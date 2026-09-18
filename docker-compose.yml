@@ -1,7 +1,5 @@
-version: "3"
-
 volumes:
-  pg_data:
+  pg18_data:
   web_root:
   smnrp_data:
 
@@ -41,9 +39,9 @@ services:
 
 
   db:
-    image: postgres:15-bookworm
+    image: postgres:18-bookworm
     hostname: db
     restart: unless-stopped
     env_file: .env
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg18_data:/var/lib/postgresql

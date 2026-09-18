@@ -1,7 +1,5 @@
-FROM node:18
+FROM node:24-bookworm
 
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update -qq && apt-get install -y yarn
+RUN corepack enable && corepack prepare yarn@1.22.22 --activate
 
 WORKDIR /app

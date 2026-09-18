@@ -16,6 +16,7 @@ const links = [
 
 <template>
   <div class="bg-blue-50 min-h-screen w-full">
+    <Toast />
     <section class="py-8 px-4 lg:px-10 bg-blue-800">
       <nav class="relative">
         <div class="flex justify-between items-center">

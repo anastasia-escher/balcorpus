@@ -43,6 +43,7 @@ const resultCount = ref<number | null>(null)
 const loading = ref(false)
 const searchError = ref('')
 const hasSearched = ref(false)
+const requestAPI = useAPI()
 
 const search = async (kind: SearchKind, values: Record<string, string | null>) => {
   const params: Record<string, string> = {}
@@ -64,7 +65,7 @@ const search = async (kind: SearchKind, values: Record<string, string | null>) =
   loading.value = true
   searchError.value = ''
   hasSearched.value = false
-  const { data, error } = await useAPI<SearchResponse>('tokens/search/', { params })
+  const { data, error } = await requestAPI<SearchResponse>('tokens/search/', { params })
   loading.value = false
 
   if (error.value || !data.value) {

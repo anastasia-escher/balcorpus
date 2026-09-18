@@ -35,68 +35,70 @@ function getCsrfToken(): string | null {
 }
 
 /**
- * Simplified API composable for client‐side rendering only.
- * Shows a PrimeVue toast on any error.
- * @param endpoint API endpoint path (without /api/v1/ prefix)
- * @param options Request options
- * @returns Promise with data and error objects
+ * Simplified API composable for client-side rendering only.
+ * Call it during component setup, then use its returned request function in
+ * event handlers. This keeps PrimeVue's Toast injection in Vue's setup scope.
+ * @returns A request function that shows a PrimeVue toast on errors.
  */
-export const useAPI = async <T = any>(
-  endpoint: string,
-  options: APIOptions = {}
-): Promise<APIResponse<T>> => {
+export const useAPI = () => {
   const config = useRuntimeConfig()
   const toast = useToast()
-  const {method = 'GET'} = options
 
-  // Prepare headers with CSRF token for unsafe methods
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers || {}),
-  }
+  return async <T = any>(
+    endpoint: string,
+    options: APIOptions = {}
+  ): Promise<APIResponse<T>> => {
+    const {method = 'GET'} = options
 
-  if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
-    const token = getCsrfToken()
-    if (token) {
-      headers['X-CSRFToken'] = token
+    // Prepare headers with CSRF token for unsafe methods
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
     }
-  }
 
-  // Build URL with query parameters if needed
-  let url = `${config.public.baseURL}/api/v1/${endpoint}`
-  if (options.params) {
-    const queryParams = new URLSearchParams()
-    Object.entries(options.params).forEach(([key, value]) => {
-      queryParams.append(key, value)
-    })
-    url += `?${queryParams.toString()}`
-  }
-
-  try {
-    const response = await $fetch<T>(url, {
-      method,
-      headers,
-      body: options.body,
-      credentials: 'include',
-    })
-
-    return {
-      data: {value: response},
-      error: {value: null},
+    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
+      const token = getCsrfToken()
+      if (token) {
+        headers['X-CSRFToken'] = token
+      }
     }
-  } catch (error: any) {
-    const statusCode = error.response?.status ?? 'Network'
-    const message = error.message || 'Unknown error'
-    toast.add({
-      severity: 'error',
-      summary: `Error ${statusCode}`,
-      detail: message,
-      life: 5000,
-    })
 
-    return {
-      data: {value: null},
-      error: {value: error},
+    // Build URL with query parameters if needed
+    let url = `${config.public.baseURL}/api/v1/${endpoint}`
+    if (options.params) {
+      const queryParams = new URLSearchParams()
+      Object.entries(options.params).forEach(([key, value]) => {
+        queryParams.append(key, value)
+      })
+      url += `?${queryParams.toString()}`
+    }
+
+    try {
+      const response = await $fetch<T>(url, {
+        method,
+        headers,
+        body: options.body,
+        credentials: 'include',
+      })
+
+      return {
+        data: {value: response},
+        error: {value: null},
+      }
+    } catch (error: any) {
+      const statusCode = error.response?.status ?? 'Network'
+      const message = error.message || 'Unknown error'
+      toast.add({
+        severity: 'error',
+        summary: `Error ${statusCode}`,
+        detail: message,
+        life: 5000,
+      })
+
+      return {
+        data: {value: null},
+        error: {value: error},
+      }
     }
   }
 }

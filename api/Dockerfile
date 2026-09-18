@@ -1,4 +1,4 @@
-FROM python:3.11-bookworm
+FROM python:3.13-bookworm
 ARG DCC_ENV=dev
 # Optimise python and debian in docker
 ENV PYTHONUNBUFFERED 1
@@ -12,26 +12,14 @@ RUN mkdir -p /vol/web/media
 RUN mkdir -p /vol/web/static
 RUN mkdir -p /vol/backups
 
-# Update the package cache
-RUN apt-get update --fix-missing
-
-# Install PostgreSQL client
-RUN apt-get install -y postgresql-client
-
-# Update and install dependencies
-RUN apt-get update --fix-missing && \
-    apt-get install -y \
-        postgresql-client \
-        graphviz \
-        && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-
-RUN apt-get update && apt-get install -y \
-    graphviz \
-    graphviz-dev \
-    && pip install pygraphviz
-# Cleanup
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates curl gnupg graphviz libgraphviz-dev && \
+    curl -fsSL https://apt.postgresql.org/pub/repos/apt/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/postgresql.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/postgresql.gpg] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends postgresql-client-18 && \
+    pip install --no-cache-dir pygraphviz && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Update pip
 RUN pip install --upgrade pip
