@@ -1,5 +1,7 @@
 from rest_framework import serializers
+
 from .models import Text, Sentence, Token, Speaker
+from .processing import sentence_text
 
 class SpeakerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -39,10 +41,10 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
         ]
 
     def get_source_sentence(self, token):
-        return token.sentence.source_full_text()
+        return sentence_text.source_text(token.sentence)
 
     def get_diplomatic_sentence(self, token):
-        return token.sentence.diplomatic_full_text()
+        return sentence_text.diplomatic_text(token.sentence)
 
 class SentenceSerializer(serializers.ModelSerializer):
     tokens = TokenSerializer(many=True, read_only=True)

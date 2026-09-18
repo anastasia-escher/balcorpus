@@ -1,12 +1,11 @@
-import re
-
-from django.db.models import F, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+
 from .models import Text, Speaker, Sentence, Token
+from .processing.token_search import build_search_queryset
 from .serializers import (
     TextSerializer,
     SpeakerSerializer,
@@ -15,18 +14,9 @@ from .serializers import (
     TokenSearchResultSerializer,
 )
 
-
-def ud_relation(relation, prefix=''):
-    """Match a UD relation together with its subtypes.
-
-    Searching for "nsubj" should also find "nsubj:pass", because the search
-    form only offers the base relations.  Example: ud_relation('nsubj') matches
-    both "nsubj" and "nsubj:pass", but not "nsubj_other".
-    """
-    return (
-        Q(**{f'{prefix}ud_type__iexact': relation})
-        | Q(**{f'{prefix}ud_type__istartswith': f'{relation}:'})
-    )
+# The criteria a search needs at least one of; 'parent' only narrows a result
+# down further, so on its own it would ask for the whole corpus.
+SEARCH_CRITERIA = ['q', 'lemma', 'pos', 'ud']
 
 
 class CorpusPagination(PageNumberPagination):
@@ -43,18 +33,22 @@ class PublicCorpusViewSet(viewsets.ReadOnlyModelViewSet):
 
 class TextViewSet(PublicCorpusViewSet):
     queryset = Text.objects.all().prefetch_related(
+        'authors',
         'sentences__tokens',
         'sentences__speaker',
     )
     serializer_class = TextSerializer
 
+
 class SpeakerViewSet(PublicCorpusViewSet):
     queryset = Speaker.objects.all()
     serializer_class = SpeakerSerializer
 
+
 class SentenceViewSet(PublicCorpusViewSet):
     queryset = Sentence.objects.all().select_related('speaker', 'text').prefetch_related('tokens')
     serializer_class = SentenceSerializer
+
 
 class TokenViewSet(PublicCorpusViewSet):
     queryset = Token.objects.all().select_related('sentence__speaker', 'sentence__text')
@@ -69,48 +63,25 @@ class TokenViewSet(PublicCorpusViewSet):
         sentence context is included so the UI does not have to load the whole
         corpus before showing a match.
         """
-        query = request.query_params.get('q', '').strip()
-        lemma = request.query_params.get('lemma', '').strip()
-        pos = request.query_params.get('pos', '').strip()
-        ud = request.query_params.get('ud', '').strip()
-        parent = request.query_params.get('parent', '').strip()
+        criteria = {
+            name: request.query_params.get(name, '').strip()
+            for name in SEARCH_CRITERIA + ['parent']
+        }
 
-        if not any((query, lemma, pos, ud)):
+        if not any(criteria[name] for name in SEARCH_CRITERIA):
             return Response(
                 {'detail': 'Provide text, a lemma, a PoS tag, or a UD tag.'},
                 status=400,
             )
 
-        queryset = Token.objects.select_related(
-            'sentence__speaker', 'sentence__text'
-        ).prefetch_related('sentence__tokens')
+        queryset = build_search_queryset(
+            text=criteria['q'],
+            lemma=criteria['lemma'],
+            pos=criteria['pos'],
+            ud=criteria['ud'],
+            parent=criteria['parent'],
+        )
 
-        if query:
-            queryset = queryset.filter(
-                Q(source__icontains=query)
-                | Q(diplomatic__icontains=query)
-                | Q(lemma__icontains=query)
-                | Q(sentence__text__text_name__icontains=query)
-                | Q(sentence__text__short_description__icontains=query)
-            )
-        if lemma:
-            queryset = queryset.filter(lemma__iexact=lemma)
-        if pos:
-            # MULTEXT-East tags support '?' as a single-character wildcard.
-            pos_pattern = re.escape(pos).replace(r'\?', '.')
-            queryset = queryset.filter(pos_tag__iregex=f'^{pos_pattern}$')
-        if ud:
-            queryset = queryset.filter(ud_relation(ud))
-        if parent:
-            # A token's head is the token of the same sentence whose ud_id
-            # equals this token's head_ud_id.  Both conditions belong in one
-            # filter() call so that they apply to the same related token.
-            queryset = queryset.filter(
-                ud_relation(parent, prefix='sentence__tokens__'),
-                sentence__tokens__ud_id=F('head_ud_id'),
-            )
-
-        queryset = queryset.order_by('sentence__text_id', 'sentence__sentence_id', 'ud_id').distinct()
         page = self.paginate_queryset(queryset)
         serializer = TokenSearchResultSerializer(page or queryset, many=True)
 

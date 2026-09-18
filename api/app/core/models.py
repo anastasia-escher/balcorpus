@@ -10,7 +10,11 @@ class Speaker(models.Model):
     """
 
     speaker_id = models.SlugField(max_length=100, unique=True)
+    # The name this person is known by, which for a writer may be a pen name.
     full_name = models.CharField(max_length=255)
+    # The name on their papers, filled in only when it differs from full_name:
+    # "Коле Чашуле" was born "Никола Кепев".
+    birth_name = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
     place_of_birth = models.CharField(max_length=255, blank=True, null=True)
     birthyear = models.PositiveIntegerField(blank=True, null=True)
@@ -61,27 +65,6 @@ class Sentence(models.Model):
     text = models.ForeignKey(Text, on_delete=models.CASCADE, related_name='sentences')
     sentence_id = models.PositiveIntegerField()
     speaker = models.ForeignKey(Speaker, on_delete=models.SET_NULL, null=True, blank=True, related_name='sentences')
-
-    def _build_text(self, attr):
-        tokens = list(self.tokens.all())
-        if not tokens:
-            return ""
-
-        words = []
-        for token in tokens:
-            word = getattr(token, attr, '') or ''
-            if word in {'.', ',', '!', '?', ';', ':'} and words:
-                words[-1] += word
-            else:
-                words.append(word)
-
-        return ' '.join(words).strip()
-
-    def source_full_text(self):
-        return self._build_text('source')
-
-    def diplomatic_full_text(self):
-        return self._build_text('diplomatic')
 
     def __str__(self):
         return f"Sentence {self.sentence_id} in {self.text.text_name}"
