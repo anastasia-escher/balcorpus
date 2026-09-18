@@ -1,7 +1,3 @@
-import Aura from '@primeuix/themes/aura'
-import Material from '@primeuix/themes/material'
-import {definePreset} from '@primeuix/themes'
-
 // https://nuxt.com/docs/api/configuration/nuxt-config
 
 export default defineNuxtConfig({
@@ -32,8 +28,7 @@ export default defineNuxtConfig({
         debug: true, // optional: console traces for hydrate/save
       },
     ],
-    '@primevue/nuxt-module',
-    '@nuxtjs/tailwindcss',
+    '@nuxt/ui',
     '@nuxtjs/i18n',
     '@nuxtjs/leaflet',
   ],
@@ -42,7 +37,6 @@ export default defineNuxtConfig({
     vueI18n: './i18n.config.ts',
     defaultLocale: 'en',
     locales: [
-
       {
         code: 'en',
         name: 'English',
@@ -53,17 +47,5 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     skipSettingLocaleOnNavigate: true,
   },
-  css: ['~/assets/css/styles.css', 'primeicons/primeicons.css'],
-  primevue: {
-    options: {
-      theme: {
-        preset: Material,
-        options: {
-          prefix: 'p',
-          darkModeSelector: '.p-dark',
-          cssLayer: false,
-        },
-      },
-    },
-  },
+  css: ['~/assets/css/styles.css'],
 })

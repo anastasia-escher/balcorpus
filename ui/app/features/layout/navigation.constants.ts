@@ -5,5 +5,5 @@ export interface NavigationLink {
 }
 
 export const NAVIGATION_LINKS: readonly NavigationLink[] = [
-  { path: '/', labelKey: 'navigation.home', icon: 'pi pi-home' },
+  {path: '/', labelKey: 'navigation.home', icon: 'i-lucide-house'},
 ]

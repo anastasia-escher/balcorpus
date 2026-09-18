@@ -1,4 +1,3 @@
-import {useToast} from 'primevue/usetoast'
 import {useRuntimeConfig} from '#app'
 import {useI18n} from 'vue-i18n'
 
@@ -52,10 +51,7 @@ export const useAPI = () => {
   const toast = useToast()
   const {t} = useI18n()
 
-  return async <T = any>(
-    endpoint: string,
-    options: APIOptions = {}
-  ): Promise<APIResponse<T>> => {
+  return async <T = any>(endpoint: string, options: APIOptions = {}): Promise<APIResponse<T>> => {
     const {method = 'GET'} = options
 
     // Prepare headers with CSRF token for unsafe methods
@@ -97,10 +93,10 @@ export const useAPI = () => {
       const statusCode = error.response?.status ?? t('api.networkStatus')
       const message = error.message || t('api.unknownError')
       toast.add({
-        severity: 'error',
-        summary: t('api.errorSummary', {statusCode}),
-        detail: message,
-        life: 5000,
+        color: 'error',
+        title: t('api.errorSummary', {statusCode}),
+        description: message,
+        duration: 5000,
       })
 
       return {

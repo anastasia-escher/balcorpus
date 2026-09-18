@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import InputText from 'primevue/inputtext'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
-import { useSearchStore } from '~/stores/search'
-import { useI18n } from 'vue-i18n'
+import {useSearchStore} from '~/stores/search'
+import {useI18n} from 'vue-i18n'
 
 const searchStore = useSearchStore()
-const { t } = useI18n()
+const {t} = useI18n()
 
 const submit = () => {
   searchStore.submitSearch('text')
@@ -25,11 +24,11 @@ const submit = () => {
     </div>
 
     <form class="space-y-8" @submit.prevent="submit">
-      <InputText
+      <UInput
         v-model="searchStore.textQuery"
-        class="w-full border-0 border-b-2 border-gray-300 focus:border-blue-700 p-3 text-lg"
-        :placeholder="t('search.forms.text.placeholder')"
-      />
+        class="w-full"
+        size="xl"
+        :placeholder="t('search.forms.text.placeholder')" />
       <SearchFormActions @reset="searchStore.resetSearchInput('text')" />
     </form>
   </section>

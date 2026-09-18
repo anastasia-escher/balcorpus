@@ -1,44 +1,35 @@
 """Importing an annotation file into sentences and tokens.
 
-Re-importing a file replaces everything the corpus holds for that text, so
-running the command twice leaves the same result as running it once.
+The file is read and checked completely before anything is written.  If it has
+errors, nothing at all reaches the database and the caller gets the full list,
+so the linguists can correct the file in one go.
+
+Re-importing a clean file replaces everything the corpus holds for that text,
+so running the command twice leaves the same result as running it once.
 """
 
 from collections import defaultdict
 
+from django.db import transaction
+
 from core.models import Sentence, Speaker, Text, Token
+from helpers.logger import logger
 
 from .cleaning import clean_annotation, clean_number, clean_text
+from .columns import (
+    ANNOTATION_COLUMNS,
+    HEAD_COLUMN,
+    REQUIRED_COLUMNS,
+    SENTENCE_COLUMN,
+    SOURCE_COLUMNS,
+    SPEAKER_COLUMN,
+    TEXT_COLUMN,
+    TIME_COLUMN,
+    TOKEN_COLUMN,
+)
+from .problems import DataProblems, ProblemList
 from .table_reader import read_rows
-
-# Which column identifies what.
-TEXT_COLUMN = 'text_id'
-SENTENCE_COLUMN = 'sent_id'
-TOKEN_COLUMN = 'ud_id'
-SPEAKER_COLUMN = 'speaker'
-
-# The column named "ud_valency" holds the ud_id of the token's syntactic head,
-# not a valency: a preposition depending on the noun at position 3 has a 3
-# there, and every sentence root has a 0.
-HEAD_COLUMN = 'ud_valency'
-
-# Columns holding the source material itself.  These are only trimmed, never
-# otherwise altered.
-SOURCE_COLUMNS = {
-    'source': 'source',
-    'diplomatic': 'diplomatic',
-    'lemma': 'lemma',
-}
-
-# Columns holding annotation, where a lone "_" means "no value".
-ANNOTATION_COLUMNS = {
-    'ud_pos': 'ud_pos',
-    'pos_tag': 'pos_tag',
-    'pos_ext': 'pos_ext',
-    'ud_type': 'ud_type',
-}
-
-TIME_COLUMN = 'time'
+from .validation import check_annotation_rows
 
 # How many rows go to the database in one statement.  Inserting the tokens one
 # by one would mean tens of thousands of round trips for a single file.
@@ -66,47 +57,102 @@ def build_token_fields(row):
     return fields
 
 
+def parse_rows(path):
+    """Read the file into rows that the checks and the writing both understand.
+
+    Returns the rows together with the column names the file actually had, so
+    the file only has to be opened once.
+
+    Row 1 of the file is the heading, so the first row of data is row 2 and the
+    numbers in an error message match what the linguist sees in Excel.
+    """
+    parsed = []
+    column_names = []
+
+    for row_number, row in enumerate(read_rows(path), start=2):
+        if not column_names:
+            column_names = list(row)
+
+        parsed.append({
+            'row_number': row_number,
+            'sentence_number': clean_number(row.get(SENTENCE_COLUMN)),
+            'speaker_slug': clean_text(row.get(SPEAKER_COLUMN)),
+            'text_id': clean_text(row.get(TEXT_COLUMN)),
+            # The cells as they were typed, so a value that is not a number can
+            # be told apart from a cell that was simply left empty.
+            'raw_numbers': {
+                SENTENCE_COLUMN: clean_text(row.get(SENTENCE_COLUMN)),
+                TOKEN_COLUMN: clean_text(row.get(TOKEN_COLUMN)),
+                HEAD_COLUMN: clean_text(row.get(HEAD_COLUMN)),
+            },
+            'fields': build_token_fields(row),
+        })
+
+    return parsed, column_names
+
+
+def check_columns(column_names, problems):
+    """Make sure the file is the kind of file we were expecting.
+
+    A workbook where the wrong sheet was exported has none of these columns,
+    and saying so is far more useful than a hundred empty-value errors.
+    """
+    if not column_names:
+        problems.error('the file has no data rows')
+        return
+
+    missing = [column for column in REQUIRED_COLUMNS if column not in column_names]
+    if missing:
+        problems.error(
+            'these columns are missing: ' + ', '.join(missing)
+            + '. Expected an annotation file with the columns '
+            + ', '.join(REQUIRED_COLUMNS) + '.'
+        )
+
+
+def check_texts_exist(rows, problems):
+    """Every text named in the file must already be in the database."""
+    named_texts = {row['text_id'] for row in rows}
+
+    if None in named_texts:
+        problems.error(
+            f'some rows have no {TEXT_COLUMN}. Every row must name the text it '
+            "belongs to, e.g. 'vasil_iljoski_corbadji_1937'."
+        )
+        named_texts.discard(None)
+
+    known = set(Text.objects.filter(text_id__in=named_texts).values_list('text_id', flat=True))
+    for text_id in sorted(named_texts - known):
+        problems.error(
+            f"the text '{text_id}' is not in the database. Import the metadata "
+            'table first: manage.py import_texts <file>.'
+        )
+
+
 def group_rows_by_text(rows):
-    """Sort the rows of a file into one bucket per text.
+    """Sort the rows into one bucket per text.
 
     A file normally holds a single text, but nothing stops it from holding
     several, so the grouping is done anyway.
     """
     grouped = defaultdict(list)
     for row in rows:
-        text_id = clean_text(row.get(TEXT_COLUMN))
-        grouped[text_id].append(row)
+        grouped[row['text_id']].append(row)
 
     return grouped
 
 
-def find_text(text_id, path):
-    """Look up the text this file belongs to, or explain why it is missing."""
-    if not text_id:
-        raise ValueError(
-            f"{path} has rows without a {TEXT_COLUMN}. Every row must name the "
-            "text it belongs to, e.g. 'vasil_iljoski_corbadji_1937'."
-        )
-
-    text = Text.objects.filter(text_id=text_id).first()
-    if text is None:
-        raise ValueError(
-            f"{path} refers to the text '{text_id}', which is not in the database. "
-            "Import the metadata table first: manage.py import_texts <file>."
-        )
-
-    return text
-
-
-def import_text_rows(text, rows):
+def write_text_rows(text, rows):
     """Replace everything stored for one text with the rows of this file.
+
+    Everything happens in one transaction: if any part of it fails, the text
+    keeps the data it had before, rather than being left half emptied.
 
     Returns a summary, e.g.
     {'text_id': 'vasil_iljoski_corbadji_1937', 'sentences': 2351,
-     'tokens': 25538, 'replaced_sentences': 0, 'unknown_speakers': []}
+     'tokens': 25538, 'replaced_sentences': 0}
     """
     speakers_by_slug = {speaker.speaker_id: speaker for speaker in Speaker.objects.all()}
-    unknown_speakers = set()
 
     # Sentence numbers in the order they appear, so the corpus keeps the order
     # of the original document rather than the order of a database scan.
@@ -115,68 +161,83 @@ def import_text_rows(text, rows):
     token_fields_of_sentence = defaultdict(list)
 
     for row in rows:
-        sentence_number = clean_number(row.get(SENTENCE_COLUMN))
-        token_fields = build_token_fields(row)
-        if sentence_number is None or token_fields['ud_id'] is None:
-            continue
+        number = row['sentence_number']
+        if number not in token_fields_of_sentence:
+            sentence_numbers.append(number)
 
-        if sentence_number not in token_fields_of_sentence:
-            sentence_numbers.append(sentence_number)
+        token_fields_of_sentence[number].append(row['fields'])
 
-        token_fields_of_sentence[sentence_number].append(token_fields)
+        slug = row['speaker_slug']
+        if slug and number not in speaker_of_sentence and slug in speakers_by_slug:
+            speaker_of_sentence[number] = speakers_by_slug[slug]
 
-        speaker_slug = clean_text(row.get(SPEAKER_COLUMN))
-        if speaker_slug and sentence_number not in speaker_of_sentence:
-            speaker = speakers_by_slug.get(speaker_slug)
-            if speaker is None:
-                unknown_speakers.add(speaker_slug)
-            else:
-                speaker_of_sentence[sentence_number] = speaker
+    with transaction.atomic():
+        replaced = Sentence.objects.filter(text=text).count()
+        if replaced:
+            logger.info(f'Replacing the {replaced} sentences already stored for {text.text_id}')
+        Sentence.objects.filter(text=text).delete()
 
-    replaced = Sentence.objects.filter(text=text).count()
-    Sentence.objects.filter(text=text).delete()
+        sentences = [
+            Sentence(
+                text=text,
+                sentence_id=number,
+                speaker=speaker_of_sentence.get(number),
+            )
+            for number in sentence_numbers
+        ]
+        Sentence.objects.bulk_create(sentences, batch_size=BATCH_SIZE)
 
-    sentences = [
-        Sentence(
-            text=text,
-            sentence_id=number,
-            speaker=speaker_of_sentence.get(number),
-        )
-        for number in sentence_numbers
-    ]
-    Sentence.objects.bulk_create(sentences, batch_size=BATCH_SIZE)
+        tokens = [
+            Token(sentence=sentence, **fields)
+            for sentence in sentences
+            for fields in token_fields_of_sentence[sentence.sentence_id]
+        ]
+        Token.objects.bulk_create(tokens, batch_size=BATCH_SIZE)
 
-    tokens = [
-        Token(sentence=sentence, **fields)
-        for sentence in sentences
-        for fields in token_fields_of_sentence[sentence.sentence_id]
-    ]
-    Token.objects.bulk_create(tokens, batch_size=BATCH_SIZE)
-
-    # The speakers appearing in a text are part of its metadata, so the link is
-    # recorded on the text as well; that is what lets a speaker page list the
-    # texts they appear in.
-    text.authors.set(set(speaker_of_sentence.values()))
+        # The speakers appearing in a text are part of its metadata, so the
+        # link is recorded on the text as well; that is what lets a speaker
+        # page list the texts they appear in.
+        text.authors.set(set(speaker_of_sentence.values()))
 
     return {
         'text_id': text.text_id,
         'sentences': len(sentences),
         'tokens': len(tokens),
         'replaced_sentences': replaced,
-        'unknown_speakers': sorted(unknown_speakers),
     }
 
 
-def import_tokens(path):
-    """Import every text contained in one annotation file.
+def import_tokens(path, allow_unknown_speakers=False):
+    """Check an annotation file and, if it is clean, import it.
 
-    Returns one summary per text found in the file.
+    Raises DataProblems when the file has errors; in that case the database is
+    left untouched.  Returns one summary per text found in the file, and the
+    warnings worth showing even for a file that went through.
     """
-    grouped = group_rows_by_text(read_rows(path))
+    problems = ProblemList()
+
+    logger.info(f'Reading {path}')
+    rows, column_names = parse_rows(path)
+
+    check_columns(column_names, problems)
+    if problems.has_errors():
+        raise DataProblems(path, problems.errors, problems.warnings)
+
+    sentence_count = len({row['sentence_number'] for row in rows})
+    logger.info(f'{len(rows)} rows read, {sentence_count} sentences')
+
+    logger.info('Checking the annotation before writing anything')
+    known_speaker_slugs = set(Speaker.objects.values_list('speaker_id', flat=True))
+    check_annotation_rows(rows, known_speaker_slugs, problems, allow_unknown_speakers)
+    check_texts_exist(rows, problems)
+
+    if problems.has_errors():
+        raise DataProblems(path, problems.errors, problems.warnings)
 
     summaries = []
-    for text_id, rows in grouped.items():
-        text = find_text(text_id, path)
-        summaries.append(import_text_rows(text, rows))
+    for text_id, text_rows in group_rows_by_text(rows).items():
+        text = Text.objects.get(text_id=text_id)
+        logger.info(f'Writing {len(text_rows)} tokens for {text_id}')
+        summaries.append(write_text_rows(text, text_rows))
 
-    return summaries
+    return summaries, problems.warnings
