@@ -9,8 +9,8 @@ import type {
   SearchResult,
 } from '~/features/search/search.types'
 
-const EMPTY_SEARCH_MESSAGE = 'Enter a search value first.'
-const SEARCH_FAILURE_MESSAGE = 'The corpus could not be searched. Please try again.'
+const EMPTY_SEARCH_ERROR_KEY = 'search.errors.empty'
+const SEARCH_FAILURE_ERROR_KEY = 'search.errors.failed'
 
 export const useSearchStore = defineStore('search', () => {
   const activeSearchKind = ref<SearchKind>('text')
@@ -22,7 +22,7 @@ export const useSearchStore = defineStore('search', () => {
   const results = ref<SearchResult[]>([])
   const resultCount = ref<number | null>(null)
   const loading = ref(false)
-  const searchError = ref('')
+  const searchErrorKey = ref<string | null>(null)
   const hasSearched = ref(false)
   const requestAPI = useAPI()
 
@@ -34,23 +34,23 @@ export const useSearchStore = defineStore('search', () => {
     parent,
   } satisfies Record<SearchInputKey, { value: string | null }>
 
-  function selectSearchKind(kind: SearchKind) {
+  const selectSearchKind = (kind: SearchKind) => {
     activeSearchKind.value = kind
   }
 
-  function resetSearchInput(kind: SearchKind) {
+  const resetSearchInput = (kind: SearchKind) => {
     for (const { inputKey } of SEARCH_REQUEST_FIELDS[kind]) {
       searchInputs[inputKey].value = inputKey === 'udTag' || inputKey === 'parent' ? null : ''
     }
   }
 
-  function clearSearchResults() {
+  const clearSearchResults = () => {
     results.value = []
     resultCount.value = null
     hasSearched.value = false
   }
 
-  function buildSearchParameters(kind: SearchKind) {
+  const buildSearchParameters = (kind: SearchKind) => {
     const parameters: Record<string, string> = {}
 
     for (const { inputKey, parameterName } of SEARCH_REQUEST_FIELDS[kind]) {
@@ -63,31 +63,34 @@ export const useSearchStore = defineStore('search', () => {
     return parameters
   }
 
-  async function submitSearch(kind: SearchKind) {
+  const submitSearch = async (kind: SearchKind) => {
     const parameters = buildSearchParameters(kind)
 
     if (!Object.keys(parameters).length) {
       clearSearchResults()
-      searchError.value = EMPTY_SEARCH_MESSAGE
+      searchErrorKey.value = EMPTY_SEARCH_ERROR_KEY
       return
     }
 
     loading.value = true
-    searchError.value = ''
+    searchErrorKey.value = null
     hasSearched.value = false
 
-    const { data, error } = await requestAPI<SearchResponse>('tokens/search/', { params: parameters })
-    loading.value = false
+    try {
+      const { data, error } = await requestAPI<SearchResponse>('tokens/search/', { params: parameters })
 
-    if (error.value || !data.value) {
-      clearSearchResults()
-      searchError.value = SEARCH_FAILURE_MESSAGE
-      return
+      if (error.value || !data.value) {
+        clearSearchResults()
+        searchErrorKey.value = SEARCH_FAILURE_ERROR_KEY
+        return
+      }
+
+      results.value = data.value.results
+      resultCount.value = data.value.count
+      hasSearched.value = true
+    } finally {
+      loading.value = false
     }
-
-    results.value = data.value.results
-    resultCount.value = data.value.count
-    hasSearched.value = true
   }
 
   return {
@@ -100,7 +103,7 @@ export const useSearchStore = defineStore('search', () => {
     results,
     resultCount,
     loading,
-    searchError,
+    searchErrorKey,
     hasSearched,
     selectSearchKind,
     resetSearchInput,

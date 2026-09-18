@@ -6,8 +6,10 @@ import SearchPosForm from '~/components/search/forms/SearchPosForm.vue'
 import SearchTextForm from '~/components/search/forms/SearchTextForm.vue'
 import SearchUdForm from '~/components/search/forms/SearchUdForm.vue'
 import { useSearchStore } from '~/stores/search'
+import { useI18n } from 'vue-i18n'
 
 const searchStore = useSearchStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -16,14 +18,14 @@ const searchStore = useSearchStore()
       <img
         class="w-full h-full object-cover"
         src="/assets/images/mac.jpeg"
-        alt="Corpus cover image"
+        :alt="t('home.coverAlt')"
       />
     </div>
     <div class="relative container px-4 mx-auto -mt-24">
       <div class="max-w-8xl px-4 pt-12 lg:pt-20 mx-auto bg-white rounded-2xl shadow-xl pb-24">
         <div class="max-w-2xl mb-12 mx-auto text-center">
           <h1 class="mb-8 text-4xl lg:text-6xl text-blue-800 font-extrabold font-heading tracking-tight">
-            Corpus of Macedonian Language
+            {{ t('home.title') }}
           </h1>
           <SearchTabs />
         </div>

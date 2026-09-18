@@ -1,5 +1,6 @@
 import {useToast} from 'primevue/usetoast'
 import {useRuntimeConfig} from '#app'
+import {useI18n} from 'vue-i18n'
 
 /**
  * HTTP method types accepted by fetch APIs
@@ -28,10 +29,16 @@ interface APIResponse<T> {
  * Gets CSRF token from cookies
  * @returns string | null The CSRF token or null if not found
  */
-function getCsrfToken(): string | null {
+const getCsrfToken = (): string | null => {
   const cookies = document.cookie.split(';')
   const csrfCookie = cookies.find(cookie => cookie.trim().startsWith('csrftoken='))
-  return csrfCookie ? csrfCookie.split('=')[1] : null
+
+  if (!csrfCookie) {
+    return null
+  }
+
+  const separatorIndex = csrfCookie.indexOf('=')
+  return separatorIndex === -1 ? null : csrfCookie.slice(separatorIndex + 1)
 }
 
 /**
@@ -43,6 +50,7 @@ function getCsrfToken(): string | null {
 export const useAPI = () => {
   const config = useRuntimeConfig()
   const toast = useToast()
+  const {t} = useI18n()
 
   return async <T = any>(
     endpoint: string,
@@ -86,11 +94,11 @@ export const useAPI = () => {
         error: {value: null},
       }
     } catch (error: any) {
-      const statusCode = error.response?.status ?? 'Network'
-      const message = error.message || 'Unknown error'
+      const statusCode = error.response?.status ?? t('api.networkStatus')
+      const message = error.message || t('api.unknownError')
       toast.add({
         severity: 'error',
-        summary: `Error ${statusCode}`,
+        summary: t('api.errorSummary', {statusCode}),
         detail: message,
         life: 5000,
       })

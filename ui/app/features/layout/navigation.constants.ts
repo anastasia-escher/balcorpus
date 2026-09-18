@@ -1,9 +1,9 @@
 export interface NavigationLink {
   path: string
-  label: string
+  labelKey: string
   icon: string
 }
 
 export const NAVIGATION_LINKS: readonly NavigationLink[] = [
-  { path: '/', label: 'Home', icon: 'pi pi-home' },
+  { path: '/', labelKey: 'navigation.home', icon: 'pi pi-home' },
 ]

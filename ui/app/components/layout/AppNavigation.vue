@@ -2,8 +2,10 @@
 import { onMounted } from 'vue'
 import { NAVIGATION_LINKS } from '~/features/layout/navigation.constants'
 import { useLayoutStore } from '~/stores/layout'
+import { useI18n } from 'vue-i18n'
 
 const layoutStore = useLayoutStore()
+const { t } = useI18n()
 
 onMounted(() => {
   layoutStore.initializeTheme()
@@ -12,12 +14,12 @@ onMounted(() => {
 
 <template>
   <header class="py-8 px-4 lg:px-10 bg-blue-800">
-    <nav class="relative" aria-label="Main navigation">
+    <nav class="relative" :aria-label="t('navigation.mainLabel')">
       <div class="flex justify-between items-center">
         <button
           type="button"
           class="lg:hidden flex items-center p-3 rounded focus:outline-none"
-          aria-label="Toggle navigation"
+          :aria-label="t('navigation.toggle')"
           :aria-expanded="layoutStore.mobileNavigationOpen"
           @click="layoutStore.toggleMobileNavigation"
         >
@@ -28,7 +30,7 @@ onMounted(() => {
           <li v-for="link in NAVIGATION_LINKS" :key="link.path">
             <NuxtLink class="text-white font-semibold hover:text-blue-50 flex items-center gap-1" :to="link.path">
               <i :class="link.icon" />
-              {{ link.label }}
+              {{ t(link.labelKey) }}
             </NuxtLink>
           </li>
         </ul>
@@ -36,7 +38,7 @@ onMounted(() => {
         <button
           type="button"
           class="hidden lg:flex items-center text-white p-2 rounded-full transition hover:bg-blue-700 focus:outline-none"
-          :aria-label="layoutStore.darkModeEnabled ? 'Use light theme' : 'Use dark theme'"
+          :aria-label="layoutStore.darkModeEnabled ? t('navigation.useLightTheme') : t('navigation.useDarkTheme')"
           @click="layoutStore.toggleTheme"
         >
           <i :class="layoutStore.darkModeEnabled ? 'pi pi-sun' : 'pi pi-moon'" />
@@ -55,13 +57,13 @@ onMounted(() => {
       <nav
         v-if="layoutStore.mobileNavigationOpen"
         class="fixed top-0 left-0 bottom-0 w-5/6 max-w-sm z-50 bg-white border-r flex flex-col py-8 overflow-y-auto"
-        aria-label="Mobile navigation"
+        :aria-label="t('navigation.mobileLabel')"
       >
         <div class="flex items-center mb-12 px-6">
           <button
             type="button"
             class="ml-auto p-2"
-            aria-label="Close navigation"
+            :aria-label="t('navigation.close')"
             @click="layoutStore.closeMobileNavigation"
           >
             <i class="pi pi-times text-2xl text-blue-800" />
@@ -75,7 +77,7 @@ onMounted(() => {
               @click="layoutStore.closeMobileNavigation"
             >
               <i :class="link.icon" />
-              {{ link.label }}
+              {{ t(link.labelKey) }}
             </NuxtLink>
           </li>
         </ul>

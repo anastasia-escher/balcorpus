@@ -1,10 +1,10 @@
-import type { SearchKind, SearchRequestField, SearchTab } from './search.types'
+import type { SearchKind, SearchOption, SearchRequestField, SearchTab } from './search.types'
 
 export const SEARCH_TABS: readonly SearchTab[] = [
-  { kind: 'text', label: 'By Full Text' },
-  { kind: 'lemma', label: 'By Lemma' },
-  { kind: 'tag', label: 'By Tag' },
-  { kind: 'ud', label: 'By UD Tag' },
+  { kind: 'text', labelKey: 'search.tabs.text' },
+  { kind: 'lemma', labelKey: 'search.tabs.lemma' },
+  { kind: 'tag', labelKey: 'search.tabs.tag' },
+  { kind: 'ud', labelKey: 'search.tabs.ud' },
 ]
 
 export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestField[]> = {
@@ -17,27 +17,27 @@ export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestFie
   ],
 }
 
-export const UD_TAG_OPTIONS = [
-  { label: 'root: sentence root', value: 'root' },
-  { label: 'acl: adnominal clause root', value: 'acl' },
-  { label: 'advcl: adverbial clause root', value: 'advcl' },
-  { label: 'advmod: adverbial modifier', value: 'advmod' },
-  { label: 'amod: adjectival modifier', value: 'amod' },
-  { label: 'aux: auxiliary', value: 'aux' },
-  { label: 'case: analytic dependency marker', value: 'case' },
-  { label: 'cc: coordinating conjunction', value: 'cc' },
-  { label: 'cop: copula', value: 'cop' },
-  { label: 'det: determiner', value: 'det' },
-  { label: 'discourse: discourse marker', value: 'discourse' },
-  { label: 'fixed: element of multiple word expression', value: 'fixed' },
-  { label: 'mark: subordinating conjunction/marker', value: 'mark' },
-  { label: 'nsubj: subject of the main sentence', value: 'nsubj' },
-  { label: 'nmod: nominal modifier', value: 'nmod' },
-  { label: 'nummod: numeric modifier', value: 'nummod' },
-  { label: 'obj: direct object', value: 'obj' },
-  { label: 'obl: oblique argument', value: 'obl' },
-  { label: 'orphan: orphaned element (no direct head)', value: 'orphan' },
-  { label: 'punct: punctuation', value: 'punct' },
-  { label: 'reparandum: stricken tokens (reparanda)', value: 'reparandum' },
-  { label: 'vocative: vocative element', value: 'vocative' },
-] as const
+export const UD_TAG_OPTIONS: readonly SearchOption[] = [
+  { labelKey: 'search.udTags.root', value: 'root' },
+  { labelKey: 'search.udTags.acl', value: 'acl' },
+  { labelKey: 'search.udTags.advcl', value: 'advcl' },
+  { labelKey: 'search.udTags.advmod', value: 'advmod' },
+  { labelKey: 'search.udTags.amod', value: 'amod' },
+  { labelKey: 'search.udTags.aux', value: 'aux' },
+  { labelKey: 'search.udTags.case', value: 'case' },
+  { labelKey: 'search.udTags.cc', value: 'cc' },
+  { labelKey: 'search.udTags.cop', value: 'cop' },
+  { labelKey: 'search.udTags.det', value: 'det' },
+  { labelKey: 'search.udTags.discourse', value: 'discourse' },
+  { labelKey: 'search.udTags.fixed', value: 'fixed' },
+  { labelKey: 'search.udTags.mark', value: 'mark' },
+  { labelKey: 'search.udTags.nsubj', value: 'nsubj' },
+  { labelKey: 'search.udTags.nmod', value: 'nmod' },
+  { labelKey: 'search.udTags.nummod', value: 'nummod' },
+  { labelKey: 'search.udTags.obj', value: 'obj' },
+  { labelKey: 'search.udTags.obl', value: 'obl' },
+  { labelKey: 'search.udTags.orphan', value: 'orphan' },
+  { labelKey: 'search.udTags.punct', value: 'punct' },
+  { labelKey: 'search.udTags.reparandum', value: 'reparandum' },
+  { labelKey: 'search.udTags.vocative', value: 'vocative' },
+]

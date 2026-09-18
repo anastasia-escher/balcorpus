@@ -5,19 +5,19 @@ export const useLayoutStore = defineStore('layout', () => {
   const mobileNavigationOpen = ref(false)
   const darkModeEnabled = ref(false)
 
-  function initializeTheme() {
+  const initializeTheme = () => {
     darkModeEnabled.value = document.documentElement.classList.contains('p-dark')
   }
 
-  function toggleMobileNavigation() {
+  const toggleMobileNavigation = () => {
     mobileNavigationOpen.value = !mobileNavigationOpen.value
   }
 
-  function closeMobileNavigation() {
+  const closeMobileNavigation = () => {
     mobileNavigationOpen.value = false
   }
 
-  function toggleTheme() {
+  const toggleTheme = () => {
     darkModeEnabled.value = !darkModeEnabled.value
     document.documentElement.classList.toggle('p-dark', darkModeEnabled.value)
   }

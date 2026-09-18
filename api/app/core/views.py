@@ -1,7 +1,6 @@
 import re
 
-from django.db.models import Case, F, IntegerField, Q, Value, When
-from django.db.models.functions import Cast
+from django.db.models import F, Q
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -15,6 +14,19 @@ from .serializers import (
     TokenSerializer,
     TokenSearchResultSerializer,
 )
+
+
+def ud_relation(relation, prefix=''):
+    """Match a UD relation together with its subtypes.
+
+    Searching for "nsubj" should also find "nsubj:pass", because the search
+    form only offers the base relations.  Example: ud_relation('nsubj') matches
+    both "nsubj" and "nsubj:pass", but not "nsubj_other".
+    """
+    return (
+        Q(**{f'{prefix}ud_type__iexact': relation})
+        | Q(**{f'{prefix}ud_type__istartswith': f'{relation}:'})
+    )
 
 
 class CorpusPagination(PageNumberPagination):
@@ -88,21 +100,14 @@ class TokenViewSet(PublicCorpusViewSet):
             pos_pattern = re.escape(pos).replace(r'\?', '.')
             queryset = queryset.filter(pos_tag__iregex=f'^{pos_pattern}$')
         if ud:
-            queryset = queryset.filter(ud_type__iexact=ud)
+            queryset = queryset.filter(ud_relation(ud))
         if parent:
-            # New imports store the head in pos_tag2.  The fallback preserves
-            # compatibility with records imported before that column was read.
-            head_id = Cast(
-                Case(
-                    When(pos_tag2__regex=r'^\d+$', then=F('pos_tag2')),
-                    When(pos_tag__regex=r'^\d+$', then=F('pos_tag')),
-                    default=Value(None),
-                ),
-                IntegerField(),
-            )
+            # A token's head is the token of the same sentence whose ud_id
+            # equals this token's head_ud_id.  Both conditions belong in one
+            # filter() call so that they apply to the same related token.
             queryset = queryset.filter(
-                sentence__tokens__ud_id=head_id,
-                sentence__tokens__ud_type__iexact=parent,
+                ud_relation(parent, prefix='sentence__tokens__'),
+                sentence__tokens__ud_id=F('head_ud_id'),
             )
 
         queryset = queryset.order_by('sentence__text_id', 'sentence__sentence_id', 'ud_id').distinct()

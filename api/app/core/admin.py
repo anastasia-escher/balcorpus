@@ -13,8 +13,8 @@ class TokenInline(admin.TabularInline):
     model = Token
     extra = 0
     fields = [
-        'ud_id', 'order', 'source', 'diplomatic', 'lemma', 'ud_type_pos',
-        'pos_tag', 'ud_valency', 'pos_tag2', 'ud_type'
+        'ud_id', 'source', 'diplomatic', 'lemma', 'ud_pos', 'pos_tag',
+        'pos_ext', 'head_ud_id', 'ud_type', 'time'
     ]
     ordering = ['ud_id']
     show_change_link = True
@@ -30,9 +30,10 @@ class SentenceInline(admin.TabularInline):
 
 @admin.register(Text)
 class TextAdmin(admin.ModelAdmin):
-    list_display = ('text_id', 'text_name', 'data_genre', 'text_genre', 'text_date', 'source')
+    list_display = ('text_id', 'source_number', 'text_name', 'data_genre', 'text_genre', 'variety', 'text_date', 'source')
     search_fields = ('text_name', 'short_description', 'source')
-    list_filter = ('data_genre', 'text_genre', 'text_date')
+    list_filter = ('data_genre', 'text_genre', 'variety', 'text_date')
+    filter_horizontal = ('authors',)
     inlines = [SentenceInline]
     ordering = ['text_id']
 
@@ -54,15 +55,15 @@ class SentenceAdmin(admin.ModelAdmin):
 @admin.register(Token)
 class TokenAdmin(admin.ModelAdmin):
     list_display = (
-        'id', 'sentence', 'ud_id', 'order', 'source', 'diplomatic', 'lemma', 'ud_type_pos',
-        'pos_tag', 'ud_valency', 'pos_tag2', 'ud_type'
+        'id', 'sentence', 'ud_id', 'source', 'diplomatic', 'lemma', 'ud_pos',
+        'pos_tag', 'pos_ext', 'head_ud_id', 'ud_type', 'time'
     )
     search_fields = (
         'sentence__text__text_name', 'sentence__sentence_id', 'source', 'diplomatic',
-        'lemma', 'ud_type_pos', 'pos_tag', 'ud_valency', 'pos_tag2', 'ud_type'
+        'lemma', 'ud_pos', 'pos_tag', 'pos_ext', 'ud_type'
     )
     list_filter = (
-        'pos_tag', 'ud_type_pos', 'ud_type', 'ud_valency', 'pos_tag2',
+        'ud_pos', 'pos_tag', 'ud_type',
         'sentence__text', 'sentence__speaker'
     )
     ordering = ['sentence', 'ud_id']

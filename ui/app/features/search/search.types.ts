@@ -6,7 +6,12 @@ export type SearchInputKey = 'textQuery' | 'lemma' | 'posQuery' | 'udTag' | 'par
 
 export interface SearchTab {
   kind: SearchKind
-  label: string
+  labelKey: string
+}
+
+export interface SearchOption {
+  value: string
+  labelKey: string
 }
 
 export interface SearchRequestField {

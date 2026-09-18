@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { SEARCH_TABS } from '~/features/search/search.constants'
 import { useSearchStore } from '~/stores/search'
+import { useI18n } from 'vue-i18n'
 
 const searchStore = useSearchStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -14,7 +16,7 @@ const searchStore = useSearchStore()
         :class="searchStore.activeSearchKind === tab.kind ? 'bg-blue-100 text-blue-900' : ''"
         @click="searchStore.selectSearchKind(tab.kind)"
       >
-        {{ tab.label }}
+        {{ t(tab.labelKey) }}
       </button>
       <span v-if="index < SEARCH_TABS.length - 1" class="text-2xl font-black">&rsaquo;</span>
     </template>

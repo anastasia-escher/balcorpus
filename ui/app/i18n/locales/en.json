@@ -1,14 +1,106 @@
 {
-  "layout": {
-    "title": "Functional Grammar of Balkan Languages",
-    "subtitle": "Institute for Linguistic Studies, Russian Academy of Sciences",
-    "subtitle2": "Digital Tool for Studying and Analyzing Balkan Languages"
-  },
-  "nav": {
+  "navigation": {
     "home": "Home",
-    "about": "About",
-    "contact": "Contact",
-    "language": "Language",
-    "theme": "Theme"
+    "mainLabel": "Main navigation",
+    "mobileLabel": "Mobile navigation",
+    "toggle": "Toggle navigation",
+    "close": "Close navigation",
+    "useDarkTheme": "Use dark theme",
+    "useLightTheme": "Use light theme"
+  },
+  "home": {
+    "title": "Corpus of Macedonian Language",
+    "coverAlt": "Corpus cover image"
+  },
+  "api": {
+    "networkStatus": "Network",
+    "unknownError": "Unknown error",
+    "errorSummary": "Error {statusCode}"
+  },
+  "search": {
+    "tabs": {
+      "text": "By Full Text",
+      "lemma": "By Lemma",
+      "tag": "By Tag",
+      "ud": "By UD Tag"
+    },
+    "actions": {
+      "submit": "Submit",
+      "reset": "Reset"
+    },
+    "forms": {
+      "text": {
+        "title": "Text Search",
+        "summary": "Search corpus by content or metadata.",
+        "description": "Enter any phrase, sentence, or keyword to find matching text passages in the Macedonian Corpus.",
+        "placeholder": "Enter a word, phrase, or sentence…"
+      },
+      "lemma": {
+        "title": "Lemma",
+        "description": "Search tokens by lemma, i.e. basic or dictionary form of the word. Nouns are usually given in sg.nom (e.g. slovo 'word'), adjectives in m.sg.nom (e.g. nov 'new'), verbs in 1sg.prs (e.g. stana 'stand up').",
+        "placeholder": "Enter a lemma"
+      },
+      "tag": {
+        "title": "PoS Tag",
+        "summary": "Search tokens by tags reflecting part-of-speech category and morphological properties.",
+        "descriptionOneBefore": "Morphological annotation follows the",
+        "descriptionOneAfter": "standard with minor modifications. The information is provided by a string of characters, reflecting the part-of-speech category (capital) and information marked by the inflection.",
+        "descriptionTwo": "The strings are specific for each part-of-speech category. For example, slovesa 'words' would be annotated as Nnpn, denoting category as noun and inflection (neutral gender, plural number, default/nominative case, not animated).",
+        "descriptionThree": "It is possible to search for a full tag and for a part: for example, the query N will find all the nouns and the query Nf all the feminine nouns. You can replace a category tag with ? to get any value, e.g. N?sny will return singular animate nouns in nominative of all genders.",
+        "placeholder": "Enter a PoS query (e.g. Nmnsny)",
+        "multtextEast": "MULTEXT-East"
+      },
+      "ud": {
+        "title": "UD Tag",
+        "summary": "Search tokens by syntactic annotation.",
+        "descriptionOneBefore": "Each sentence is syntactically annotated by the",
+        "descriptionOneAfter": "standard. Each token is given an ID according to the position in the sentence.",
+        "descriptionTwo": "For each token, a dependency on other elements within the sentence is declared by these IDs, as well as by the character of the dependency.",
+        "descriptionThree": "One token in each sentence is marked as its root, usually representing the most verbal element.",
+        "placeholder": "Select an UD tag",
+        "parentPlaceholder": "UD of parent (optional)",
+        "universalDependencies": "Universal Dependencies"
+      }
+    },
+    "udTags": {
+      "root": "root: sentence root",
+      "acl": "acl: adnominal clause root",
+      "advcl": "advcl: adverbial clause root",
+      "advmod": "advmod: adverbial modifier",
+      "amod": "amod: adjectival modifier",
+      "aux": "aux: auxiliary",
+      "case": "case: analytic dependency marker",
+      "cc": "cc: coordinating conjunction",
+      "cop": "cop: copula",
+      "det": "det: determiner",
+      "discourse": "discourse: discourse marker",
+      "fixed": "fixed: element of multiple word expression",
+      "mark": "mark: subordinating conjunction/marker",
+      "nsubj": "nsubj: subject of the main sentence",
+      "nmod": "nmod: nominal modifier",
+      "nummod": "nummod: numeric modifier",
+      "obj": "obj: direct object",
+      "obl": "obl: oblique argument",
+      "orphan": "orphan: orphaned element (no direct head)",
+      "punct": "punct: punctuation",
+      "reparandum": "reparandum: stricken tokens (reparanda)",
+      "vocative": "vocative: vocative element"
+    },
+    "errors": {
+      "empty": "Enter a search value first.",
+      "failed": "The corpus could not be searched. Please try again."
+    },
+    "results": {
+      "loading": "Searching the corpus…",
+      "title": "Results ({count})",
+      "empty": "No matching tokens were found.",
+      "lemma": "— lemma: {lemma}",
+      "partOfSpeech": "· PoS: {tag}",
+      "ud": "· UD: {tag}",
+      "fallbackTextName": "Text {textId}",
+      "location": "{textName}, sentence {sentenceId}",
+      "speaker": "· {speakerName}",
+      "showingFirst": "Showing the first {count} matches."
+    }
   }
 }
