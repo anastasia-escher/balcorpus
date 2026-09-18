@@ -53,7 +53,7 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     skipSettingLocaleOnNavigate: true,
   },
-  css: ['~/assets/css/override.css', '~/assets/css/styles.css', 'primeicons/primeicons.css'],
+  css: ['~/assets/css/styles.css', 'primeicons/primeicons.css'],
   primevue: {
     options: {
       theme: {

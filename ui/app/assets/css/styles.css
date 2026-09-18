@@ -57,3 +57,16 @@ body {
 .p-dark {
     background-color: #18181B;
 }
+
+.search-form .p-dropdown {
+    border-radius: 0;
+    border: none;
+    border-bottom: 2px solid #d1d5db;
+    box-shadow: none;
+    min-height: 3rem;
+    font-size: 1.125rem;
+}
+
+.search-form .p-dropdown.p-focus {
+    border-bottom-color: #2563eb;
+}
