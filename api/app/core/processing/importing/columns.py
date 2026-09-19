@@ -8,13 +8,13 @@ the source files has to be changed here and nowhere else.
 TEXT_COLUMN = 'text_id'
 SENTENCE_COLUMN = 'sent_id'
 TOKEN_COLUMN = 'ud_id'
-SPEAKER_COLUMN = 'speaker'
+SPEAKER_COLUMN = 'speaker_id'
 TIME_COLUMN = 'time'
 
-# The column named "ud_valency" holds the ud_id of the token's syntactic head,
-# not a valency: a preposition depending on the noun at position 3 has a 3
-# there, and every sentence root has a 0.
-HEAD_COLUMN = 'ud_valency'
+# The ud_id of the token's syntactic head inside the same sentence; 0 for the
+# root. The editors' spreadsheets called this column "ud_valency", which it
+# never was; the cleaned files call it what it is.
+HEAD_COLUMN = 'head'
 
 # Columns holding the source material itself.  These are only trimmed, never
 # otherwise altered.

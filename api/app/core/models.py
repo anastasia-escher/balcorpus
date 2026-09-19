@@ -16,14 +16,28 @@ class Speaker(models.Model):
     # "Коле Чашуле" was born "Никола Кепев".
     birth_name = models.CharField(max_length=255, blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
-    place_of_birth = models.CharField(max_length=255, blank=True, null=True)
     birthyear = models.PositiveIntegerField(blank=True, null=True)
-    variety = models.CharField(max_length=100, blank=True, null=True)
-    education = models.CharField(max_length=255, blank=True, null=True)
+    # Where the person was born, split so the data can be asked geographic
+    # questions: "Brajchino", "village", "Resen".
+    place_of_birth = models.CharField(max_length=255, blank=True, null=True)
+    place_type = models.CharField(max_length=20, blank=True, null=True)
+    municipality = models.CharField(max_length=255, blank=True, null=True)
+    # The dialect area the speaker comes from. Named apart from Text.variety,
+    # which is a different thing: whether a text is standard or dialectal.
+    dialect_region = models.CharField(max_length=100, blank=True, null=True)
+    education_level = models.CharField(max_length=50, blank=True, null=True)
+    education_note = models.CharField(max_length=255, blank=True, null=True)
     religion = models.CharField(max_length=100, blank=True, null=True)
-    l1 = models.CharField(max_length=255, blank=True, null=True)
-    l2 = models.CharField(max_length=255, blank=True, null=True)
-    l3 = models.CharField(max_length=255, blank=True, null=True)
+    # First, second and third language, as ISO 639-1 codes. A slot may hold
+    # several codes separated by a semicolon.
+    l1 = models.CharField(max_length=50, blank=True, null=True)
+    l2 = models.CharField(max_length=50, blank=True, null=True)
+    l3 = models.CharField(max_length=50, blank=True, null=True)
+    # Remarks the source files kept inside cells meant to hold a value.
+    notes = models.TextField(blank=True, null=True)
+    # Row number in the editors' spreadsheet, so a record can be checked
+    # against their own copy.
+    source_row = models.PositiveIntegerField(blank=True, null=True)
 
     def __str__(self):
         return f"{self.full_name} ({self.speaker_id})"
@@ -48,9 +62,17 @@ class Text(models.Model):
     text_name = models.CharField(max_length=255)
     data_genre = models.CharField(max_length=100, blank=True, null=True)
     text_genre = models.CharField(max_length=100, blank=True, null=True)
+    # Whether the text is in the standard language or a dialect, and whatever
+    # the editors wrote beside that.
     variety = models.CharField(max_length=255, blank=True, null=True)
+    variety_note = models.TextField(blank=True, null=True)
     text_date = models.CharField(max_length=50, blank=True, null=True)
+    # Further years, for a text published more than once.
+    year_note = models.CharField(max_length=100, blank=True, null=True)
     source = models.URLField(blank=True, null=True)
+    # Name of the file the editors delivered, kept as the record of where this
+    # row came from.
+    source_file = models.CharField(max_length=255, blank=True, null=True)
     short_description = models.TextField(blank=True, null=True)
     authors = models.ManyToManyField(Speaker, related_name='texts', blank=True)
 

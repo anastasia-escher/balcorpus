@@ -24,13 +24,14 @@ from .table_reader import read_rows
 SPEAKER_ID_COLUMN = 'speaker_id'
 
 # The name the person is known by; for a writer this may be a pen name.
-DISPLAY_NAME_COLUMN = 'speaker'
+DISPLAY_NAME_COLUMN = 'name'
 
-# The name on their papers, which for most people is the same one again.
-BIRTH_NAME_COLUMN = 'Full_Name'
+# The name on their papers, filled in only when it differs.
+BIRTH_NAME_COLUMN = 'birth_name'
 
-GENDER_COLUMN = 'Gender'
-BIRTHYEAR_COLUMN = 'Birthyear'
+GENDER_COLUMN = 'sex'
+BIRTHYEAR_COLUMN = 'birth_year'
+SOURCE_ROW_COLUMN = 'source_row'
 
 EXAMPLE_SPEAKER_ID = 'vasil_iljoski'
 
@@ -38,13 +39,17 @@ EXAMPLE_SPEAKER_ID = 'vasil_iljoski'
 LABEL_COLUMNS = {
     DISPLAY_NAME_COLUMN: 'full_name',
     BIRTH_NAME_COLUMN: 'birth_name',
-    'Place_of_Birth': 'place_of_birth',
-    'Variety': 'variety',
-    'Education': 'education',
-    'Religion': 'religion',
-    'L1': 'l1',
-    'L2': 'l2',
-    'L3': 'l3',
+    'place_of_birth': 'place_of_birth',
+    'place_type': 'place_type',
+    'municipality': 'municipality',
+    'dialect_region': 'dialect_region',
+    'education_level': 'education_level',
+    'education_note': 'education_note',
+    'religion': 'religion',
+    'l1': 'l1',
+    'l2': 'l2',
+    'l3': 'l3',
+    'notes': 'notes',
 }
 
 # Columns the file cannot be read without.
@@ -63,11 +68,8 @@ def build_fields(row):
         fields['gender'] = clean_gender(row[GENDER_COLUMN])
     if BIRTHYEAR_COLUMN in row:
         fields['birthyear'] = clean_number(row[BIRTHYEAR_COLUMN])
-
-    # The birth name is only worth storing when it differs from the name the
-    # person is known by; otherwise it is the same string twice.
-    if fields.get('birth_name') == fields.get('full_name'):
-        fields['birth_name'] = None
+    if SOURCE_ROW_COLUMN in row:
+        fields['source_row'] = clean_number(row[SOURCE_ROW_COLUMN])
 
     return fields
 

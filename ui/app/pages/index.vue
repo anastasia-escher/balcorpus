@@ -14,15 +14,15 @@ const {t} = useI18n()
 
 <template>
   <article class="pb-24">
-    <div class="relative h-80 overflow-hidden md:h-[26rem]">
+    <div class="relative h-64 overflow-hidden md:h-80">
       <img class="h-full w-full object-cover" src="/assets/images/mac.jpeg" :alt="t('home.coverAlt')" />
       <!-- A warm veil keeps the photograph quiet and the title readable on it. -->
       <div class="absolute inset-0 bg-terracotta-950/55" />
       <div class="absolute inset-0 flex flex-col items-center justify-center px-6 pt-14 text-center">
-        <h1 class="font-serif text-3xl leading-tight text-paper md:text-5xl">
+        <h1 class="font-serif text-3xl leading-tight text-paper md:text-4xl">
           {{ t('home.title') }}
         </h1>
-        <p class="mt-4 max-w-xl text-sm text-stone-200 md:text-base">
+        <p class="mt-3 max-w-xl text-sm text-stone-200">
           {{ t('home.subtitle') }}
         </p>
       </div>
@@ -31,9 +31,9 @@ const {t} = useI18n()
     <div class="mx-auto max-w-3xl px-6">
       <!-- z-10 keeps the panel above the cover photograph it overlaps. -->
       <div
-        class="relative z-10 -mt-10 rounded-sm border border-stone-200 bg-white px-6 py-8 shadow-sm md:px-10 md:py-10">
+        class="relative z-10 -mt-14 rounded-sm border border-stone-200 bg-white px-6 py-7 shadow-sm md:px-10 md:py-8">
         <SearchTabs />
-        <div class="mt-8">
+        <div class="mt-6">
           <SearchTextForm v-if="searchStore.activeSearchKind === 'text'" />
           <SearchLemmaForm v-else-if="searchStore.activeSearchKind === 'lemma'" />
           <SearchPosForm v-else-if="searchStore.activeSearchKind === 'tag'" />

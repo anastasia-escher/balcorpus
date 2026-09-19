@@ -1,0 +1,381 @@
+{
+  "name": "macedonian-corpus",
+  "title": "Macedonian Corpus — metadata and annotated texts",
+  "description": "Metadata and morphologically and syntactically annotated texts of the Macedonian Corpus. The metadata are in English; the material itself, and the names of people and titles, stay in Macedonian.",
+  "created": "2026-09-19",
+  "profile": "tabular-data-package",
+  "resources": [
+    {
+      "name": "speakers",
+      "path": "speakers.xlsx",
+      "title": "Speakers and authors",
+      "description": "One row per person whose language the corpus records.",
+      "profile": "tabular-data-resource",
+      "format": "xlsx",
+      "mediatype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "dialect": {
+        "header": true,
+        "headerRows": [
+          1
+        ]
+      },
+      "schema": {
+        "fields": [
+          {
+            "name": "speaker_id",
+            "type": "string",
+            "description": "Identifier used by texts.xlsx and by the annotation files.",
+            "example": "anton_panov"
+          },
+          {
+            "name": "name",
+            "type": "string",
+            "description": "The name the person is known by, in Macedonian Cyrillic. For a writer this may be a pen name."
+          },
+          {
+            "name": "birth_name",
+            "type": "string",
+            "description": "The name on their papers, filled in only when it differs from name."
+          },
+          {
+            "name": "sex",
+            "type": "string",
+            "description": "Recorded sex of the speaker.",
+            "enum": [
+              "male",
+              "female"
+            ]
+          },
+          {
+            "name": "birth_year",
+            "type": "year",
+            "description": "Year of birth."
+          },
+          {
+            "name": "place_of_birth",
+            "type": "string",
+            "description": "Settlement of birth, romanised. A second name the settlement goes by is kept in brackets."
+          },
+          {
+            "name": "place_type",
+            "type": "string",
+            "description": "Whether that settlement is a village or a town.",
+            "enum": [
+              "village",
+              "town"
+            ]
+          },
+          {
+            "name": "municipality",
+            "type": "string",
+            "description": "Municipality the settlement belongs to, romanised, when the source named one."
+          },
+          {
+            "name": "dialect_region",
+            "type": "string",
+            "description": "Dialect area the speaker comes from. Areas inside Macedonia are compass directions; speakers from elsewhere are given by country, with a part of it in brackets.",
+            "enum": [
+              "southwest",
+              "southeast",
+              "south",
+              "north",
+              "east",
+              "west",
+              "northwest",
+              "northeast",
+              "central",
+              "Aegean Macedonia",
+              "Turkey",
+              "Kosovo",
+              "Serbia",
+              "Albania",
+              "Moldova",
+              "Romania",
+              "Greece",
+              "Bosnia and Herzegovina",
+              "Croatia",
+              "central-east",
+              "central Bosnia"
+            ]
+          },
+          {
+            "name": "education_level",
+            "type": "string",
+            "description": "How far the speaker went in school.",
+            "enum": [
+              "tertiary",
+              "secondary"
+            ]
+          },
+          {
+            "name": "education_note",
+            "type": "string",
+            "description": "What kind of school, when the source said so."
+          },
+          {
+            "name": "religion",
+            "type": "string",
+            "description": "Recorded religion.",
+            "enum": [
+              "Orthodox",
+              "Muslim"
+            ]
+          },
+          {
+            "name": "l1",
+            "type": "string",
+            "description": "First language, as ISO 639-1 codes.",
+            "example": "mk"
+          },
+          {
+            "name": "l2",
+            "type": "string",
+            "description": "Second language. Several codes are separated by a semicolon.",
+            "example": "sr;hr"
+          },
+          {
+            "name": "l3",
+            "type": "string",
+            "description": "Third language, written like l2."
+          },
+          {
+            "name": "notes",
+            "type": "string",
+            "description": "Remarks the source hid inside cells that were meant to hold a value, such as postings as an ambassador."
+          },
+          {
+            "name": "source_row",
+            "type": "integer",
+            "description": "Row number in the spreadsheet this came from, for checking against the editors’ own copy."
+          }
+        ],
+        "primaryKey": "speaker_id",
+        "foreignKeys": [],
+        "missingValues": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "texts",
+      "path": "texts.xlsx",
+      "title": "Texts",
+      "description": "One row per document of the corpus.",
+      "profile": "tabular-data-resource",
+      "format": "xlsx",
+      "mediatype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "dialect": {
+        "header": true,
+        "headerRows": [
+          1
+        ]
+      },
+      "schema": {
+        "fields": [
+          {
+            "name": "text_id",
+            "type": "string",
+            "description": "Identifier used by the annotation files: author surname, short title, year.",
+            "example": "panov_pechalbari_1936"
+          },
+          {
+            "name": "title",
+            "type": "string",
+            "description": "Title of the text, in Macedonian Cyrillic."
+          },
+          {
+            "name": "author_id",
+            "type": "string",
+            "description": "The author, as a speaker_id."
+          },
+          {
+            "name": "data_genre",
+            "type": "string",
+            "description": "What kind of material this is.",
+            "enum": [
+              "literature",
+              "speech"
+            ]
+          },
+          {
+            "name": "text_genre",
+            "type": "string",
+            "description": "Literary genre. Several genres are separated by a semicolon.",
+            "enum": [
+              "drama",
+              "prose",
+              "poetry",
+              "criticism",
+              "dialogue"
+            ],
+            "example": "drama;prose"
+          },
+          {
+            "name": "variety",
+            "type": "string",
+            "description": "Whether the text is in the standard language or a dialect.",
+            "enum": [
+              "standard",
+              "dialectal"
+            ]
+          },
+          {
+            "name": "variety_note",
+            "type": "string",
+            "description": "What the source wrote beside the variety, romanised: which dialect, or why both are named."
+          },
+          {
+            "name": "year",
+            "type": "year",
+            "description": "Year of publication. The first one, if several."
+          },
+          {
+            "name": "year_note",
+            "type": "string",
+            "description": "Further years the source gave, for a text published more than once."
+          },
+          {
+            "name": "source_url",
+            "type": "string",
+            "description": "Where the text can be read online."
+          },
+          {
+            "name": "source_file",
+            "type": "string",
+            "description": "Name of the file the editors delivered, kept as the record of where this row came from."
+          },
+          {
+            "name": "source_row",
+            "type": "integer",
+            "description": "Row number in the spreadsheet this came from."
+          }
+        ],
+        "primaryKey": "text_id",
+        "foreignKeys": [
+          {
+            "fields": "author_id",
+            "reference": {
+              "resource": "speakers",
+              "fields": "speaker_id"
+            }
+          }
+        ],
+        "missingValues": [
+          ""
+        ]
+      }
+    },
+    {
+      "name": "annotations",
+      "path": "annotations/*.xlsx",
+      "title": "Annotated texts",
+      "description": "One file per text, one row per token, in the order of the text. Morphology follows MULTEXT-East, syntax follows Universal Dependencies.",
+      "profile": "tabular-data-resource",
+      "format": "xlsx",
+      "mediatype": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "dialect": {
+        "header": true,
+        "headerRows": [
+          1
+        ]
+      },
+      "schema": {
+        "fields": [
+          {
+            "name": "text_id",
+            "type": "string",
+            "description": "The text this token belongs to."
+          },
+          {
+            "name": "sent_id",
+            "type": "integer",
+            "description": "Number of the sentence within the text."
+          },
+          {
+            "name": "ud_id",
+            "type": "integer",
+            "description": "Position of the token within the sentence."
+          },
+          {
+            "name": "source",
+            "type": "string",
+            "description": "The word form as it stands in the text."
+          },
+          {
+            "name": "diplomatic",
+            "type": "string",
+            "description": "The word form in diplomatic transcription, where the corpus has one."
+          },
+          {
+            "name": "lemma",
+            "type": "string",
+            "description": "Dictionary form of the word."
+          },
+          {
+            "name": "ud_pos",
+            "type": "string",
+            "description": "Universal part-of-speech tag.",
+            "example": "NOUN"
+          },
+          {
+            "name": "pos_tag",
+            "type": "string",
+            "description": "MULTEXT-East morphosyntactic description.",
+            "example": "Ncmsnn"
+          },
+          {
+            "name": "pos_ext",
+            "type": "string",
+            "description": "Universal Dependencies features.",
+            "example": "Case=Nom|Gender=Masc|Number=Sing"
+          },
+          {
+            "name": "head",
+            "type": "integer",
+            "description": "The ud_id of this token’s syntactic head in the same sentence. 0 means the token is the root. The source called this column ud_valency, which it never was."
+          },
+          {
+            "name": "ud_type",
+            "type": "string",
+            "description": "Universal Dependencies relation to the head, subtypes included.",
+            "example": "nsubj:pass"
+          },
+          {
+            "name": "speaker_id",
+            "type": "string",
+            "description": "Who produced this stretch of language."
+          },
+          {
+            "name": "time",
+            "type": "string",
+            "description": "Timecode in the recording; only spoken material has one."
+          }
+        ],
+        "primaryKey": [
+          "text_id",
+          "sent_id",
+          "ud_id"
+        ],
+        "foreignKeys": [
+          {
+            "fields": "text_id",
+            "reference": {
+              "resource": "texts",
+              "fields": "text_id"
+            }
+          },
+          {
+            "fields": "speaker_id",
+            "reference": {
+              "resource": "speakers",
+              "fields": "speaker_id"
+            }
+          }
+        ],
+        "missingValues": [
+          ""
+        ]
+      }
+    }
+  ]
+}

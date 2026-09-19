@@ -38,7 +38,7 @@ const submit = () => {
       <p>{{ t('search.forms.ud.descriptionTwo') }}</p>
       <p>{{ t('search.forms.ud.descriptionThree') }}</p>
     </SearchFormIntro>
-    <form class="space-y-8" @submit.prevent="submit">
+    <form class="space-y-6" @submit.prevent="submit">
       <USelect
         v-model="searchStore.udTag"
         :items="udTagOptions"

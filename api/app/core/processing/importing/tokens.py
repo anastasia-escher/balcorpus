@@ -148,6 +148,9 @@ def write_text_rows(text, rows):
     Everything happens in one transaction: if any part of it fails, the text
     keeps the data it had before, rather than being left half emptied.
 
+    The text's authors are not touched here. Who wrote a text is metadata and
+    comes from the text table; who speaks in it is recorded on each sentence.
+
     Returns a summary, e.g.
     {'text_id': 'vasil_iljoski_corbadji_1937', 'sentences': 2351,
      'tokens': 25538, 'replaced_sentences': 0}
@@ -193,11 +196,6 @@ def write_text_rows(text, rows):
             for fields in token_fields_of_sentence[sentence.sentence_id]
         ]
         Token.objects.bulk_create(tokens, batch_size=BATCH_SIZE)
-
-        # The speakers appearing in a text are part of its metadata, so the
-        # link is recorded on the text as well; that is what lets a speaker
-        # page list the texts they appear in.
-        text.authors.set(set(speaker_of_sentence.values()))
 
     return {
         'text_id': text.text_id,

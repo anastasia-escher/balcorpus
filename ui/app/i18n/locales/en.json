@@ -100,12 +100,17 @@
       "fallbackTextName": "Text {textId}",
       "location": "{textName}, sentence {sentenceId}",
       "speaker": "· {speakerName}",
-      "showingFirst": "Showing the first {count} matches.",
       "labels": {
         "lemma": "Lemma",
         "partOfSpeech": "PoS",
         "ud": "UD"
-      }
+      },
+      "showingRange": "Showing {first}–{last} of {total} matches."
+    },
+    "pagination": {
+      "label": "Result pages",
+      "previous": "Previous",
+      "next": "Next"
     }
   }
 }

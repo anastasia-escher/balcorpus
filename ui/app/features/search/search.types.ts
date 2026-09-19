@@ -27,7 +27,7 @@ export interface SearchResult {
   pos_tag: string | null
   ud_type: string | null
   sentence_id: number
-  text_id: number
+  text_id: string
   text_name: string
   speaker_id: string | null
   speaker_name: string | null
@@ -37,5 +37,7 @@ export interface SearchResult {
 
 export interface SearchResponse {
   count: number
+  next: string | null
+  previous: string | null
   results: SearchResult[]
 }

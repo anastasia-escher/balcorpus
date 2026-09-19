@@ -6,7 +6,7 @@ mistakes in it leaves the database exactly as it was.
 
 from django.db import transaction
 
-from core.models import Text
+from core.models import Speaker, Text
 from helpers.logger import logger
 
 from .cleaning import clean_label, clean_number, clean_text
@@ -22,25 +22,32 @@ from .table_reader import read_rows
 # The slug that the annotation files also carry, e.g.
 # "vasil_iljoski_corbadji_1937".  It is what links the two kinds of file.
 TEXT_ID_COLUMN = 'text_id'
-TITLE_COLUMN = 'Titel'
+TITLE_COLUMN = 'title'
 
-EXAMPLE_TEXT_ID = 'vasil_iljoski_corbadji_1937'
+# The author, given as a speaker_id. This is what ties a text to the speaker
+# table without anybody having to match names by hand.
+AUTHOR_COLUMN = 'author_id'
+
+EXAMPLE_TEXT_ID = 'panov_pechalbari_1936'
 
 # Metadata column -> Text field.  A column missing from the file is simply
 # skipped, so an export without "Short Description" still imports.
 LABEL_COLUMNS = {
     TITLE_COLUMN: 'text_name',
-    'Data_Genre': 'data_genre',
-    'Text_Genre': 'text_genre',
-    'Variety': 'variety',
-    'Date': 'text_date',
-    'Source': 'source',
-    'Short Description': 'short_description',
+    'data_genre': 'data_genre',
+    'text_genre': 'text_genre',
+    'variety': 'variety',
+    'variety_note': 'variety_note',
+    'year': 'text_date',
+    'year_note': 'year_note',
+    'source_url': 'source',
+    'source_file': 'source_file',
+    'short_description': 'short_description',
 }
 
 # The running number of the editors' own spreadsheet, kept for cross-checking.
 NUMBER_COLUMNS = {
-    'Text_ID': 'source_number',
+    'source_row': 'source_number',
 }
 
 # Columns the file cannot be read without.
@@ -78,6 +85,7 @@ def parse_rows(path, problems):
         parsed.append({
             'row_number': row_number,
             'record_id': clean_text(row.get(TEXT_ID_COLUMN)),
+            'author_id': clean_text(row.get(AUTHOR_COLUMN)),
             'fields': build_fields(row),
         })
 
@@ -94,6 +102,7 @@ def check_rows(rows, column_names, problems):
 
     check_duplicate_ids(rows, TEXT_ID_COLUMN, problems)
     check_lengths(rows, Text, problems)
+    check_authors(rows, problems)
 
     for row in rows:
         check_identifier(
@@ -108,10 +117,31 @@ def check_rows(rows, column_names, problems):
             )
 
 
+def check_authors(rows, problems):
+    """Every author named must already be in the speaker table."""
+    named = {row['author_id'] for row in rows if row['author_id']}
+    known = set(Speaker.objects.filter(speaker_id__in=named).values_list('speaker_id', flat=True))
+
+    for row in rows:
+        author_id = row['author_id']
+        if author_id and author_id not in known:
+            problems.error(
+                f"the author '{author_id}' is not in the database. Import the "
+                'speaker table first: manage.py import_speakers <file>.',
+                row['row_number'],
+            )
+        elif not author_id:
+            problems.warning(
+                f'{AUTHOR_COLUMN} is empty, so this text has no author',
+                row['row_number'],
+            )
+
+
 def write_rows(rows):
     """Create or update one Text per row, all of it in one transaction."""
     created = 0
     updated = 0
+    speakers_by_id = {speaker.speaker_id: speaker for speaker in Speaker.objects.all()}
 
     with transaction.atomic():
         for row in rows:
@@ -121,9 +151,13 @@ def write_rows(rows):
             if not fields.get('text_name'):
                 fields['text_name'] = row['record_id']
 
-            _, was_created = Text.objects.update_or_create(
+            text, was_created = Text.objects.update_or_create(
                 text_id=row['record_id'], defaults=fields
             )
+            # The author link lives on the text, so a speaker page can list
+            # everything they wrote.
+            author = speakers_by_id.get(row['author_id'])
+            text.authors.set([author] if author else [])
             if was_created:
                 created += 1
             else:

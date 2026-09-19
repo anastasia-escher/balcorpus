@@ -19,7 +19,7 @@ const submit = () => {
       <p>{{ t('search.forms.text.description') }}</p>
     </SearchFormIntro>
 
-    <form class="space-y-8" @submit.prevent="submit">
+    <form class="space-y-6" @submit.prevent="submit">
       <UInput
         v-model="searchStore.textQuery"
         class="search-control w-full"

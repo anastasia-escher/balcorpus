@@ -30,7 +30,7 @@ class SentenceInline(admin.TabularInline):
 
 @admin.register(Text)
 class TextAdmin(admin.ModelAdmin):
-    list_display = ('text_id', 'source_number', 'text_name', 'data_genre', 'text_genre', 'variety', 'text_date', 'source')
+    list_display = ('text_id', 'text_name', 'data_genre', 'text_genre', 'variety', 'text_date', 'source')
     search_fields = ('text_name', 'short_description', 'source')
     list_filter = ('data_genre', 'text_genre', 'variety', 'text_date')
     filter_horizontal = ('authors',)
@@ -39,9 +39,11 @@ class TextAdmin(admin.ModelAdmin):
 
 @admin.register(Speaker)
 class SpeakerAdmin(admin.ModelAdmin):
-    list_display = ('speaker_id', 'full_name', 'gender', 'place_of_birth', 'birthyear', 'variety', 'education', 'religion', 'l1', 'l2', 'l3')
-    search_fields = ('speaker_id', 'full_name', 'place_of_birth', 'variety', 'education', 'religion', 'l1', 'l2', 'l3')
-    list_filter = ('gender', 'variety', 'education', 'religion', 'l1', 'l2', 'l3')
+    list_display = ('speaker_id', 'full_name', 'gender', 'birthyear', 'place_of_birth',
+                    'municipality', 'dialect_region', 'education_level', 'religion', 'l1', 'l2', 'l3')
+    search_fields = ('speaker_id', 'full_name', 'birth_name', 'place_of_birth',
+                     'municipality', 'notes')
+    list_filter = ('gender', 'place_type', 'dialect_region', 'education_level', 'religion', 'l1')
     ordering = ['speaker_id']
 
 @admin.register(Sentence)

@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import SearchPagination from '~/components/search/SearchPagination.vue'
+import {pageRange} from '~/features/search/pagination'
 import {splitSentenceAroundToken} from '~/features/search/highlight'
+import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 import type {SearchResult} from '~/features/search/search.types'
@@ -13,6 +16,12 @@ const wordForm = (result: SearchResult) => result.source || result.diplomatic ||
 /** The sentence the hit came from, split so the hit can be marked. */
 const sentenceParts = (result: SearchResult) =>
   splitSentenceAroundToken(result.source_sentence || result.diplomatic_sentence, wordForm(result))
+
+/** Which matches of the whole result set this page is showing. */
+const shownRange = computed(() => ({
+  ...pageRange(searchStore.page, searchStore.resultCount ?? 0),
+  total: searchStore.resultCount ?? 0,
+}))
 
 /** The annotation of one hit, as label/value pairs, skipping what is missing. */
 const annotations = (result: SearchResult) =>
@@ -76,10 +85,10 @@ const annotations = (result: SearchResult) =>
       </li>
     </ol>
 
-    <p
-      v-if="searchStore.resultCount && searchStore.resultCount > searchStore.results.length"
-      class="mt-6 text-xs text-stone-500">
-      {{ t('search.results.showingFirst', {count: searchStore.results.length}) }}
+    <p v-if="searchStore.pageCount > 1" class="mt-6 text-xs text-stone-500">
+      {{ t('search.results.showingRange', shownRange) }}
     </p>
+
+    <SearchPagination />
   </section>
 </template>

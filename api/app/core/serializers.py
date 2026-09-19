@@ -7,8 +7,10 @@ class SpeakerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Speaker
         fields = [
-            'speaker_id', 'full_name', 'gender', 'place_of_birth', 'birthyear',
-            'variety', 'education', 'religion', 'l1', 'l2', 'l3'
+            'speaker_id', 'full_name', 'birth_name', 'gender', 'birthyear',
+            'place_of_birth', 'place_type', 'municipality', 'dialect_region',
+            'education_level', 'education_note', 'religion', 'l1', 'l2', 'l3',
+            'notes',
         ]
 
 class TokenSerializer(serializers.ModelSerializer):
@@ -63,7 +65,7 @@ class TextSerializer(serializers.ModelSerializer):
     class Meta:
         model = Text
         fields = [
-            'text_id', 'source_number', 'text_name', 'data_genre', 'text_genre',
-            'variety', 'text_date', 'source', 'short_description', 'authors',
-            'sentences'
+            'text_id', 'text_name', 'data_genre', 'text_genre', 'variety',
+            'variety_note', 'text_date', 'year_note', 'source',
+            'short_description', 'authors', 'sentences',
         ]
