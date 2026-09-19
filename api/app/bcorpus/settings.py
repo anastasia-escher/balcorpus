@@ -14,6 +14,7 @@ from os import environ
 from pathlib import Path
 
 from corsheaders.defaults import default_headers
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,11 +23,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = environ.get(
-    "DJANGO_SECRET_KEY",
-    "dd8d1abef5651a7d7c12-3f6db86b9-da531b6b55b-114d4fdf0bf5d3de876b",
-)
+# The secret key signs sessions, password-reset links and CSRF tokens, so
+# anyone who knows it can forge them. It is read from the environment and has
+# no default on purpose: a default would live in this file, which is in the
+# repository, and a deployment that forgot to set the variable would come up
+# signing with a key everybody can read. Failing to start is the safer answer.
+SECRET_KEY = environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise ImproperlyConfigured(
+        "DJANGO_SECRET_KEY is not set. Put a long random value in the "
+        "environment, for example with: "
+        "python -c 'import secrets; print(secrets.token_urlsafe(64))'"
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (environ.get("DJANGO_DEBUG", "False")) == "True"

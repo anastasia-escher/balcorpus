@@ -3,13 +3,22 @@ import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import TextsSearchField from '~/components/texts/TextsSearchField.vue'
 import TextsTable from '~/components/texts/TextsTable.vue'
 import {TEXTS_PAGE_SIZE} from '~/features/texts/texts.constants'
-import {computed, onMounted} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {pageRange} from '~/features/pagination/pagination'
+import {useListUrl} from '~/composables/useListUrl'
 import {useTextList} from '~/composables/useTextList'
 import {useI18n} from 'vue-i18n'
 
 const textList = useTextList()
+const listUrl = useListUrl()
 const {t} = useI18n()
+
+// What the page was opened with: a plain /texts, or a link carrying a search
+// and a page number.
+const openedWith = {search: listUrl.searchInUrl(), page: listUrl.pageInUrl()}
+
+// The search now on screen, which paging has to keep asking for.
+const currentSearch = ref(openedWith.search)
 
 /** Which of all the texts this page is showing. */
 const shownRange = computed(() => ({
@@ -17,11 +26,35 @@ const shownRange = computed(() => ({
   total: textList.itemCount.value,
 }))
 
-// An empty query asks for the whole catalogue, so the same call serves the
-// first visit and a cleared search box.
-const search = (query: string) => textList.load(query ? {q: query} : {})
+/** An empty query asks for the whole catalogue, which is what Clear wants. */
+const narrowing = (search: string) => (search ? {q: search} : {})
 
-onMounted(() => textList.load())
+/** Put into the address whatever the list is actually showing now. */
+const rememberInUrl = () => listUrl.writeToUrl({page: textList.page.value, search: currentSearch.value})
+
+const search = async (query: string) => {
+  currentSearch.value = query
+  const applied = await textList.load(narrowing(query))
+
+  if (applied) {
+    rememberInUrl()
+  }
+}
+
+const goToPage = async (page: number) => {
+  const applied = await textList.goToPage(page)
+
+  if (applied) {
+    rememberInUrl()
+  }
+}
+
+onMounted(async () => {
+  await textList.load(narrowing(openedWith.search), openedWith.page)
+  // The list may have opened on a different page than the link asked for, if
+  // that page does not exist; the address follows what is on screen.
+  rememberInUrl()
+})
 </script>
 
 <template>
@@ -32,7 +65,7 @@ onMounted(() => textList.load())
     </header>
 
     <div class="mt-8">
-      <TextsSearchField @search="search" />
+      <TextsSearchField :initial-query="openedWith.search" @search="search" />
     </div>
 
     <p v-if="textList.loading.value" class="mt-12 text-sm text-stone-500">
@@ -59,7 +92,7 @@ onMounted(() => textList.load())
       <CorpusPagination
         :page="textList.page.value"
         :page-count="textList.pageCount.value"
-        @select="textList.goToPage" />
+        @select="goToPage" />
     </section>
   </article>
 </template>

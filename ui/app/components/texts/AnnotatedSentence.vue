@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type {AnnotatedToken, TextSentence} from '~/features/texts/texts.types'
+import {wordForm} from '~/features/corpus/word-form'
+import type {TextSentence} from '~/features/texts/texts.types'
 
 /**
  * One sentence of a text, set the way an interlinear edition sets it: the
@@ -13,9 +14,6 @@ defineProps<{
   // not interrupted by their name over and over.
   showSpeaker: boolean
 }>()
-
-/** The word as it is written, whichever reading the corpus recorded. */
-const wordForm = (token: AnnotatedToken) => token.source || token.diplomatic || ''
 </script>
 
 <template>

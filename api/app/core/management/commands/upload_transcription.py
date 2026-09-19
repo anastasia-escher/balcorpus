@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
+from core.processing.exporting.after_import import export_texts_for_server
 from core.processing.importing.problems import DataProblems
 from core.processing.importing.tokens import import_tokens
 from helpers.logger import logger
@@ -48,3 +49,7 @@ class Command(BaseCommand):
                 f"{summary['text_id']}: {summary['sentences']} sentences, "
                 f"{summary['tokens']} tokens imported."
             )
+
+        # One file may carry more than one text, so every text it touched is
+        # written out, not just the first.
+        export_texts_for_server(summary['text_id'] for summary in summaries)

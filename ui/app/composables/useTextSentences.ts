@@ -11,8 +11,8 @@ import type {TextSentence} from '~/features/texts/texts.types'
 export function useTextSentences() {
   const sentences = usePaginatedList<TextSentence>('sentences/', TEXT_SENTENCES_PAGE_SIZE)
 
-  /** Open a text at its beginning. */
-  const openText = (textId: string) => sentences.load({text: textId})
+  /** Open a text, at its beginning unless a page is named. */
+  const openText = (textId: string, startPage?: number) => sentences.load({text: textId}, startPage)
 
   return {...sentences, openText}
 }

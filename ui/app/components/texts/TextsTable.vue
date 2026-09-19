@@ -56,10 +56,10 @@ const {t} = useI18n()
             {{ text.text_date || MISSING_VALUE }}
           </td>
           <td class="px-3 py-4 text-sm text-stone-600">
-            {{ readableList(text.text_genre) }}
+            {{ readableList(text.text_genre) || MISSING_VALUE }}
           </td>
           <td class="px-3 py-4 text-sm text-stone-600">
-            {{ readableList(text.variety) }}
+            {{ readableList(text.variety) || MISSING_VALUE }}
           </td>
         </tr>
       </tbody>

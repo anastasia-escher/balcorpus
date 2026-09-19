@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
+from core.processing.exporting.after_import import export_metadata_for_server
 from core.processing.importing.problems import DataProblems
 from core.processing.importing.speakers import import_speakers
 from helpers.logger import logger
@@ -34,3 +35,5 @@ class Command(BaseCommand):
         logger.info(
             f"{summary['created']} speakers created, {summary['updated']} updated."
         )
+
+        export_metadata_for_server()

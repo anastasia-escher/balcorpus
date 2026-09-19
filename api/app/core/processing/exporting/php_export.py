@@ -18,6 +18,11 @@ from core.models import Sentence, Speaker, Text, Token
 
 from .csv_writer import write_csv
 
+# Where the files land unless the caller says otherwise.  The project's ./data
+# folder is mounted as /data inside the container, so this is data/php_ready,
+# next to data/input where the linguists' files arrive.
+DEFAULT_OUTPUT_FOLDER = '/data/php_ready'
+
 SPEAKERS_FILE = 'speakers.csv'
 TEXTS_FILE = 'texts.csv'
 TEXT_AUTHORS_FILE = 'text_authors.csv'
@@ -175,17 +180,3 @@ def export_annotation(text_id, output_folder):
             token_rows(text_id),
         ),
     }
-
-
-def export_everything(output_folder):
-    """Write the metadata and every text that has an annotation.
-
-    Returns the metadata summary and one summary per text.
-    """
-    metadata = export_metadata(output_folder)
-    annotations = [
-        export_annotation(text_id, output_folder)
-        for text_id in annotated_text_ids()
-    ]
-
-    return metadata, annotations

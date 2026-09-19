@@ -3,9 +3,10 @@ import AnnotatedSentence from '~/components/texts/AnnotatedSentence.vue'
 import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import TextMetadataHeader from '~/components/texts/TextMetadataHeader.vue'
 import {TEXT_SENTENCES_PAGE_SIZE} from '~/features/texts/texts.constants'
-import {computed, onMounted} from 'vue'
+import {computed, onMounted, watch} from 'vue'
 import {pageRange} from '~/features/pagination/pagination'
 import {startsNewTurn} from '~/features/texts/sentences'
+import {useListUrl} from '~/composables/useListUrl'
 import {useRoute} from 'vue-router'
 import {useTextDetails} from '~/composables/useTextDetails'
 import {useTextSentences} from '~/composables/useTextSentences'
@@ -14,9 +15,8 @@ import {useI18n} from 'vue-i18n'
 const route = useRoute()
 const details = useTextDetails()
 const sentences = useTextSentences()
+const listUrl = useListUrl()
 const {t} = useI18n()
-
-const textId = String(route.params.textId)
 
 /** Which sentences of the whole text this page is showing. */
 const shownRange = computed(() => ({
@@ -24,10 +24,33 @@ const shownRange = computed(() => ({
   total: sentences.itemCount.value,
 }))
 
-onMounted(() => {
+/** Turning a page writes it into the address, so the place can be shared. */
+const goToPage = async (page: number) => {
+  const applied = await sentences.goToPage(page)
+
+  if (applied) {
+    listUrl.writeToUrl({page: sentences.page.value})
+  }
+}
+
+/** Read a text from the given page, and leave the address saying so. */
+const openText = async (textId: string, startPage: number) => {
   details.loadText(textId)
-  sentences.openText(textId)
-})
+  await sentences.openText(textId, startPage)
+  // The text may have opened at a different page than the link asked for, if
+  // that page does not exist; the address follows what is on screen.
+  listUrl.writeToUrl({page: sentences.page.value})
+}
+
+onMounted(() => openText(String(route.params.textId), listUrl.pageInUrl()))
+
+// Vue reuses this component when only the text_id in the address changes, so
+// without this a link from one text straight to another would leave the old
+// text on screen.
+watch(
+  () => route.params.textId,
+  textId => openText(String(textId), 1)
+)
 </script>
 
 <template>
@@ -85,7 +108,7 @@ onMounted(() => {
         <CorpusPagination
           :page="sentences.page.value"
           :page-count="sentences.pageCount.value"
-          @select="sentences.goToPage" />
+          @select="goToPage" />
       </section>
     </template>
   </article>

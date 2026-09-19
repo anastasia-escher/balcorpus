@@ -64,14 +64,6 @@ export interface TextMetadata {
   authors: SpeakerDetails[]
 }
 
-/** One page of the text list, as the corpus paginates it. */
-export interface TextListResponse {
-  count: number
-  next: string | null
-  previous: string | null
-  results: TextMetadata[]
-}
-
 /**
  * One annotated word form, as the text page prints it: the word itself, and
  * under it in grey what the annotation says about it.
@@ -105,12 +97,4 @@ export interface TextSentence {
   sentence_id: number
   speaker: SpeakerDetails | null
   tokens: AnnotatedToken[]
-}
-
-/** One page of a text's sentences, as the corpus paginates them. */
-export interface SentenceListResponse {
-  count: number
-  next: string | null
-  previous: string | null
-  results: TextSentence[]
 }

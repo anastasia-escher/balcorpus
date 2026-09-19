@@ -16,7 +16,7 @@ const NEIGHBOURS = 1
 /** What a gap in the list of page numbers is called. */
 export const ELLIPSIS = 'ellipsis'
 
-export type PageItem = number | typeof ELLIPSIS
+type PageItem = number | typeof ELLIPSIS
 
 /**
  * How many pages the results are spread over.

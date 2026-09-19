@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import SpeakerNames from '~/components/texts/SpeakerNames.vue'
-import {MISSING_VALUE, readableList} from '~/features/texts/text-metadata'
+import {readableList} from '~/features/texts/text-metadata'
 import {computed} from 'vue'
 import {useI18n} from 'vue-i18n'
 import type {TextMetadata} from '~/features/texts/texts.types'
@@ -18,7 +18,7 @@ const facts = computed(() =>
     {label: t('texts.columns.year'), value: props.text.text_date},
     {label: t('texts.columns.genre'), value: readableList(props.text.text_genre)},
     {label: t('texts.columns.variety'), value: readableList(props.text.variety)},
-  ].filter(fact => fact.value && fact.value !== MISSING_VALUE)
+  ].filter(fact => Boolean(fact.value))
 )
 </script>
 

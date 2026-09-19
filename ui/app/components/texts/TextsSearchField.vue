@@ -8,11 +8,17 @@ import {useI18n} from 'vue-i18n'
  * The corpus does the searching, so this only collects what was typed and
  * says when to go and ask. It reports the query rather than acting on it.
  */
+const props = defineProps<{
+  // What was searched for already, so a link to a search arrives with its
+  // own words still in the box.
+  initialQuery: string
+}>()
+
 const emit = defineEmits<{search: [query: string]}>()
 
 const {t} = useI18n()
 
-const query = ref('')
+const query = ref(props.initialQuery)
 
 const search = () => emit('search', query.value.trim())
 

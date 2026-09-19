@@ -14,6 +14,15 @@ interface APIOptions {
   headers?: Record<string, string>
   body?: any
   params?: Record<string, string>
+  /**
+   * Do not raise a toast when the corpus answers "not found".
+   *
+   * Set it where a missing thing is an ordinary answer the caller already
+   * explains on the page — a text_id nobody has, a page number past the end
+   * of a list. Everything else, a broken connection included, still raises
+   * one, so this never hides a real failure.
+   */
+  quietNotFound?: boolean
 }
 
 /**
@@ -90,14 +99,19 @@ export const useAPI = () => {
         error: {value: null},
       }
     } catch (error: any) {
-      const statusCode = error.response?.status ?? t('api.networkStatus')
-      const message = error.message || t('api.unknownError')
-      toast.add({
-        color: 'error',
-        title: t('api.errorSummary', {statusCode}),
-        description: message,
-        duration: 5000,
-      })
+      const status = error.response?.status ?? error.status
+      const notFound = status === 404
+
+      if (!(notFound && options.quietNotFound)) {
+        const statusCode = status ?? t('api.networkStatus')
+        const message = error.message || t('api.unknownError')
+        toast.add({
+          color: 'error',
+          title: t('api.errorSummary', {statusCode}),
+          description: message,
+          duration: 5000,
+        })
+      }
 
       return {
         data: {value: null},

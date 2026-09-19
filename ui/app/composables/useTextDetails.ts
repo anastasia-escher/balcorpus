@@ -23,7 +23,9 @@ export function useTextDetails() {
     missing.value = false
 
     try {
-      const {data, error} = await requestAPI<TextMetadata>(`texts/${textId}/`)
+      const {data, error} = await requestAPI<TextMetadata>(`texts/${textId}/`, {
+        quietNotFound: true,
+      })
 
       if (error.value || !data.value) {
         text.value = null

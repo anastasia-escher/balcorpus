@@ -30,10 +30,14 @@ below are given paths starting with `/data`.
 
 ## The order of work
 
-A new file arrives, and it goes through these four steps. The first three
-check the file and refuse it whole if anything is wrong: either everything is
+A new file arrives and goes through one of these three commands. Each of them
+checks the file and refuses it whole if anything is wrong: either everything is
 imported or nothing is, and every problem found is listed at once, so a file
 can be corrected in one go rather than one error per run.
+
+**Each command ends by writing the files for the server itself**, so there is
+no fourth step to remember. The two metadata commands rewrite the metadata
+files; importing an annotation rewrites that text's two files.
 
 ### 1. The speakers
 
@@ -56,30 +60,36 @@ docker compose exec api python manage.py upload_transcription /data/input/annota
 Re-running this for a text that is already in the corpus replaces everything
 stored for it, so a corrected file can simply be imported again.
 
-### 4. The files for the server
+### Then: to the server
+
+Copy `data/php_ready/` to `private/data/` on the server and run the loader
+there.
+
+## Writing every file again
+
+The imports keep `php_ready/` up to date on their own. One command writes the
+whole corpus out again, for when that is not enough -- after restoring a
+backup, or when the folder has been emptied:
 
 ```
 docker compose exec api python manage.py export_php
 ```
 
-Or, after re-importing a single annotation, only that text:
+It also takes a single text, leaving the metadata files alone:
 
 ```
 docker compose exec api python manage.py export_php --text <text_id>
 ```
 
-Then copy `data/php_ready/` to `private/data/` on the server and run the
-loader there.
-
 ## Why that order
 
-Each step needs what the one before it wrote:
+Each command needs what the one before it wrote:
 
 - a text names its author by `speaker_id`, so the speaker has to exist before
   the text table is imported;
 - an annotation names its text by `text_id` and its speakers by `speaker_id`,
   so both tables have to be imported before the annotation;
-- the export reads the database, so it comes last.
+- the export reads the database, so it happens at the end of each command.
 
 Out of order, the import stops and says which file to run first. It does not
 write half of the data and leave the rest.

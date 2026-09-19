@@ -7,7 +7,6 @@ from rest_framework.response import Response
 from .models import Text, Speaker, Sentence, Token
 from .processing.sentence_context import clamp_window, sentences_around
 from .processing.text_search import build_text_queryset
-from .processing.text_sentences import sentences_of_text
 from .processing.token_search import build_search_queryset
 from .serializers import (
     TextSerializer,
@@ -77,7 +76,15 @@ class SpeakerViewSet(PublicCorpusViewSet):
 
 
 class SentenceViewSet(PublicCorpusViewSet):
-    queryset = Sentence.objects.all().select_related('speaker', 'text').prefetch_related('tokens')
+    # Ordered because the list is paginated: without a fixed order the database
+    # is free to return rows differently each time, so the same page number
+    # could answer with different sentences.
+    queryset = (
+        Sentence.objects.all()
+        .select_related('speaker', 'text')
+        .prefetch_related('tokens')
+        .order_by('text_id', 'sentence_id')
+    )
     serializer_class = SentenceSerializer
 
     def get_queryset(self):
@@ -86,13 +93,18 @@ class SentenceViewSet(PublicCorpusViewSet):
         Reading a text is what the text page does:
 
             /api/v1/sentences/?text=panov_pechalbari_1936
+
+        A text_id that no text has simply gives nothing back, which is what
+        the page wants: a text whose annotation has not been imported yet is
+        not an error, it is an empty text.
         """
+        sentences = super().get_queryset()
         text_id = self.request.query_params.get('text', '').strip()
 
         if text_id:
-            return sentences_of_text(text_id)
+            return sentences.filter(text_id=text_id)
 
-        return super().get_queryset()
+        return sentences
 
     @action(detail=False, methods=['get'], url_path='context')
     def context(self, request):
