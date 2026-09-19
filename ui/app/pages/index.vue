@@ -2,7 +2,7 @@
 import SearchResults from '~/components/search/SearchResults.vue'
 import SearchTabs from '~/components/search/SearchTabs.vue'
 import SearchLemmaForm from '~/components/search/forms/SearchLemmaForm.vue'
-import SearchPosForm from '~/components/search/forms/SearchPosForm.vue'
+import SearchMorphologyForm from '~/components/search/forms/SearchMorphologyForm.vue'
 import SearchTextForm from '~/components/search/forms/SearchTextForm.vue'
 import SearchUdForm from '~/components/search/forms/SearchUdForm.vue'
 import {useSearchStore} from '~/stores/search'
@@ -39,7 +39,7 @@ const {t} = useI18n()
         <div class="mt-6">
           <SearchTextForm v-if="searchStore.activeSearchKind === 'text'" />
           <SearchLemmaForm v-else-if="searchStore.activeSearchKind === 'lemma'" />
-          <SearchPosForm v-else-if="searchStore.activeSearchKind === 'tag'" />
+          <SearchMorphologyForm v-else-if="searchStore.activeSearchKind === 'tag'" />
           <SearchUdForm v-else />
         </div>
       </div>

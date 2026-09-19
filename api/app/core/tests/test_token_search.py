@@ -27,6 +27,13 @@ class PosTagRegexTests(TestCase):
         self.assertEqual(pos_tag_regex('Ap-fs-n'), r'^Ap\-fs\-n$')
         self.assertEqual(pos_tag_regex('A.b'), r'^A\.b$')
 
+    def test_a_closing_star_stands_for_the_rest_of_the_tag(self):
+        self.assertEqual(pos_tag_regex('N*'), '^N.*$')
+        self.assertEqual(pos_tag_regex('P??f*'), '^P..f.*$')
+
+    def test_a_star_that_does_not_close_the_query_is_an_ordinary_star(self):
+        self.assertEqual(pos_tag_regex('N*c'), r'^N\*c$')
+
 
 class UdRelationFilterTests(TestCase):
     """Searching a relation finds its subtypes, because the form offers only
@@ -110,6 +117,30 @@ class SearchQuerysetTests(TestCase):
     def test_pos_tag_matches_the_whole_tag_not_a_prefix(self):
         # 'N' alone must not find 'Ncfsny': the pattern is anchored.
         self.assertEqual(self.forms(pos='N'), [])
+
+    def test_pos_tag_with_an_open_tail_matches_a_whole_category(self):
+        self.assertEqual(self.forms(pos='N*'), ['Комедијата'])
+
+    def test_an_open_tail_also_matches_when_nothing_follows(self):
+        # 'Z' is a tag of one character, and 'Z*' has to find it.
+        self.assertEqual(self.forms(pos='Z*'), ['.'])
+
+    def test_an_open_tail_matches_tags_of_different_lengths(self):
+        # The annotation names as many positions as it knows, so the same
+        # question — a feminine pronoun — meets tags of two lengths.
+        make_sentence(
+            'Која ја виде',
+            # A relative pronoun the annotation describes down to the seventh
+            # position, and a personal one it stops naming after the sixth.
+            pos_tags=['Pr-fs--n', 'Pp3fsay', 'Vmpip3s-n'],
+            text=self.sentence.text,
+            speaker=self.sentence.speaker,
+            sentence_id=3,
+        )
+        self.assertEqual(self.forms(pos='P??f*'), ['Која', 'ја'])
+
+    def test_an_open_tail_still_requires_the_positions_before_it(self):
+        self.assertEqual(self.forms(pos='Nc?p*'), [])
 
     def test_ud_relation_includes_subtypes(self):
         self.assertEqual(self.forms(ud='nsubj'), ['Комедијата'])

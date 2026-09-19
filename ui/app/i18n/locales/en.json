@@ -37,7 +37,7 @@
     "tabs": {
       "text": "By Full Text",
       "lemma": "By Lemma",
-      "tag": "By Tag",
+      "tag": "By Morphology",
       "ud": "By UD Tag"
     },
     "actions": {
@@ -59,13 +59,15 @@
         "placeholder": "Enter a lemma"
       },
       "tag": {
-        "title": "PoS Tag",
-        "summary": "Search tokens by tags reflecting part-of-speech category and morphological properties.",
-        "descriptionOneBefore": "Morphological annotation follows the",
-        "descriptionOneAfter": "standard with minor modifications. The information is provided by a string of characters, reflecting the part-of-speech category (capital) and information marked by the inflection.",
-        "descriptionTwo": "The strings are specific for each part-of-speech category. For example, slovesa 'words' would be annotated as Nnpn, denoting category as noun and inflection (neutral gender, plural number, default/nominative case, not animated).",
-        "descriptionThree": "It is possible to search for a full tag and for a part: for example, the query N will find all the nouns and the query Nf all the feminine nouns. You can replace a category tag with ? to get any value, e.g. N?sny will return singular animate nouns in nominative of all genders.",
-        "placeholder": "Enter a PoS query (e.g. Nmnsny)",
+        "title": "Morphology",
+        "summary": "Search tokens by part of speech and by the morphological properties that go with it.",
+        "descriptionOneBefore": "The morphological annotation follows the",
+        "descriptionOneAfter": "standard for Macedonian, which describes a word as a part of speech plus a fixed list of properties.",
+        "descriptionTwo": "Choose a part of speech, then narrow it down with as many of its properties as you need. A property left at \"any\" is not asked about, so a noun with nothing but feminine chosen finds feminine nouns of every number, case and definiteness.",
+        "categoryLabel": "Part of speech",
+        "categoryPlaceholder": "Choose a part of speech",
+        "anyValue": "Any",
+        "patternLabel": "Tag pattern:",
         "multtextEast": "MULTEXT-East"
       },
       "ud": {
@@ -78,6 +80,158 @@
         "placeholder": "Select an UD tag",
         "parentPlaceholder": "UD of parent (optional)",
         "universalDependencies": "Universal Dependencies"
+      }
+    },
+    "msd": {
+      "categories": {
+        "noun": "Noun",
+        "verb": "Verb",
+        "adjective": "Adjective",
+        "pronoun": "Pronoun",
+        "adverb": "Adverb",
+        "numeral": "Numeral",
+        "adposition": "Preposition",
+        "conjunction": "Conjunction",
+        "particle": "Particle",
+        "interjection": "Interjection",
+        "abbreviation": "Abbreviation",
+        "residual": "Residual (foreign word, typo…)",
+        "punctuation": "Punctuation"
+      },
+      "properties": {
+        "type": "Type",
+        "gender": "Gender",
+        "number": "Number",
+        "case": "Case",
+        "definiteness": "Definiteness",
+        "degree": "Degree",
+        "person": "Person",
+        "aspect": "Aspect",
+        "verbForm": "Mood",
+        "tense": "Tense",
+        "negative": "Negated",
+        "clitic": "Clitic (short form)",
+        "formation": "Formation",
+        "form": "Written as"
+      },
+      "values": {
+        "gender": {
+          "masculine": "Masculine",
+          "feminine": "Feminine",
+          "neuter": "Neuter"
+        },
+        "number": {
+          "singular": "Singular",
+          "plural": "Plural",
+          "count": "Count form (after a numeral)"
+        },
+        "definiteness": {
+          "indefinite": "Indefinite",
+          "definite": "Definite (-от, -та, -то)",
+          "definiteNear": "Definite, near (-ов, -ва, -во)",
+          "definiteFar": "Definite, far (-он, -на, -но)"
+        },
+        "degree": {
+          "positive": "Positive",
+          "comparative": "Comparative (по-)",
+          "superlative": "Superlative (најмного-)"
+        },
+        "person": {
+          "first": "First",
+          "second": "Second",
+          "third": "Third"
+        },
+        "formation": {
+          "simple": "Simple (one word)",
+          "compound": "Compound (several words)"
+        },
+        "yesNo": {
+          "no": "No",
+          "yes": "Yes"
+        },
+        "nounType": {
+          "common": "Common",
+          "proper": "Proper"
+        },
+        "nounCase": {
+          "nominative": "Nominative (default form)",
+          "vocative": "Vocative (addressing someone)",
+          "oblique": "Oblique"
+        },
+        "verbType": {
+          "main": "Main",
+          "auxiliary": "Auxiliary (сум, ќе, би)",
+          "modal": "Modal (може, треба)"
+        },
+        "aspect": {
+          "progressive": "Imperfective",
+          "perfective": "Perfective",
+          "biaspectual": "Either aspect"
+        },
+        "verbForm": {
+          "indicative": "Indicative",
+          "imperative": "Imperative"
+        },
+        "tense": {
+          "present": "Present",
+          "imperfect": "Imperfect",
+          "aorist": "Aorist",
+          "compound": "Compound (l-form participle)"
+        },
+        "adjectiveType": {
+          "qualificative": "Qualificative (убав)",
+          "general": "General relational",
+          "possessive": "Possessive (мајчин)",
+          "ordinal": "Ordinal (втор)",
+          "participle": "Participle (напишан)"
+        },
+        "pronounType": {
+          "personal": "Personal (јас, тој)",
+          "demonstrative": "Demonstrative (овој, тој)",
+          "indefinite": "Indefinite (некој)",
+          "interrogative": "Interrogative (кој?)",
+          "relative": "Relative (кој, што)",
+          "reflexive": "Reflexive (себе, се)",
+          "negative": "Negative (никој)",
+          "general": "General (секој)"
+        },
+        "pronounCase": {
+          "nominative": "Nominative (тој)",
+          "dative": "Dative (му, нему)",
+          "accusative": "Accusative (го, него)"
+        },
+        "adverbType": {
+          "general": "General",
+          "adjectival": "Adjectival",
+          "verbal": "Verbal",
+          "modal": "Modal"
+        },
+        "adpositionType": {
+          "preposition": "Preposition"
+        },
+        "conjunctionType": {
+          "coordinating": "Coordinating (и, но)",
+          "subordinating": "Subordinating (дека, ако)"
+        },
+        "numeralForm": {
+          "digit": "Digits (7)",
+          "roman": "Roman numeral (VII)",
+          "letter": "Letters (седум)"
+        },
+        "numeralType": {
+          "cardinal": "Cardinal (седум)",
+          "pronominal": "Pronominal (неколку)",
+          "special": "Special (седумте, обата)"
+        },
+        "residualType": {
+          "foreign": "Foreign word",
+          "typo": "Typo",
+          "web": "Web address",
+          "emo": "Emoticon",
+          "hashtag": "Hashtag",
+          "at": "At-mention",
+          "program": "Program code"
+        }
       }
     },
     "udTags": {

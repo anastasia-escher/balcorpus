@@ -2,7 +2,10 @@ import {computed, ref} from 'vue'
 import {defineStore} from 'pinia'
 import {useAPI} from '~/composables/useAPI'
 import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
+import {findMsdCategory} from '~/features/search/msd.constants'
+import {buildMsdPattern} from '~/features/search/msd.pattern'
 import {countPages} from '~/features/pagination/pagination'
+import type {MsdSelection} from '~/features/search/msd.types'
 import type {
   SearchInputKey,
   SearchKind,
@@ -19,7 +22,11 @@ export const useSearchStore = defineStore('search', () => {
   const activeSearchKind = ref<SearchKind>('text')
   const textQuery = ref('')
   const lemma = ref('')
-  const posQuery = ref('')
+  // The morphology search: a part of speech, and the values chosen for its
+  // properties. The tag pattern the corpus receives follows from these two, so
+  // it is computed rather than stored next to them.
+  const morphologyCategoryCode = ref<string | null>(null)
+  const morphologySelection = ref<MsdSelection>({})
   // Whether the free-text search also matches inside longer words. Off by
   // default: someone looking for a word form wants that form.
   const partialText = ref(false)
@@ -44,10 +51,17 @@ export const useSearchStore = defineStore('search', () => {
   const searchInputs = {
     textQuery,
     lemma,
-    posQuery,
     udTag,
     parent,
   } satisfies Record<SearchInputKey, {value: string | null}>
+
+  const morphologyCategory = computed(() => findMsdCategory(morphologyCategoryCode.value))
+
+  const morphologyPattern = computed(() =>
+    morphologyCategory.value
+      ? buildMsdPattern(morphologyCategory.value, morphologySelection.value)
+      : ''
+  )
 
   const pageCount = computed(() => countPages(resultCount.value ?? 0, SEARCH_PAGE_SIZE))
 
@@ -55,7 +69,34 @@ export const useSearchStore = defineStore('search', () => {
     activeSearchKind.value = kind
   }
 
+  /** Choose a part of speech. Its properties start over. */
+  const selectMorphologyCategory = (code: string | null) => {
+    morphologyCategoryCode.value = code
+    // A gender chosen for a noun says nothing about a verb, and the properties
+    // are not even the same ones, so nothing is carried over.
+    morphologySelection.value = {}
+  }
+
+  /** Choose the value of one property, or let it mean "any" again with null. */
+  const setMorphologyValue = (propertyName: string, code: string | null) => {
+    const selection = {...morphologySelection.value}
+
+    if (code) {
+      selection[propertyName] = code
+    } else {
+      delete selection[propertyName]
+    }
+
+    morphologySelection.value = selection
+  }
+
   const resetSearchInput = (kind: SearchKind) => {
+    if (kind === 'tag') {
+      // Dropping the part of speech drops the properties chosen under it.
+      selectMorphologyCategory(null)
+      return
+    }
+
     for (const {inputKey} of SEARCH_REQUEST_FIELDS[kind]) {
       searchInputs[inputKey].value = inputKey === 'udTag' || inputKey === 'parent' ? null : ''
     }
@@ -76,6 +117,12 @@ export const useSearchStore = defineStore('search', () => {
       if (value) {
         parameters[parameterName] = value
       }
+    }
+
+    // Built from the chosen part of speech and properties rather than read
+    // from a field, which is why it is not part of SEARCH_REQUEST_FIELDS.
+    if (kind === 'tag' && morphologyPattern.value) {
+      parameters.pos = morphologyPattern.value
     }
 
     // A flag rather than a value, so it is not part of SEARCH_REQUEST_FIELDS.
@@ -145,7 +192,10 @@ export const useSearchStore = defineStore('search', () => {
     activeSearchKind,
     textQuery,
     lemma,
-    posQuery,
+    morphologyCategoryCode,
+    morphologySelection,
+    morphologyCategory,
+    morphologyPattern,
     partialText,
     udTag,
     parent,
@@ -157,6 +207,8 @@ export const useSearchStore = defineStore('search', () => {
     page,
     pageCount,
     selectSearchKind,
+    selectMorphologyCategory,
+    setMorphologyValue,
     resetSearchInput,
     submitSearch,
     goToPage,

@@ -2,7 +2,7 @@ export const SEARCH_KINDS = ['text', 'lemma', 'tag', 'ud'] as const
 
 export type SearchKind = (typeof SEARCH_KINDS)[number]
 
-export type SearchInputKey = 'textQuery' | 'lemma' | 'posQuery' | 'udTag' | 'parent'
+export type SearchInputKey = 'textQuery' | 'lemma' | 'udTag' | 'parent'
 
 export interface SearchTab {
   kind: SearchKind

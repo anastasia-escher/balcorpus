@@ -13,7 +13,10 @@ export const SEARCH_TABS: readonly SearchTab[] = [
 export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestField[]> = {
   text: [{ inputKey: 'textQuery', parameterName: 'q' }],
   lemma: [{ inputKey: 'lemma', parameterName: 'lemma' }],
-  tag: [{ inputKey: 'posQuery', parameterName: 'pos' }],
+  // The morphology search has no field to read: it holds a part of speech and
+  // the properties chosen under it, and the store turns those into the 'pos'
+  // parameter itself. See buildSearchParameters.
+  tag: [],
   ud: [
     { inputKey: 'udTag', parameterName: 'ud' },
     { inputKey: 'parent', parameterName: 'parent' },

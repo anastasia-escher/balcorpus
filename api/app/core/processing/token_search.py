@@ -14,6 +14,13 @@ from core.models import Token
 # like "N?sny" should find singular animate nouns of every gender.
 POS_WILDCARD = '?'
 
+# A '*' at the end of a query means "and anything, or nothing, after this".
+# The annotation leaves the trailing positions off a tag when it does not name
+# them, so pronouns appear in the corpus both as 'Pp3fsay' and as 'Pp1-sann'.
+# Without an open tail, a query for "a feminine pronoun" would have to guess a
+# length and would silently miss the tags of the other one.
+POS_TAIL_WILDCARD = '*'
+
 
 def ud_relation_filter(relation, prefix=''):
     """Match a UD relation together with its subtypes.
@@ -34,13 +41,20 @@ def ud_relation_filter(relation, prefix=''):
 def pos_tag_regex(pos):
     """Turn a MULTEXT-East query into a regular expression.
 
-    Everything the user typed is escaped, so only '?' keeps a special meaning.
+    Everything the user typed is escaped, so only two characters keep a special
+    meaning: '?' stands for one character, and a closing '*' for the rest of
+    the tag, however long it is. A '*' anywhere else is just a star.
 
-    Example: "N?sny" becomes "^N.sny$"
+    Example: "N?sny" becomes "^N.sny$", and "P??f*" becomes "^P..f.*$"
     """
+    has_open_tail = pos.endswith(POS_TAIL_WILDCARD)
+    if has_open_tail:
+        pos = pos[:-1]
+
     escaped = re.escape(pos)
     pattern = escaped.replace(re.escape(POS_WILDCARD), '.')
-    return f'^{pattern}$'
+    tail = '.*' if has_open_tail else ''
+    return f'^{pattern}{tail}$'
 
 
 def word_filter(text, partial=False):
