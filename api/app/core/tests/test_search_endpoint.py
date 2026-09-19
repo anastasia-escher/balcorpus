@@ -52,6 +52,24 @@ class SearchEndpointTests(TestCase):
         self.assertEqual(result['ud_type'], 'nsubj:pass')
         self.assertEqual(result['head_ud_id'], 4)
 
+    def test_free_text_matches_the_whole_word_by_default(self):
+        self.assertEqual(self.search(q='убаво').json()['count'], 1)
+        self.assertEqual(self.search(q='убав').json()['count'], 1)  # the lemma
+        self.assertEqual(self.search(q='комеди').json()['count'], 0)
+
+    def test_the_partial_flag_widens_the_search_to_substrings(self):
+        self.assertEqual(self.search(q='комеди', partial='true').json()['count'], 1)
+        self.assertEqual(self.search(q='комеди', partial='1').json()['count'], 1)
+
+    def test_a_flag_that_is_not_set_leaves_the_search_on_whole_words(self):
+        self.assertEqual(self.search(q='комеди', partial='0').json()['count'], 0)
+        self.assertEqual(self.search(q='комеди', partial='maybe').json()['count'], 0)
+
+    def test_free_text_no_longer_matches_the_title_of_the_text(self):
+        # The text is called 'Печалбари'; matching it here used to return all
+        # of its tokens.
+        self.assertEqual(self.search(q='Печалбари').json()['count'], 0)
+
     def test_nothing_found_is_an_empty_answer_and_not_an_error(self):
         response = self.search(lemma='нема-таква-лема')
 

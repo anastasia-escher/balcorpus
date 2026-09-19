@@ -1,14 +1,17 @@
 <script setup lang="ts">
 import SearchPagination from '~/components/search/SearchPagination.vue'
+import SearchResultContext from '~/components/search/SearchResultContext.vue'
 import {pageRange} from '~/features/search/pagination'
 import {splitSentenceAroundToken} from '~/features/search/highlight'
 import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
+import {useSentenceContext} from '~/composables/useSentenceContext'
 import {useI18n} from 'vue-i18n'
 import type {SearchResult} from '~/features/search/search.types'
 
 const searchStore = useSearchStore()
 const {t} = useI18n()
+const context = useSentenceContext()
 
 /** The word form as it was found in the text, whichever reading exists. */
 const wordForm = (result: SearchResult) => result.source || result.diplomatic || ''
@@ -82,6 +85,20 @@ const annotations = (result: SearchResult) =>
             {{ t('search.results.speaker', {speakerName: result.speaker_name}) }}</template
           >
         </p>
+
+        <button
+          type="button"
+          class="mt-2 text-xs text-stone-500 underline-offset-4 transition-colors hover:text-terracotta-700 hover:underline"
+          :aria-expanded="context.isOpen(result)"
+          @click="context.toggleContext(result)">
+          {{ context.isOpen(result) ? t('search.context.hide') : t('search.context.show') }}
+        </button>
+
+        <SearchResultContext
+          v-if="context.isOpen(result)"
+          :sentences="context.sentencesFor(result)"
+          :matched-sentence-id="result.sentence_id"
+          :loading="context.isLoading(result)" />
       </li>
     </ol>
 

@@ -41,3 +41,15 @@ export interface SearchResponse {
   previous: string | null
   results: SearchResult[]
 }
+
+/** One sentence standing next to a search result. */
+export interface ContextSentence {
+  sentence_id: number
+  speaker_name: string | null
+  source_sentence: string
+}
+
+export interface ContextResponse {
+  sentence_id: number
+  results: ContextSentence[]
+}

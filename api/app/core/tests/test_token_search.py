@@ -71,16 +71,28 @@ class SearchQuerysetTests(TestCase):
     def forms(self, **criteria):
         return sorted(build_search_queryset(**criteria).values_list('source', flat=True))
 
-    def test_free_text_matches_a_word_form(self):
+    def test_free_text_matches_a_whole_word_form(self):
         self.assertEqual(self.forms(text='убаво'), ['убаво'])
 
-    def test_free_text_matches_part_of_a_word(self):
-        self.assertEqual(self.forms(text='комеди'), ['Комедијата'])
+    def test_free_text_matches_a_whole_lemma(self):
+        self.assertEqual(self.forms(text='убав'), ['убаво'])
 
-    def test_free_text_matches_the_title_of_the_text(self):
-        # Searching the metadata is deliberate: it finds every token of a text
-        # whose title matches.
-        self.assertEqual(len(self.forms(text='Печалбари')), 5)
+    def test_free_text_does_not_match_part_of_a_word_by_default(self):
+        # Someone looking for a word form wants that form, not every word it
+        # happens to sit inside.
+        self.assertEqual(self.forms(text='комеди'), [])
+
+    def test_partial_text_matches_part_of_a_word(self):
+        self.assertEqual(self.forms(text='комеди', partial_text=True), ['Комедијата'])
+
+    def test_partial_text_matches_an_ending(self):
+        self.assertEqual(self.forms(text='ата', partial_text=True), ['Комедијата'])
+
+    def test_free_text_does_not_search_the_metadata_of_the_text(self):
+        # The title of the text is 'Печалбари'. Matching it here used to
+        # return every token of the text; the metadata get their own filter.
+        self.assertEqual(self.forms(text='Печалбари'), [])
+        self.assertEqual(self.forms(text='Печалбари', partial_text=True), [])
 
     def test_lemma_matches_the_whole_lemma_only(self):
         self.assertEqual(self.forms(lemma='убав'), ['убаво'])
@@ -122,8 +134,12 @@ class SearchQuerysetTests(TestCase):
         self.assertEqual(len(self.forms()), 5)
 
     def test_results_come_back_in_the_order_of_the_corpus(self):
-        forms = list(build_search_queryset(text='Печалбари').values_list('source', flat=True))
-        self.assertEqual(forms, ['Комедијата', 'е', 'убаво', 'напишана', '.'])
+        # 'а' is inside four of the five words, in corpus order.
+        forms = list(
+            build_search_queryset(text='а', partial_text=True)
+            .values_list('source', flat=True)
+        )
+        self.assertEqual(forms, ['Комедијата', 'убаво', 'напишана'])
 
     def test_a_token_is_not_repeated_when_filtering_by_parent(self):
         # Joining the sentence's tokens can produce the same row twice.

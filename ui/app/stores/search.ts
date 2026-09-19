@@ -20,6 +20,9 @@ export const useSearchStore = defineStore('search', () => {
   const textQuery = ref('')
   const lemma = ref('')
   const posQuery = ref('')
+  // Whether the free-text search also matches inside longer words. Off by
+  // default: someone looking for a word form wants that form.
+  const partialText = ref(false)
   const udTag = ref<string | null>(null)
   const parent = ref<string | null>(null)
   const results = ref<SearchResult[]>([])
@@ -73,6 +76,13 @@ export const useSearchStore = defineStore('search', () => {
       if (value) {
         parameters[parameterName] = value
       }
+    }
+
+    // A flag rather than a value, so it is not part of SEARCH_REQUEST_FIELDS.
+    // It only rides along with a query: on its own it is not a search, and
+    // adding it would turn an empty form into a request the corpus refuses.
+    if (kind === 'text' && partialText.value && parameters.q) {
+      parameters.partial = 'true'
     }
 
     return parameters
@@ -136,6 +146,7 @@ export const useSearchStore = defineStore('search', () => {
     textQuery,
     lemma,
     posQuery,
+    partialText,
     udTag,
     parent,
     results,

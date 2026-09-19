@@ -33,10 +33,12 @@
     },
     "forms": {
       "text": {
-        "title": "Text Search",
-        "summary": "Search corpus by content or metadata.",
-        "description": "Enter any phrase, sentence, or keyword to find matching text passages in the Macedonian Corpus.",
-        "placeholder": "Enter a word, phrase, or sentence…"
+        "title": "Word or lemma",
+        "summary": "Search the corpus for a word form or a dictionary form.",
+        "description": "Enter one word. The search matches a token whose written form or whose lemma is that word, so \"убаво\" also finds \"поубаво\", whose lemma it is. Metadata such as genre, dialect or speaker get their own filter.",
+        "placeholder": "Enter a word…",
+        "partial": "Also match inside words",
+        "partialHint": "Off: finds the word form or lemma itself. On: also finds it inside longer words."
       },
       "lemma": {
         "title": "Lemma",
@@ -111,6 +113,12 @@
       "label": "Result pages",
       "previous": "Previous",
       "next": "Next"
+    },
+    "context": {
+      "show": "Show context",
+      "hide": "Hide context",
+      "loading": "Loading the surrounding sentences…",
+      "empty": "No surrounding sentences were found."
     }
   }
 }

@@ -58,8 +58,29 @@ class SentenceSerializer(serializers.ModelSerializer):
             'id', 'sentence_id', 'speaker', 'tokens'
         ]
 
+class SentenceContextSerializer(serializers.ModelSerializer):
+    """One sentence standing next to a search result, ready to read."""
+
+    speaker_name = serializers.CharField(source='speaker.full_name', read_only=True, allow_null=True)
+    source_sentence = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Sentence
+        fields = ['sentence_id', 'speaker_name', 'source_sentence']
+
+    def get_source_sentence(self, sentence):
+        return sentence_text.source_text(sentence)
+
+
 class TextSerializer(serializers.ModelSerializer):
-    sentences = SentenceSerializer(many=True, read_only=True)
+    """A text and its metadata.
+
+    The sentences are deliberately not nested here.  A text of average length
+    carries some fourteen thousand tokens, so a list of texts that included
+    them answered with megabytes; the sentences are read through
+    /sentences/ and /tokens/search/ instead.
+    """
+
     authors = SpeakerSerializer(many=True, read_only=True)
 
     class Meta:
@@ -67,5 +88,5 @@ class TextSerializer(serializers.ModelSerializer):
         fields = [
             'text_id', 'text_name', 'data_genre', 'text_genre', 'variety',
             'variety_note', 'text_date', 'year_note', 'source',
-            'short_description', 'authors', 'sentences',
+            'short_description', 'authors',
         ]

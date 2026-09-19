@@ -25,6 +25,19 @@ const submit = () => {
         class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.text.placeholder')" />
+      <label class="flex cursor-pointer items-start gap-2 text-sm text-stone-600">
+        <input
+          v-model="searchStore.partialText"
+          type="checkbox"
+          class="mt-0.5 accent-terracotta-600" />
+        <span>
+          {{ t('search.forms.text.partial') }}
+          <span class="block text-xs text-stone-400">
+            {{ t('search.forms.text.partialHint') }}
+          </span>
+        </span>
+      </label>
+
       <SearchFormActions @reset="searchStore.resetSearchInput('text')" />
     </form>
   </section>

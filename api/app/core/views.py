@@ -5,11 +5,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .models import Text, Speaker, Sentence, Token
+from .processing.sentence_context import clamp_window, sentences_around
 from .processing.token_search import build_search_queryset
 from .serializers import (
     TextSerializer,
     SpeakerSerializer,
     SentenceSerializer,
+    SentenceContextSerializer,
     TokenSerializer,
     TokenSearchResultSerializer,
 )
@@ -17,6 +19,26 @@ from .serializers import (
 # The criteria a search needs at least one of; 'parent' only narrows a result
 # down further, so on its own it would ask for the whole corpus.
 SEARCH_CRITERIA = ['q', 'lemma', 'pos', 'ud']
+
+# Query parameters that are read as yes/no rather than as text.
+TRUE_VALUES = {'1', 'true', 'yes', 'on'}
+
+
+def read_flag(request, name):
+    """Read a query parameter that means yes or no.
+
+    Example: ?partial=true -> True, ?partial=0 -> False, absent -> False
+    """
+    return request.query_params.get(name, '').strip().lower() in TRUE_VALUES
+
+
+def read_number(request, name):
+    """Read a query parameter that should hold a whole number, or None."""
+    value = request.query_params.get(name, '').strip()
+    try:
+        return int(value)
+    except ValueError:
+        return None
 
 
 class CorpusPagination(PageNumberPagination):
@@ -29,14 +51,14 @@ class PublicCorpusViewSet(viewsets.ReadOnlyModelViewSet):
     """The corpus is public; only Django admin requires authentication."""
 
     permission_classes = [AllowAny]
+    pagination_class = CorpusPagination
 
 
 class TextViewSet(PublicCorpusViewSet):
-    queryset = Text.objects.all().prefetch_related(
-        'authors',
-        'sentences__tokens',
-        'sentences__speaker',
-    )
+    # The sentences are not prefetched: TextSerializer does not carry them,
+    # because a text holds thousands of tokens and a list of texts that
+    # included them answered with megabytes.
+    queryset = Text.objects.all().prefetch_related('authors')
     serializer_class = TextSerializer
 
 
@@ -49,11 +71,36 @@ class SentenceViewSet(PublicCorpusViewSet):
     queryset = Sentence.objects.all().select_related('speaker', 'text').prefetch_related('tokens')
     serializer_class = SentenceSerializer
 
+    @action(detail=False, methods=['get'], url_path='context')
+    def context(self, request):
+        """The sentences standing around one sentence of a text.
+
+        A concordance line is often not enough to judge a form, so the result
+        list can ask for what came before and after it:
+
+            /api/v1/sentences/context/?text=panov_pechalbari_1936&sentence=42
+
+        The answer is short by design and therefore not paginated.
+        """
+        text_id = request.query_params.get('text', '').strip()
+        sentence_number = read_number(request, 'sentence')
+
+        if not text_id or sentence_number is None:
+            return Response(
+                {'detail': 'Provide a text and the number of a sentence in it.'},
+                status=400,
+            )
+
+        sentences = sentences_around(
+            text_id, sentence_number, clamp_window(read_number(request, 'window'))
+        )
+        serializer = SentenceContextSerializer(sentences, many=True)
+        return Response({'sentence_id': sentence_number, 'results': serializer.data})
+
 
 class TokenViewSet(PublicCorpusViewSet):
     queryset = Token.objects.all().select_related('sentence__speaker', 'sentence__text')
     serializer_class = TokenSerializer
-    pagination_class = CorpusPagination
 
     @action(detail=False, methods=['get'], url_path='search')
     def search(self, request):
@@ -80,6 +127,7 @@ class TokenViewSet(PublicCorpusViewSet):
             pos=criteria['pos'],
             ud=criteria['ud'],
             parent=criteria['parent'],
+            partial_text=read_flag(request, 'partial'),
         )
 
         page = self.paginate_queryset(queryset)

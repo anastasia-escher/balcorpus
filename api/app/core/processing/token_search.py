@@ -43,14 +43,29 @@ def pos_tag_regex(pos):
     return f'^{pattern}$'
 
 
-def free_text_filter(text):
-    """Match a word form, a lemma, or the metadata of the text it comes from."""
+def word_filter(text, partial=False):
+    """Match a token by its written form or its lemma.
+
+    By default the whole word has to match, which is what someone looking for
+    a word form expects. ``partial`` widens it to "contains", for finding an
+    ending or a stem: partial=True and text='ица' also finds "убавица".
+
+    The metadata of the text — its title and description — are deliberately
+    not searched here. They get a filter of their own; mixing them in meant
+    that searching "Печалбари" returned all 13 989 tokens of the text called
+    Печалбари instead of the eight that are the word.
+    """
+    if partial:
+        return (
+            Q(source__icontains=text)
+            | Q(diplomatic__icontains=text)
+            | Q(lemma__icontains=text)
+        )
+
     return (
-        Q(source__icontains=text)
-        | Q(diplomatic__icontains=text)
-        | Q(lemma__icontains=text)
-        | Q(sentence__text__text_name__icontains=text)
-        | Q(sentence__text__short_description__icontains=text)
+        Q(source__iexact=text)
+        | Q(diplomatic__iexact=text)
+        | Q(lemma__iexact=text)
     )
 
 
@@ -65,19 +80,22 @@ def head_filter(parent_relation):
     return ud_relation_filter(parent_relation, prefix='sentence__tokens__')
 
 
-def build_search_queryset(text='', lemma='', pos='', ud='', parent=''):
+def build_search_queryset(text='', lemma='', pos='', ud='', parent='', partial_text=False):
     """Return the tokens matching the given criteria, in corpus order.
 
     Empty criteria are simply skipped, so the caller can pass whatever the
     request contained.  The sentence and its tokens are fetched along with the
     result because every match is displayed together with its context.
+
+    ``partial_text`` turns the free-text search from whole words into
+    substrings; it has no effect on the other criteria.
     """
     queryset = Token.objects.select_related(
         'sentence__speaker', 'sentence__text'
     ).prefetch_related('sentence__tokens')
 
     if text:
-        queryset = queryset.filter(free_text_filter(text))
+        queryset = queryset.filter(word_filter(text, partial_text))
     if lemma:
         queryset = queryset.filter(lemma__iexact=lemma)
     if pos:
