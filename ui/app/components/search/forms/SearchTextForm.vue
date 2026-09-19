@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
+import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
@@ -13,20 +14,15 @@ const submit = () => {
 
 <template>
   <section>
-    <div class="mb-8 text-gray-900">
-      <p class="font-bold text-lg mb-2">
-        {{ t('search.forms.text.title') }}
-        <span class="font-normal text-base text-gray-700">— {{ t('search.forms.text.summary') }}</span>
-      </p>
-      <p class="mb-2">
-        {{ t('search.forms.text.description') }}
-      </p>
-    </div>
+    <SearchFormIntro :title="t('search.forms.text.title')">
+      <p>{{ t('search.forms.text.summary') }}</p>
+      <p>{{ t('search.forms.text.description') }}</p>
+    </SearchFormIntro>
 
     <form class="space-y-8" @submit.prevent="submit">
       <UInput
         v-model="searchStore.textQuery"
-        class="w-full"
+        class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.text.placeholder')" />
       <SearchFormActions @reset="searchStore.resetSearchInput('text')" />

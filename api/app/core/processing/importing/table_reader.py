@@ -3,6 +3,11 @@
 Both the metadata tables (.csv) and the annotation files (.xlsx) are read
 here, so the importers never have to care which of the two they were given,
 and never have to count columns by position.
+
+Anything wrong with the shape of the file is written into the ProblemList the
+caller passes in, alongside everything the content checks find, so that one run
+reports the whole picture.  The only thing that still raises is being handed a
+kind of file we cannot open at all.
 """
 
 import csv
@@ -37,8 +42,8 @@ def is_empty_row(values):
     return all(value is None or str(value).strip() == '' for value in values)
 
 
-def check_for_duplicates(headers, path):
-    """Refuse a file whose columns cannot be told apart.
+def check_for_duplicates(headers, problems):
+    """Report a file whose columns cannot be told apart.
 
     Earlier versions of the annotation sheet had two columns both named
     "POS_Tag"; reading such a file by name would silently drop one of them.
@@ -51,14 +56,14 @@ def check_for_duplicates(headers, path):
         seen.add(header)
 
     if duplicates:
-        raise ValueError(
-            f"{path} has more than one column named {', '.join(sorted(duplicates))}. "
-            "Please give each column its own name and export the file again."
+        problems.error(
+            f"there is more than one column named {', '.join(sorted(duplicates))}. "
+            'Please give each column its own name and export the file again.'
         )
 
 
-def check_row_width(values, headers, path, row_number):
-    """Refuse a row that has more values than the file has columns.
+def row_is_too_wide(values, headers, problems, row_number):
+    """Report a row that has more values than the file has columns.
 
     zip() would silently throw the extra values away, and every value after the
     mistake would land in the wrong field.  That happens with an unquoted comma
@@ -71,15 +76,19 @@ def check_row_width(values, headers, path, row_number):
     A row with *fewer* values is fine; it just means the last columns were left
     empty, which spreadsheets do all the time.
     """
-    if len(values) > len(headers):
-        raise ValueError(
-            f"Row {row_number} of {path} has {len(values)} values but the file has "
-            f"{len(headers)} columns. A cell most likely contains a comma without "
-            "being wrapped in quotation marks, which splits it into two columns."
-        )
+    if len(values) <= len(headers):
+        return False
+
+    problems.error(
+        f'there are {len(values)} values but the file has {len(headers)} '
+        'columns. A cell most likely contains a comma without being wrapped '
+        'in quotation marks, which splits it into two columns.',
+        row_number,
+    )
+    return True
 
 
-def read_rows(path):
+def read_rows(path, problems):
     """Yield every non-empty data row of the file as a dict.
 
     Example for one row of an annotation file:
@@ -89,9 +98,9 @@ def read_rows(path):
     suffix = path.suffix.lower()
 
     if suffix == EXCEL_SUFFIX:
-        return read_excel_rows(path)
+        return read_excel_rows(path, problems)
     if suffix == CSV_SUFFIX:
-        return read_csv_rows(path)
+        return read_csv_rows(path, problems)
 
     raise ValueError(
         f"{path} has the unsupported extension '{suffix}'. "
@@ -99,7 +108,7 @@ def read_rows(path):
     )
 
 
-def read_excel_rows(path):
+def read_excel_rows(path, problems):
     """Read the first worksheet of an .xlsx file, one row at a time.
 
     read_only mode means even a file with hundreds of thousands of rows is
@@ -110,26 +119,28 @@ def read_excel_rows(path):
 
     rows = worksheet.iter_rows(values_only=True)
     headers = [clean_header(name) for name in next(rows, [])]
-    check_for_duplicates(headers, path)
+    check_for_duplicates(headers, problems)
 
     for row_number, values in enumerate(rows, start=2):
         if is_empty_row(values):
             continue
-        check_row_width(values, headers, path, row_number)
+        if row_is_too_wide(values, headers, problems, row_number):
+            continue
         yield dict(zip(headers, values))
 
     workbook.close()
 
 
-def read_csv_rows(path):
+def read_csv_rows(path, problems):
     """Read a .csv file, one row at a time."""
     with open(path, newline='', encoding='utf-8-sig') as csv_file:
         reader = csv.reader(csv_file)
         headers = [clean_header(name) for name in next(reader, [])]
-        check_for_duplicates(headers, path)
+        check_for_duplicates(headers, problems)
 
         for row_number, values in enumerate(reader, start=2):
             if is_empty_row(values):
                 continue
-            check_row_width(values, headers, path, row_number)
+            if row_is_too_wide(values, headers, problems, row_number):
+                continue
             yield dict(zip(headers, values))

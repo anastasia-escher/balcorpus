@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
+import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
@@ -13,15 +14,12 @@ const submit = () => {
 
 <template>
   <section>
-    <div class="mb-8 text-gray-900">
-      <p class="font-bold text-lg mb-2">
-        {{ t('search.forms.tag.title') }}
-        <span class="font-normal text-base text-gray-700">— {{ t('search.forms.tag.summary') }}</span>
-      </p>
-      <p class="mb-2">
+    <SearchFormIntro :title="t('search.forms.tag.title')">
+      <p>{{ t('search.forms.tag.summary') }}</p>
+      <p>
         {{ t('search.forms.tag.descriptionOneBefore') }}
         <a
-          class="text-blue-700 underline"
+          class="text-terracotta-700 underline underline-offset-2 transition-colors hover:text-terracotta-800"
           href="http://nl.ijs.si/ME/V3/msd/html/msd-mk.html"
           target="_blank"
           rel="noopener">
@@ -29,18 +27,14 @@ const submit = () => {
         </a>
         {{ t('search.forms.tag.descriptionOneAfter') }}
       </p>
-      <p class="mb-2">
-        {{ t('search.forms.tag.descriptionTwo') }}
-      </p>
-      <p class="mb-2">
-        {{ t('search.forms.tag.descriptionThree') }}
-      </p>
-    </div>
+      <p>{{ t('search.forms.tag.descriptionTwo') }}</p>
+      <p>{{ t('search.forms.tag.descriptionThree') }}</p>
+    </SearchFormIntro>
 
     <form class="space-y-8" @submit.prevent="submit">
       <UInput
         v-model="searchStore.posQuery"
-        class="w-full"
+        class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.tag.placeholder')" />
       <SearchFormActions @reset="searchStore.resetSearchInput('tag')" />

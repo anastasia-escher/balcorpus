@@ -1,47 +1,85 @@
 <script setup lang="ts">
-import { useSearchStore } from '~/stores/search'
-import { useI18n } from 'vue-i18n'
+import {splitSentenceAroundToken} from '~/features/search/highlight'
+import {useSearchStore} from '~/stores/search'
+import {useI18n} from 'vue-i18n'
+import type {SearchResult} from '~/features/search/search.types'
 
 const searchStore = useSearchStore()
-const { t } = useI18n()
+const {t} = useI18n()
+
+/** The word form as it was found in the text, whichever reading exists. */
+const wordForm = (result: SearchResult) => result.source || result.diplomatic || ''
+
+/** The sentence the hit came from, split so the hit can be marked. */
+const sentenceParts = (result: SearchResult) =>
+  splitSentenceAroundToken(result.source_sentence || result.diplomatic_sentence, wordForm(result))
+
+/** The annotation of one hit, as label/value pairs, skipping what is missing. */
+const annotations = (result: SearchResult) =>
+  [
+    {label: t('search.results.labels.lemma'), value: result.lemma},
+    {label: t('search.results.labels.partOfSpeech'), value: result.pos_tag},
+    {label: t('search.results.labels.ud'), value: result.ud_type},
+  ].filter(entry => Boolean(entry.value))
 </script>
 
 <template>
-  <div v-if="searchStore.loading" class="mt-10 text-center text-gray-700">
+  <div v-if="searchStore.loading" class="mt-12 text-center text-sm text-stone-500">
     {{ t('search.results.loading') }}
   </div>
-  <p v-else-if="searchStore.searchErrorKey" class="mt-10 rounded bg-red-50 p-4 text-red-800">
+
+  <p
+    v-else-if="searchStore.searchErrorKey"
+    class="mt-12 border-l-2 border-terracotta-500 bg-terracotta-50 px-4 py-3 text-sm text-terracotta-900">
     {{ t(searchStore.searchErrorKey) }}
   </p>
-  <section v-else-if="searchStore.hasSearched" class="mt-10 border-t border-gray-200 pt-8">
-    <h3 class="text-2xl font-bold text-blue-900">
-      {{ t('search.results.title', { count: searchStore.resultCount }) }}
-    </h3>
-    <p v-if="!searchStore.results.length" class="mt-4 text-gray-700">{{ t('search.results.empty') }}</p>
-    <ol v-else class="mt-5 space-y-4">
-      <li
-        v-for="result in searchStore.results"
-        :key="result.id"
-        class="rounded-lg border border-gray-200 bg-gray-50 p-4"
-      >
-        <p class="font-semibold text-blue-900">
-          {{ result.source || result.diplomatic }}
-          <span v-if="result.lemma" class="font-normal text-gray-700"> {{ t('search.results.lemma', { lemma: result.lemma }) }}</span>
-          <span v-if="result.pos_tag" class="font-normal text-gray-700"> {{ t('search.results.partOfSpeech', { tag: result.pos_tag }) }}</span>
-          <span v-if="result.ud_type" class="font-normal text-gray-700"> {{ t('search.results.ud', { tag: result.ud_type }) }}</span>
+
+  <section v-else-if="searchStore.hasSearched" class="mt-12">
+    <h2 class="font-serif text-lg text-stone-900">
+      {{ t('search.results.title', {count: searchStore.resultCount}) }}
+    </h2>
+
+    <p v-if="!searchStore.results.length" class="mt-4 text-sm text-stone-600">
+      {{ t('search.results.empty') }}
+    </p>
+
+    <ol v-else class="mt-6 divide-y divide-stone-200 border-t border-stone-200">
+      <li v-for="result in searchStore.results" :key="result.id" class="py-5">
+        <p class="font-serif text-lg leading-relaxed text-stone-800">
+          {{ sentenceParts(result).before
+          }}<mark
+            v-if="sentenceParts(result).match"
+            class="bg-terracotta-100 px-0.5 font-semibold text-terracotta-900">
+            {{ sentenceParts(result).match }}</mark
+          >{{ sentenceParts(result).after }}
         </p>
-        <p class="mt-2 text-gray-800">{{ result.source_sentence || result.diplomatic_sentence }}</p>
-        <p class="mt-2 text-sm text-gray-600">
-          {{ t('search.results.location', {
-            textName: result.text_name || t('search.results.fallbackTextName', { textId: result.text_id }),
-            sentenceId: result.sentence_id,
-          }) }}
-          <template v-if="result.speaker_name"> {{ t('search.results.speaker', { speakerName: result.speaker_name }) }}</template>
+
+        <dl class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-stone-500">
+          <div v-for="entry in annotations(result)" :key="entry.label" class="flex gap-1.5">
+            <dt class="tracking-[0.08em] uppercase">{{ entry.label }}</dt>
+            <dd class="font-medium text-stone-700">{{ entry.value }}</dd>
+          </div>
+        </dl>
+
+        <p class="mt-1.5 text-xs text-stone-400">
+          {{
+            t('search.results.location', {
+              textName:
+                result.text_name || t('search.results.fallbackTextName', {textId: result.text_id}),
+              sentenceId: result.sentence_id,
+            })
+          }}
+          <template v-if="result.speaker_name">
+            {{ t('search.results.speaker', {speakerName: result.speaker_name}) }}</template
+          >
         </p>
       </li>
     </ol>
-    <p v-if="searchStore.resultCount && searchStore.resultCount > searchStore.results.length" class="mt-4 text-sm text-gray-600">
-      {{ t('search.results.showingFirst', { count: searchStore.results.length }) }}
+
+    <p
+      v-if="searchStore.resultCount && searchStore.resultCount > searchStore.results.length"
+      class="mt-6 text-xs text-stone-500">
+      {{ t('search.results.showingFirst', {count: searchStore.results.length}) }}
     </p>
   </section>
 </template>

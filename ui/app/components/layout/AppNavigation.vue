@@ -1,80 +1,72 @@
 <script setup lang="ts">
-import {onMounted} from 'vue'
 import {NAVIGATION_LINKS} from '~/features/layout/navigation.constants'
 import {useLayoutStore} from '~/stores/layout'
 import {useI18n} from 'vue-i18n'
 
 const layoutStore = useLayoutStore()
 const {t} = useI18n()
-
-onMounted(() => {
-  layoutStore.initializeTheme()
-})
 </script>
 
 <template>
-  <header class="py-8 px-4 lg:px-10 bg-blue-800">
-    <nav class="relative" :aria-label="t('navigation.mainLabel')">
-      <div class="flex justify-between items-center">
+  <!-- A dark scrim under the bar keeps the links readable whatever the
+       photograph behind them happens to be. -->
+  <header class="bg-gradient-to-b from-stone-950/70 via-stone-950/35 to-transparent pb-4">
+    <div class="mx-auto flex max-w-5xl items-center gap-4 px-6 py-4">
+      <NuxtLink to="/" class="font-serif text-lg text-paper drop-shadow-sm hover:text-terracotta-200">
+        {{ t('site.name') }}
+      </NuxtLink>
+
+      <nav class="ml-auto" :aria-label="t('navigation.mainLabel')">
         <button
           type="button"
-          class="lg:hidden flex items-center p-3 rounded focus:outline-none"
+          class="p-1 text-paper sm:hidden"
           :aria-label="t('navigation.toggle')"
           :aria-expanded="layoutStore.mobileNavigationOpen"
           @click="layoutStore.toggleMobileNavigation">
           <UIcon name="i-lucide-menu" class="text-xl" />
         </button>
 
-        <ul class="hidden lg:flex lg:space-x-10 items-center">
+        <ul class="hidden gap-6 sm:flex">
           <li v-for="link in NAVIGATION_LINKS" :key="link.path">
             <NuxtLink
-              class="text-white font-semibold hover:text-blue-50 flex items-center gap-1"
+              class="text-sm text-stone-200 drop-shadow-sm transition-colors hover:text-white"
+              active-class="text-white"
               :to="link.path">
-              <UIcon :name="link.icon" />
               {{ t(link.labelKey) }}
             </NuxtLink>
           </li>
         </ul>
-
-        <button
-          type="button"
-          class="hidden lg:flex items-center text-white p-2 rounded-full transition hover:bg-blue-700 focus:outline-none"
-          :aria-label="
-            layoutStore.darkModeEnabled ? t('navigation.useLightTheme') : t('navigation.useDarkTheme')
-          "
-          @click="layoutStore.toggleTheme">
-          <UIcon :name="layoutStore.darkModeEnabled ? 'i-lucide-sun' : 'i-lucide-moon'" />
-        </button>
-      </div>
-    </nav>
+      </nav>
+    </div>
 
     <transition name="fade">
       <div
         v-if="layoutStore.mobileNavigationOpen"
-        class="fixed inset-0 z-40 bg-blue-800/90"
+        class="fixed inset-0 z-40 bg-stone-900/40"
         @click="layoutStore.closeMobileNavigation" />
     </transition>
     <transition name="slide">
       <nav
         v-if="layoutStore.mobileNavigationOpen"
-        class="fixed top-0 left-0 bottom-0 w-5/6 max-w-sm z-50 bg-white border-r flex flex-col py-8 overflow-y-auto"
+        class="fixed top-0 bottom-0 left-0 z-50 flex w-5/6 max-w-xs flex-col overflow-y-auto border-r border-stone-200 bg-paper py-5"
         :aria-label="t('navigation.mobileLabel')">
-        <div class="flex items-center mb-12 px-6">
+        <div class="flex items-center px-6 pb-6">
+          <span class="font-serif text-lg text-stone-900">{{ t('site.name') }}</span>
           <button
             type="button"
-            class="ml-auto p-2"
+            class="ml-auto p-1 text-stone-500 hover:text-stone-900"
             :aria-label="t('navigation.close')"
             @click="layoutStore.closeMobileNavigation">
-            <UIcon name="i-lucide-x" class="text-2xl text-blue-800" />
+            <UIcon name="i-lucide-x" class="text-xl" />
           </button>
         </div>
         <ul>
           <li v-for="link in NAVIGATION_LINKS" :key="link.path">
             <NuxtLink
-              class="block pl-8 py-4 font-semibold text-blue-800 hover:bg-blue-50 rounded flex items-center gap-2"
+              class="block px-6 py-3 text-stone-600 hover:bg-paper-dark hover:text-stone-900"
+              active-class="text-stone-900"
               :to="link.path"
               @click="layoutStore.closeMobileNavigation">
-              <UIcon :name="link.icon" />
               {{ t(link.labelKey) }}
             </NuxtLink>
           </li>

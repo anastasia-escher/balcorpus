@@ -1,16 +1,19 @@
 {
+  "site": {
+    "name": "Macedonian Corpus",
+    "tagline": "A searchable corpus of Macedonian with morphological and syntactic annotation"
+  },
   "navigation": {
     "home": "Home",
     "mainLabel": "Main navigation",
     "mobileLabel": "Mobile navigation",
     "toggle": "Toggle navigation",
-    "close": "Close navigation",
-    "useDarkTheme": "Use dark theme",
-    "useLightTheme": "Use light theme"
+    "close": "Close navigation"
   },
   "home": {
     "title": "Corpus of Macedonian Language",
-    "coverAlt": "Corpus cover image"
+    "coverAlt": "Corpus cover image",
+    "subtitle": "Search word forms, lemmas, part-of-speech tags and syntactic relations"
   },
   "api": {
     "networkStatus": "Network",
@@ -94,13 +97,15 @@
       "loading": "Searching the corpus…",
       "title": "Results ({count})",
       "empty": "No matching tokens were found.",
-      "lemma": "— lemma: {lemma}",
-      "partOfSpeech": "· PoS: {tag}",
-      "ud": "· UD: {tag}",
       "fallbackTextName": "Text {textId}",
       "location": "{textName}, sentence {sentenceId}",
       "speaker": "· {speakerName}",
-      "showingFirst": "Showing the first {count} matches."
+      "showingFirst": "Showing the first {count} matches.",
+      "labels": {
+        "lemma": "Lemma",
+        "partOfSpeech": "PoS",
+        "ud": "UD"
+      }
     }
   }
 }

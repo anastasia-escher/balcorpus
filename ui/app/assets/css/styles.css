@@ -1,15 +1,85 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
 
-html {
-  font-size: 14px;
+/*
+  The corpus is a scholarly tool, so the page is built to read like a printed
+  edition: warm paper, dark ink, and a single muted accent used sparingly.
+  Everything here is a design token; components refer to these names rather
+  than to raw colour values.
+*/
+@theme static {
+  /* The accent. Shade 500 is what Nuxt UI paints buttons with, so it is dark
+     enough to carry white text (contrast 4.9:1). */
+  --color-terracotta-50: #fdf6f3;
+  --color-terracotta-100: #f9e8e1;
+  --color-terracotta-200: #f1cfc2;
+  --color-terracotta-300: #e4ac98;
+  --color-terracotta-400: #d2836b;
+  --color-terracotta-500: #b0523a;
+  --color-terracotta-600: #97452f;
+  --color-terracotta-700: #7c3927;
+  --color-terracotta-800: #653023;
+  --color-terracotta-900: #532a20;
+  --color-terracotta-950: #2e1310;
+
+  /* The page itself: a warmer white than any of Tailwind's greys. */
+  --color-paper: #faf7f1;
+  --color-paper-dark: #f2ece2;
+
+  /* Headings and corpus material are set in a serif, the interface in a
+     sans. Both stacks are system fonts, so nothing is downloaded and the
+     Macedonian letters ѓ ќ ѕ љ њ џ are covered by the reader's own fonts. */
+  --font-serif: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia,
+    'Times New Roman', serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
 }
 
 body {
   margin: 0;
-  min-height: 100%;
-  overflow-x: hidden;
-  overflow-y: auto;
-  font-weight: normal;
-  padding: 1rem;
+  min-height: 100vh;
+  background: var(--color-paper);
+  color: var(--color-stone-800);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+  Search fields are single ruled lines rather than boxes, the way a form is
+  printed on paper. Nuxt UI renders the actual control inside the component,
+  so the rule is applied to that inner element.
+*/
+.search-control [data-slot='base'],
+.search-control[data-slot='base'] {
+  min-height: 3.25rem;
+  border: 0;
+  border-bottom: 1px solid var(--color-stone-300);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: var(--color-stone-900);
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  line-height: 1.5;
+  padding-left: 0;
+  padding-right: 0;
+  transition: border-color 0.15s ease;
+}
+
+.search-control [data-slot='base']::placeholder,
+.search-control[data-slot='base'] [data-slot='placeholder'] {
+  color: var(--color-stone-400);
+  font-style: italic;
+}
+
+.search-control [data-slot='base']:hover,
+.search-control[data-slot='base']:hover {
+  border-bottom-color: var(--color-stone-400);
+}
+
+.search-control [data-slot='base']:focus-visible,
+.search-control[data-slot='base']:focus-visible {
+  border-bottom-color: var(--color-terracotta-600);
+  box-shadow: none;
+  outline: none;
 }

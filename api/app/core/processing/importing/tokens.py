@@ -57,7 +57,7 @@ def build_token_fields(row):
     return fields
 
 
-def parse_rows(path):
+def parse_rows(path, problems):
     """Read the file into rows that the checks and the writing both understand.
 
     Returns the rows together with the column names the file actually had, so
@@ -69,7 +69,7 @@ def parse_rows(path):
     parsed = []
     column_names = []
 
-    for row_number, row in enumerate(read_rows(path), start=2):
+    for row_number, row in enumerate(read_rows(path, problems), start=2):
         if not column_names:
             column_names = list(row)
 
@@ -217,7 +217,7 @@ def import_tokens(path, allow_unknown_speakers=False):
     problems = ProblemList()
 
     logger.info(f'Reading {path}')
-    rows, column_names = parse_rows(path)
+    rows, column_names = parse_rows(path, problems)
 
     check_columns(column_names, problems)
     if problems.has_errors():
@@ -225,6 +225,11 @@ def import_tokens(path, allow_unknown_speakers=False):
 
     sentence_count = len({row['sentence_number'] for row in rows})
     logger.info(f'{len(rows)} rows read, {sentence_count} sentences')
+
+    # A file whose columns have shifted makes every later check meaningless,
+    # so it is reported on its own.
+    if problems.has_errors():
+        raise DataProblems(path, problems.errors, problems.warnings)
 
     logger.info('Checking the annotation before writing anything')
     known_speaker_slugs = set(Speaker.objects.values_list('speaker_id', flat=True))
