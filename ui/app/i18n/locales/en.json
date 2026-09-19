@@ -8,7 +8,8 @@
     "mainLabel": "Main navigation",
     "mobileLabel": "Mobile navigation",
     "toggle": "Toggle navigation",
-    "close": "Close navigation"
+    "close": "Close navigation",
+    "texts": "Texts"
   },
   "home": {
     "title": "Corpus of Macedonian Language",
@@ -109,16 +110,31 @@
       },
       "showingRange": "Showing {first}–{last} of {total} matches."
     },
-    "pagination": {
-      "label": "Result pages",
-      "previous": "Previous",
-      "next": "Next"
-    },
     "context": {
       "show": "Show context",
       "hide": "Hide context",
       "loading": "Loading the surrounding sentences…",
       "empty": "No surrounding sentences were found."
+    }
+  },
+  "pagination": {
+    "label": "Pages",
+    "previous": "Previous",
+    "next": "Next"
+  },
+  "texts": {
+    "title": "Texts of the corpus",
+    "subtitle": "Every text the corpus holds, with the metadata recorded for it.",
+    "loading": "Loading the texts…",
+    "failed": "The list of texts could not be loaded. Please try again.",
+    "empty": "The corpus holds no texts yet.",
+    "showingRange": "Showing {first}–{last} of {total} texts.",
+    "columns": {
+      "title": "Title",
+      "author": "Author",
+      "year": "Year",
+      "genre": "Genre",
+      "variety": "Variety"
     }
   }
 }

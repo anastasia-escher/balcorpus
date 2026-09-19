@@ -8,6 +8,9 @@ import SearchUdForm from '~/components/search/forms/SearchUdForm.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
+// The page opens with a cover photograph, so the bar floats over it.
+definePageMeta({navigationVariant: 'over-photo'})
+
 const searchStore = useSearchStore()
 const {t} = useI18n()
 </script>

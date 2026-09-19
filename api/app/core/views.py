@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from .models import Text, Speaker, Sentence, Token
 from .processing.sentence_context import clamp_window, sentences_around
+from .processing.text_sentences import sentences_of_text
 from .processing.token_search import build_search_queryset
 from .serializers import (
     TextSerializer,
@@ -70,6 +71,20 @@ class SpeakerViewSet(PublicCorpusViewSet):
 class SentenceViewSet(PublicCorpusViewSet):
     queryset = Sentence.objects.all().select_related('speaker', 'text').prefetch_related('tokens')
     serializer_class = SentenceSerializer
+
+    def get_queryset(self):
+        """The whole corpus, or one text of it when ?text= names one.
+
+        Reading a text is what the text page does:
+
+            /api/v1/sentences/?text=panov_pechalbari_1936
+        """
+        text_id = self.request.query_params.get('text', '').strip()
+
+        if text_id:
+            return sentences_of_text(text_id)
+
+        return super().get_queryset()
 
     @action(detail=False, methods=['get'], url_path='context')
     def context(self, request):
