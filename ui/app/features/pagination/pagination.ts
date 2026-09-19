@@ -2,12 +2,13 @@
  * Working out what a pager should show.
  *
  * The corpus answers with one page at a time, so the interface only ever
- * knows how many matches there are in total and which page it is looking at.
+ * knows how many things there are in total and which page it is looking at.
  * Everything a pager needs follows from those two numbers.
+ *
+ * Nothing here knows what is being paged. How many fit on a page is asked
+ * for every time rather than defaulted, because the search and the list of
+ * texts each decide that for themselves.
  */
-
-/** How many matches one page of results holds. */
-export const PAGE_SIZE = 25
 
 /** How many page numbers are shown on either side of the current one. */
 const NEIGHBOURS = 1
@@ -18,11 +19,11 @@ export const ELLIPSIS = 'ellipsis'
 export type PageItem = number | typeof ELLIPSIS
 
 /**
- * How many pages the matches are spread over.
+ * How many pages the results are spread over.
  *
  * Example: countPages(60, 25) -> 3
  */
-export function countPages(totalResults: number, pageSize = PAGE_SIZE): number {
+export function countPages(totalResults: number, pageSize: number): number {
   if (totalResults <= 0 || pageSize <= 0) {
     return 0
   }
@@ -31,11 +32,11 @@ export function countPages(totalResults: number, pageSize = PAGE_SIZE): number {
 }
 
 /**
- * The first and last match shown on a page, counting from one.
+ * The first and last result shown on a page, counting from one.
  *
  * Example: pageRange(3, 60, 25) -> { first: 51, last: 60 }
  */
-export function pageRange(page: number, totalResults: number, pageSize = PAGE_SIZE) {
+export function pageRange(page: number, totalResults: number, pageSize: number) {
   const first = (page - 1) * pageSize + 1
   const last = Math.min(page * pageSize, totalResults)
   return {first, last}

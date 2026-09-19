@@ -71,3 +71,46 @@ export interface TextListResponse {
   previous: string | null
   results: TextMetadata[]
 }
+
+/**
+ * One annotated word form, as the text page prints it: the word itself, and
+ * under it in grey what the annotation says about it.
+ *
+ * Example:
+ *   {
+ *     ud_id: 1, source: 'Комедијата', diplomatic: null, lemma: 'комедија',
+ *     ud_pos: 'NOUN', pos_tag: 'Ncfsny', pos_ext: 'Case=Nom|Gender=Fem',
+ *     head_ud_id: 4, ud_type: 'nsubj:pass', time: null,
+ *   }
+ */
+export interface AnnotatedToken {
+  ud_id: number
+  source: string | null
+  diplomatic: string | null
+  lemma: string | null
+  ud_pos: string | null
+  pos_tag: string | null
+  pos_ext: string | null
+  head_ud_id: number | null
+  ud_type: string | null
+  time: string | null
+}
+
+/**
+ * One sentence of a text, with its words in the order they are written.
+ * ``speaker`` is who is talking, which a play records per line.
+ */
+export interface TextSentence {
+  id: number
+  sentence_id: number
+  speaker: SpeakerDetails | null
+  tokens: AnnotatedToken[]
+}
+
+/** One page of a text's sentences, as the corpus paginates them. */
+export interface SentenceListResponse {
+  count: number
+  next: string | null
+  previous: string | null
+  results: TextSentence[]
+}

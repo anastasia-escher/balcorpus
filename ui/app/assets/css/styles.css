@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import '@nuxt/ui';
+@import './cursors.css';
 
 /*
   The corpus is a scholarly tool, so the page is built to read like a printed
@@ -21,6 +22,13 @@
   --color-terracotta-800: #653023;
   --color-terracotta-900: #532a20;
   --color-terracotta-950: #2e1310;
+
+  /* A link to somewhere else is the accent, a shade darker than a button so
+     it carries as body text on paper (6.1:1). Links wear no underline here,
+     so the colour is the whole signal: on hover it warms to the lighter 500,
+     which is a change a reader notices without the line. */
+  --color-link: #97452f;
+  --color-link-hover: #b0523a;
 
   /* The page itself: a warmer white than any of Tailwind's greys. */
   --color-paper: #faf7f1;

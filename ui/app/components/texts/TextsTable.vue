@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import SpeakerNames from '~/components/texts/SpeakerNames.vue'
+import {MISSING_VALUE, readableList} from '~/features/texts/text-metadata'
 import {useI18n} from 'vue-i18n'
 import type {TextMetadata} from '~/features/texts/texts.types'
 
@@ -12,21 +14,6 @@ defineProps<{
 
 const {t} = useI18n()
 
-/** What is printed when the metadata simply has no value for a column. */
-const MISSING_VALUE = '—'
-
-/**
- * Some columns hold several values in one cell, separated by a semicolon:
- * "drama;prose", "standard;dialectal". They read better spaced out.
- *
- * Example: readable('drama;prose') -> 'drama, prose'
- */
-const readable = (value: string | null) =>
-  value ? value.split(';').map(part => part.trim()).filter(Boolean).join(', ') : MISSING_VALUE
-
-/** The authors of a text, as one line. Every text so far has exactly one. */
-const authorNames = (text: TextMetadata) =>
-  text.authors.map(author => author.full_name).join(', ') || MISSING_VALUE
 </script>
 
 <template>
@@ -56,20 +43,24 @@ const authorNames = (text: TextMetadata) =>
 
       <tbody class="divide-y divide-stone-200">
         <tr v-for="text in texts" :key="text.text_id" class="transition-colors hover:bg-paper-dark">
-          <td class="px-3 py-4 font-serif text-base leading-snug text-stone-900">
-            {{ text.text_name }}
+          <td class="px-3 py-4 font-serif text-base leading-snug">
+            <NuxtLink
+              class="text-link transition-colors hover:text-link-hover"
+              :to="`/texts/${text.text_id}`">
+              {{ text.text_name }}
+            </NuxtLink>
           </td>
           <td class="px-3 py-4 text-sm text-stone-700">
-            {{ authorNames(text) }}
+            <SpeakerNames :speakers="text.authors" />
           </td>
           <td class="px-3 py-4 text-sm whitespace-nowrap text-stone-600">
             {{ text.text_date || MISSING_VALUE }}
           </td>
           <td class="px-3 py-4 text-sm text-stone-600">
-            {{ readable(text.text_genre) }}
+            {{ readableList(text.text_genre) }}
           </td>
           <td class="px-3 py-4 text-sm text-stone-600">
-            {{ readable(text.variety) }}
+            {{ readableList(text.variety) }}
           </td>
         </tr>
       </tbody>

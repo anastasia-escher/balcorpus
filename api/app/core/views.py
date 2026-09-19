@@ -6,6 +6,7 @@ from rest_framework.response import Response
 
 from .models import Text, Speaker, Sentence, Token
 from .processing.sentence_context import clamp_window, sentences_around
+from .processing.text_search import build_text_queryset
 from .processing.text_sentences import sentences_of_text
 from .processing.token_search import build_search_queryset
 from .serializers import (
@@ -61,6 +62,13 @@ class TextViewSet(PublicCorpusViewSet):
     # included them answered with megabytes.
     queryset = Text.objects.all().prefetch_related('authors')
     serializer_class = TextSerializer
+
+    def get_queryset(self):
+        """The catalogue, narrowed by ?q= to a title, an author or a text_id.
+
+            /api/v1/texts/?q=панов
+        """
+        return build_text_queryset(self.request.query_params.get('q', ''))
 
 
 class SpeakerViewSet(PublicCorpusViewSet):

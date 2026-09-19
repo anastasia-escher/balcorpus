@@ -12,19 +12,44 @@ will need. Remove this file when the work is done.
       `components/texts/TextsTable.vue`, `pages/texts/index.vue`.
       Wiring: `features/layout/navigation.constants.ts`, `i18n/locales/en.json`.
 
-Agreed afterwards, not part of the minimal version:
-- 3. Speaker details in a modal, opened from the author in the table.
-- 4. The text page itself: every word with its lemma and tags under it.
+- [x] **3. Speaker details in a window**, opened from the author's name.
+      New: `features/texts/speaker.ts`, `components/texts/SpeakerDetailsModal.vue`.
+      Wiring: `components/texts/TextsTable.vue`, `i18n/locales/en.json`.
+- [x] **4. The text page:** every word with its lemma and tags under it.
+      New: `features/texts/sentences.ts`, `composables/useTextDetails.ts`,
+      `composables/useTextSentences.ts`, `components/texts/AnnotatedSentence.vue`,
+      `components/texts/TextMetadataHeader.vue`, `pages/texts/[textId].vue`.
+- [x] **5. Finding a text**, by title, author or text_id, on the server.
+      New: `core/processing/text_search.py`, `core/tests/test_text_search.py`,
+      `components/texts/TextsSearchField.vue`.
+      Wiring: `core/views.py`, `pages/texts/index.vue`, `i18n/locales/en.json`.
+
+Done along the way:
+- [x] **One pager, one set of paging helpers.** `SearchPagination.vue` is
+      gone; both the search and the catalogue use
+      `components/common/CorpusPagination.vue`. The pure helpers moved out
+      of `features/search/` into `features/pagination/`, and each feature
+      now declares its own page size instead of inheriting the search's.
+- [x] **One paging composable.** `composables/usePaginatedList.ts` holds
+      the fetch-a-page dance; `useTextList` and `useTextSentences` are
+      eight-line wrappers over it.
+- [x] **Links are blue**, via a `--color-link` token, because the
+      terracotta accent marks emphasis everywhere and did not read as
+      "this takes you somewhere".
+- [x] **The pointer cursor**, in one place: `assets/css/cursors.css`.
+      Tailwind's preflight gives a button the arrow cursor and the Nuxt UI
+      controls inherit it, so tabs, selects, checkboxes, Submit/Reset, the
+      search pager and "Show context" all showed an arrow. Audited every
+      clickable element on every screen: none left without a hand.
+- [x] **The navigation bar** no longer wears its dark scrim on a page
+      without a cover photograph. A page asks for the bar it wants through
+      `definePageMeta({navigationVariant})`.
+      New: `features/layout/navigation.variants.ts`.
+      Wiring: `AppNavigation.vue`, `layouts/default.vue`, both pages.
 
 Decided: paging everywhere, no infinite scroll.
 
 Noticed while building, not touched — waiting on a decision:
-- The navigation bar carries a dark scrim meant to sit over the cover
-  photograph on the home page. On a page without a photograph it reads as
-  a grey smudge.
-- `components/search/SearchPagination.vue` and the new
-  `components/common/CorpusPagination.vue` are now the same pager twice,
-  one reading the search store and one taking props.
 - `/api/v1/sentences/` without `?text=` is paginated but unordered, which
   Django warns about. Pre-existing; `?text=` orders properly.
 

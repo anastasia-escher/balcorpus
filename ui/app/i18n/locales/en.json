@@ -135,6 +135,36 @@
       "year": "Year",
       "genre": "Genre",
       "variety": "Variety"
+    },
+    "noMatches": "No text matches that. Try a title, an author, or part of either.",
+    "search": {
+      "label": "Search the texts",
+      "placeholder": "Title or author…",
+      "submit": "Search",
+      "clear": "Clear"
     }
+  },
+  "speaker": {
+    "empty": "The corpus records nothing further about this person.",
+    "labels": {
+      "birthName": "Born as",
+      "birthyear": "Born",
+      "gender": "Gender",
+      "placeOfBirth": "Place of birth",
+      "municipality": "Municipality",
+      "dialectRegion": "Dialect region",
+      "education": "Education",
+      "religion": "Religion",
+      "languages": "Languages",
+      "notes": "Notes"
+    }
+  },
+  "text": {
+    "backToList": "← All texts",
+    "loadingMetadata": "Loading the text…",
+    "loading": "Loading the text…",
+    "failed": "The text could not be loaded. Please try again.",
+    "notAnnotated": "This text has not been annotated yet, so there is nothing to read here.",
+    "showingRange": "Showing sentences {first}–{last} of {total}."
   }
 }

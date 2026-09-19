@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import CorpusPagination from '~/components/common/CorpusPagination.vue'
+import TextsSearchField from '~/components/texts/TextsSearchField.vue'
 import TextsTable from '~/components/texts/TextsTable.vue'
-import {TEXTS_PAGE_SIZE, useTextList} from '~/composables/useTextList'
+import {TEXTS_PAGE_SIZE} from '~/features/texts/texts.constants'
 import {computed, onMounted} from 'vue'
-import {pageRange} from '~/features/search/pagination'
+import {pageRange} from '~/features/pagination/pagination'
+import {useTextList} from '~/composables/useTextList'
 import {useI18n} from 'vue-i18n'
 
 const textList = useTextList()
@@ -11,11 +13,15 @@ const {t} = useI18n()
 
 /** Which of all the texts this page is showing. */
 const shownRange = computed(() => ({
-  ...pageRange(textList.page.value, textList.textCount.value, TEXTS_PAGE_SIZE),
-  total: textList.textCount.value,
+  ...pageRange(textList.page.value, textList.itemCount.value, TEXTS_PAGE_SIZE),
+  total: textList.itemCount.value,
 }))
 
-onMounted(textList.loadFirstPage)
+// An empty query asks for the whole catalogue, so the same call serves the
+// first visit and a cleared search box.
+const search = (query: string) => textList.load(query ? {q: query} : {})
+
+onMounted(() => textList.load())
 </script>
 
 <template>
@@ -24,6 +30,10 @@ onMounted(textList.loadFirstPage)
       <h1 class="font-serif text-3xl text-stone-900">{{ t('texts.title') }}</h1>
       <p class="mt-3 max-w-2xl text-sm text-stone-600">{{ t('texts.subtitle') }}</p>
     </header>
+
+    <div class="mt-8">
+      <TextsSearchField @search="search" />
+    </div>
 
     <p v-if="textList.loading.value" class="mt-12 text-sm text-stone-500">
       {{ t('texts.loading') }}
@@ -35,12 +45,12 @@ onMounted(textList.loadFirstPage)
       {{ t('texts.failed') }}
     </p>
 
-    <p v-else-if="!textList.texts.value.length" class="mt-12 text-sm text-stone-600">
-      {{ t('texts.empty') }}
+    <p v-else-if="!textList.items.value.length" class="mt-12 text-sm text-stone-600">
+      {{ t('texts.noMatches') }}
     </p>
 
-    <section v-else class="mt-10">
-      <TextsTable :texts="textList.texts.value" />
+    <section v-else class="mt-8">
+      <TextsTable :texts="textList.items.value" />
 
       <p v-if="textList.pageCount.value > 1" class="mt-6 text-xs text-stone-500">
         {{ t('texts.showingRange', shownRange) }}

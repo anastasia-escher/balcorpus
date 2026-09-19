@@ -1,0 +1,27 @@
+/*
+  Anything a person can click shows a hand.
+
+  Tailwind's preflight paints a button with the arrow cursor, and the Nuxt UI
+  controls — tabs, selects, the close button of a window — are buttons
+  underneath, so they inherit it. The hand is put back here once, rather than
+  on every control in the project, where the next one added would be the one
+  that gets forgotten.
+
+  A control that is switched off keeps the arrow: it says "not now" instead of
+  inviting a click that does nothing.
+*/
+
+button,
+input[type='checkbox'],
+input[type='radio'],
+label:has(input[type='checkbox']),
+label:has(input[type='radio']),
+[role='option'] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled='true'],
+[data-disabled] {
+  cursor: default;
+}

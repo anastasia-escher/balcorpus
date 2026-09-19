@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed} from 'vue'
-import {ELLIPSIS, pageItems} from '~/features/search/pagination'
+import {ELLIPSIS, pageItems} from '~/features/pagination/pagination'
 import {useI18n} from 'vue-i18n'
 
 /**
@@ -28,7 +28,7 @@ const items = computed(() => pageItems(props.page, props.pageCount))
     :aria-label="t('pagination.label')">
     <button
       type="button"
-      class="cursor-pointer px-2 py-1 text-sm text-stone-500 transition-colors hover:text-stone-900 disabled:cursor-default disabled:text-stone-300"
+      class="px-2 py-1 text-sm text-stone-500 transition-colors hover:text-stone-900 disabled:text-stone-300"
       :disabled="page <= 1"
       @click="emit('select', page - 1)">
       {{ t('pagination.previous') }}
@@ -39,7 +39,7 @@ const items = computed(() => pageItems(props.page, props.pageCount))
       <button
         v-else
         type="button"
-        class="min-w-8 cursor-pointer px-2 py-1 text-sm transition-colors"
+        class="min-w-8 px-2 py-1 text-sm transition-colors"
         :class="
           item === page
             ? 'font-semibold text-terracotta-700 underline underline-offset-4'
@@ -53,7 +53,7 @@ const items = computed(() => pageItems(props.page, props.pageCount))
 
     <button
       type="button"
-      class="cursor-pointer px-2 py-1 text-sm text-stone-500 transition-colors hover:text-stone-900 disabled:cursor-default disabled:text-stone-300"
+      class="px-2 py-1 text-sm text-stone-500 transition-colors hover:text-stone-900 disabled:text-stone-300"
       :disabled="page >= pageCount"
       @click="emit('select', page + 1)">
       {{ t('pagination.next') }}

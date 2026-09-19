@@ -1,8 +1,8 @@
 import {computed, ref} from 'vue'
 import {defineStore} from 'pinia'
 import {useAPI} from '~/composables/useAPI'
-import {SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
-import {PAGE_SIZE, countPages} from '~/features/search/pagination'
+import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
+import {countPages} from '~/features/pagination/pagination'
 import type {
   SearchInputKey,
   SearchKind,
@@ -49,7 +49,7 @@ export const useSearchStore = defineStore('search', () => {
     parent,
   } satisfies Record<SearchInputKey, {value: string | null}>
 
-  const pageCount = computed(() => countPages(resultCount.value ?? 0))
+  const pageCount = computed(() => countPages(resultCount.value ?? 0, SEARCH_PAGE_SIZE))
 
   const selectSearchKind = (kind: SearchKind) => {
     activeSearchKind.value = kind
@@ -98,7 +98,7 @@ export const useSearchStore = defineStore('search', () => {
         params: {
           ...submittedParameters.value,
           page: String(wantedPage),
-          page_size: String(PAGE_SIZE),
+          page_size: String(SEARCH_PAGE_SIZE),
         },
       })
 

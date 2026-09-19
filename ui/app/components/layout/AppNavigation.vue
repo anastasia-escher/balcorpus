@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import {NAVIGATION_LINKS, type NavigationVariant} from '~/features/layout/navigation.constants'
+import {NAVIGATION_LINKS} from '~/features/layout/navigation.constants'
+import type {NavigationVariant} from '~/features/layout/navigation.variants'
 import {computed} from 'vue'
 import {useLayoutStore} from '~/stores/layout'
 import {useI18n} from 'vue-i18n'
@@ -40,7 +41,7 @@ const overPhoto = computed(() => props.variant === 'over-photo')
       <nav class="ml-auto" :aria-label="t('navigation.mainLabel')">
         <button
           type="button"
-          class="cursor-pointer p-1 sm:hidden"
+          class="p-1 sm:hidden"
           :class="overPhoto ? 'text-paper' : 'text-stone-700'"
           :aria-label="t('navigation.toggle')"
           :aria-expanded="layoutStore.mobileNavigationOpen"
@@ -83,7 +84,7 @@ const overPhoto = computed(() => props.variant === 'over-photo')
           <span class="font-serif text-lg text-stone-900">{{ t('site.name') }}</span>
           <button
             type="button"
-            class="ml-auto cursor-pointer p-1 text-stone-500 hover:text-stone-900"
+            class="ml-auto p-1 text-stone-500 hover:text-stone-900"
             :aria-label="t('navigation.close')"
             @click="layoutStore.closeMobileNavigation">
             <UIcon name="i-lucide-x" class="text-xl" />

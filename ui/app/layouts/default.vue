@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import AppFooter from '~/components/layout/AppFooter.vue'
 import AppNavigation from '~/components/layout/AppNavigation.vue'
-import {DEFAULT_NAVIGATION_VARIANT} from '~/features/layout/navigation.constants'
+import {DEFAULT_NAVIGATION_VARIANT} from '~/features/layout/navigation.variants'
 import {computed} from 'vue'
 import {useRoute} from 'vue-router'
 

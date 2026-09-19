@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import SearchPagination from '~/components/search/SearchPagination.vue'
+import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import SearchResultContext from '~/components/search/SearchResultContext.vue'
-import {pageRange} from '~/features/search/pagination'
+import {SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
+import {pageRange} from '~/features/pagination/pagination'
 import {splitSentenceAroundToken} from '~/features/search/highlight'
 import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
@@ -22,7 +23,7 @@ const sentenceParts = (result: SearchResult) =>
 
 /** Which matches of the whole result set this page is showing. */
 const shownRange = computed(() => ({
-  ...pageRange(searchStore.page, searchStore.resultCount ?? 0),
+  ...pageRange(searchStore.page, searchStore.resultCount ?? 0, SEARCH_PAGE_SIZE),
   total: searchStore.resultCount ?? 0,
 }))
 
@@ -106,6 +107,9 @@ const annotations = (result: SearchResult) =>
       {{ t('search.results.showingRange', shownRange) }}
     </p>
 
-    <SearchPagination />
+    <CorpusPagination
+      :page="searchStore.page"
+      :page-count="searchStore.pageCount"
+      @select="searchStore.goToPage" />
   </section>
 </template>
