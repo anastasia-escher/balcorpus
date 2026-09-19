@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type {TextSentence} from '~/features/texts/texts.types'
+import type {AnnotatedToken, TextSentence} from '~/features/texts/texts.types'
 
 /**
  * One sentence of a text, set the way an interlinear edition sets it: the
@@ -15,8 +15,7 @@ defineProps<{
 }>()
 
 /** The word as it is written, whichever reading the corpus recorded. */
-const wordForm = (token: {source: string | null; diplomatic: string | null}) =>
-  token.source || token.diplomatic || ''
+const wordForm = (token: AnnotatedToken) => token.source || token.diplomatic || ''
 </script>
 
 <template>
@@ -28,7 +27,9 @@ const wordForm = (token: {source: string | null; diplomatic: string | null}) =>
     </span>
 
     <div class="min-w-0 flex-1">
-      <p v-if="showSpeaker && sentence.speaker" class="mb-1 text-xs tracking-[0.08em] text-stone-500 uppercase">
+      <p
+        v-if="showSpeaker && sentence.speaker"
+        class="mb-1 text-xs tracking-[0.08em] text-stone-500 uppercase">
         {{ sentence.speaker.full_name }}
       </p>
 

@@ -7,4 +7,5 @@ export interface NavigationLink {
 export const NAVIGATION_LINKS: readonly NavigationLink[] = [
   {path: '/', labelKey: 'navigation.home', icon: 'i-lucide-house'},
   {path: '/texts', labelKey: 'navigation.texts', icon: 'i-lucide-library'},
+  {path: '/about', labelKey: 'navigation.about', icon: 'i-lucide-info'},
 ]

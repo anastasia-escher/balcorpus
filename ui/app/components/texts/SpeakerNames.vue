@@ -26,7 +26,7 @@ const selectedSpeaker = ref<SpeakerDetails | null>(null)
     <!-- A name is only worth clicking when the corpus records something about
          the person besides the name itself. -->
     <template v-for="(speaker, position) in speakers" :key="speaker.speaker_id">
-      <span v-if="position > 0">, </span>
+      <span v-if="position > 0">,</span>
       <button
         v-if="hasSpeakerDetails(speaker)"
         type="button"

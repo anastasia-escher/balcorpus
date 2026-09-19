@@ -9,12 +9,24 @@
     "mobileLabel": "Mobile navigation",
     "toggle": "Toggle navigation",
     "close": "Close navigation",
-    "texts": "Texts"
+    "texts": "Texts",
+    "about": "About"
   },
   "home": {
     "title": "Corpus of Macedonian Language",
     "coverAlt": "Corpus cover image",
     "subtitle": "Search word forms, lemmas, part-of-speech tags and syntactic relations"
+  },
+  "about": {
+    "title": "About",
+    "corpus": {
+      "heading": "About the corpus",
+      "whatItIs": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+      "annotation": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+    },
+    "contributors": {
+      "heading": "Contributors"
+    }
   },
   "api": {
     "networkStatus": "Network",
@@ -127,7 +139,6 @@
     "subtitle": "Every text the corpus holds, with the metadata recorded for it.",
     "loading": "Loading the texts…",
     "failed": "The list of texts could not be loaded. Please try again.",
-    "empty": "The corpus holds no texts yet.",
     "showingRange": "Showing {first}–{last} of {total} texts.",
     "columns": {
       "title": "Title",
@@ -161,10 +172,10 @@
   },
   "text": {
     "backToList": "← All texts",
-    "loadingMetadata": "Loading the text…",
     "loading": "Loading the text…",
     "failed": "The text could not be loaded. Please try again.",
     "notAnnotated": "This text has not been annotated yet, so there is nothing to read here.",
-    "showingRange": "Showing sentences {first}–{last} of {total}."
+    "showingRange": "Showing sentences {first}–{last} of {total}.",
+    "notFound": "No such text is in the corpus. It may have been renamed."
   }
 }

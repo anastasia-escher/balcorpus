@@ -20,7 +20,7 @@ const NAME_FIELDS = ['speaker_id', 'full_name']
  */
 export function hasSpeakerDetails(speaker: SpeakerDetails): boolean {
   return Object.entries(speaker).some(
-    ([field, value]) => !NAME_FIELDS.includes(field) && value !== null && value !== '',
+    ([field, value]) => !NAME_FIELDS.includes(field) && value !== null && value !== ''
   )
 }
 

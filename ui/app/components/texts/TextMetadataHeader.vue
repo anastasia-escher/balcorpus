@@ -18,7 +18,7 @@ const facts = computed(() =>
     {label: t('texts.columns.year'), value: props.text.text_date},
     {label: t('texts.columns.genre'), value: readableList(props.text.text_genre)},
     {label: t('texts.columns.variety'), value: readableList(props.text.variety)},
-  ].filter(fact => fact.value && fact.value !== MISSING_VALUE),
+  ].filter(fact => fact.value && fact.value !== MISSING_VALUE)
 )
 </script>
 

@@ -175,3 +175,8 @@ pythonenv
 
 AGENTS.md
 CLAUDE.md
+# Generated for the PHP server by "manage.py export_php" -- not source.
+data/php_ready/
+
+# macOS leaves these in every folder it has been looked at in.
+.DS_Store
