@@ -3,7 +3,6 @@ import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import SearchResultContext from '~/components/search/SearchResultContext.vue'
 import {SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
 import {pageRange} from '~/features/pagination/pagination'
-import {wordForm} from '~/features/corpus/word-form'
 import {splitSentenceAroundToken} from '~/features/search/highlight'
 import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
@@ -14,6 +13,13 @@ import type {SearchResult} from '~/features/search/search.types'
 const searchStore = useSearchStore()
 const {t} = useI18n()
 const context = useSentenceContext()
+
+/**
+ * The word form as it was found in the text. A hit carries two readings:
+ * ``source``, the form as it stands in the original, and ``diplomatic``, a
+ * transcription of it. Most have only the first.
+ */
+const wordForm = (result: SearchResult) => result.source || result.diplomatic || ''
 
 /** The sentence the hit came from, split so the hit can be marked. */
 const sentenceParts = (result: SearchResult) =>

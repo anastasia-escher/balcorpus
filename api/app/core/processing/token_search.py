@@ -94,6 +94,35 @@ def head_filter(parent_relation):
     return ud_relation_filter(parent_relation, prefix='sentence__tokens__')
 
 
+def criteria_filter(text='', lemma='', pos='', ud='', partial_text=False):
+    """Combine everything that can describe one token into a single filter.
+
+    Whatever is empty is simply left out, so the caller can pass on whatever
+    the request contained; with nothing at all the filter is empty, which the
+    caller can test for.  All four criteria read columns of the token itself,
+    so they can be asked in one condition.
+
+    The same description is used twice: once for the word being searched for,
+    and once for a word standing near it (see ``context_search``). Keeping it
+    in one place is what makes a tag or a lemma mean the same in both.
+
+    Example: criteria_filter(lemma='одам', pos='Vmp*') matches tokens whose
+    lemma is "одам" and whose tag starts with "Vmp".
+    """
+    conditions = Q()
+
+    if text:
+        conditions &= word_filter(text, partial_text)
+    if lemma:
+        conditions &= Q(lemma__iexact=lemma)
+    if pos:
+        conditions &= Q(pos_tag__iregex=pos_tag_regex(pos))
+    if ud:
+        conditions &= ud_relation_filter(ud)
+
+    return conditions
+
+
 def build_search_queryset(text='', lemma='', pos='', ud='', parent='', partial_text=False):
     """Return the tokens matching the given criteria, in corpus order.
 
@@ -108,14 +137,10 @@ def build_search_queryset(text='', lemma='', pos='', ud='', parent='', partial_t
         'sentence__speaker', 'sentence__text'
     ).prefetch_related('sentence__tokens')
 
-    if text:
-        queryset = queryset.filter(word_filter(text, partial_text))
-    if lemma:
-        queryset = queryset.filter(lemma__iexact=lemma)
-    if pos:
-        queryset = queryset.filter(pos_tag__iregex=pos_tag_regex(pos))
-    if ud:
-        queryset = queryset.filter(ud_relation_filter(ud))
+    queryset = queryset.filter(
+        criteria_filter(text=text, lemma=lemma, pos=pos, ud=ud, partial_text=partial_text)
+    )
+
     if parent:
         queryset = queryset.filter(
             head_filter(parent),

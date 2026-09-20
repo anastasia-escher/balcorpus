@@ -42,12 +42,8 @@ const {t} = useI18n()
 
       <tbody class="divide-y divide-stone-200">
         <tr v-for="text in texts" :key="text.text_id" class="transition-colors hover:bg-paper-dark">
-          <td class="px-3 py-4 font-serif text-base leading-snug">
-            <NuxtLink
-              class="text-link transition-colors hover:text-link-hover"
-              :to="`/texts/${text.text_id}`">
-              {{ text.text_name }}
-            </NuxtLink>
+          <td class="px-3 py-4 font-serif text-base leading-snug text-stone-900">
+            {{ text.text_name }}
           </td>
           <td class="px-3 py-4 text-sm text-stone-700">
             <SpeakerNames :speakers="text.authors" />

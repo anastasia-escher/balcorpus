@@ -323,13 +323,5 @@
       "languages": "Languages",
       "notes": "Notes"
     }
-  },
-  "text": {
-    "backToList": "← All texts",
-    "loading": "Loading the text…",
-    "failed": "The text could not be loaded. Please try again.",
-    "notAnnotated": "This text has not been annotated yet, so there is nothing to read here.",
-    "showingRange": "Showing sentences {first}–{last} of {total}.",
-    "notFound": "No such text is in the corpus. It may have been renamed."
   }
 }

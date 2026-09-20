@@ -13,15 +13,6 @@ class SpeakerSerializer(serializers.ModelSerializer):
             'notes',
         ]
 
-class TokenSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Token
-        fields = [
-            'ud_id', 'source', 'diplomatic', 'lemma', 'ud_pos', 'pos_tag',
-            'pos_ext', 'head_ud_id', 'ud_type', 'time'
-        ]
-
-
 class TokenSearchResultSerializer(serializers.ModelSerializer):
     """A token together with enough context to display a corpus match."""
 
@@ -32,6 +23,10 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
     speaker_name = serializers.CharField(source='sentence.speaker.full_name', read_only=True, allow_null=True)
     source_sentence = serializers.SerializerMethodField()
     diplomatic_sentence = serializers.SerializerMethodField()
+    # The second word of the match, when the search asked for one standing
+    # nearby. Both are None for a search that did not ask.
+    context_ud_id = serializers.SerializerMethodField()
+    context_source = serializers.SerializerMethodField()
 
     class Meta:
         model = Token
@@ -40,6 +35,7 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
             'pos_tag', 'pos_ext', 'head_ud_id', 'ud_type', 'time',
             'sentence_id', 'text_id', 'text_name', 'speaker_id', 'speaker_name',
             'source_sentence', 'diplomatic_sentence',
+            'context_ud_id', 'context_source',
         ]
 
     def get_source_sentence(self, token):
@@ -48,15 +44,32 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
     def get_diplomatic_sentence(self, token):
         return sentence_text.diplomatic_text(token.sentence)
 
-class SentenceSerializer(serializers.ModelSerializer):
-    tokens = TokenSerializer(many=True, read_only=True)
-    speaker = SpeakerSerializer(read_only=True)
+    def get_context_ud_id(self, token):
+        # Annotated by context_search, so it is simply absent from a search
+        # that asked for one word only.
+        return getattr(token, 'context_ud_id', None)
 
-    class Meta:
-        model = Sentence
-        fields = [
-            'id', 'sentence_id', 'speaker', 'tokens'
-        ]
+    def get_context_source(self, token):
+        """The written form of the nearby word, e.g. "дојдовме"."""
+        neighbour = self.find_context_token(token)
+        return neighbour.source if neighbour else None
+
+    def find_context_token(self, token):
+        """The token the search found beside this one, or None.
+
+        The sentence's tokens are already prefetched for the readable text, so
+        the neighbour is picked out of them here instead of being fetched
+        again per result.
+        """
+        context_ud_id = self.get_context_ud_id(token)
+        if context_ud_id is None:
+            return None
+
+        for candidate in token.sentence.tokens.all():
+            if candidate.ud_id == context_ud_id:
+                return candidate
+
+        return None
 
 class SentenceContextSerializer(serializers.ModelSerializer):
     """One sentence standing next to a search result, ready to read."""
