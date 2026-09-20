@@ -20,6 +20,19 @@ DEFAULT_SPEAKER_ID = 'anton_panov'
 DEFAULT_SPEAKER_NAME = 'Антон Панов'
 
 
+class Word:
+    """A stand-in for a Token, so that putting a sentence back together can be
+    tested without writing four model objects to the database.
+
+    Example: Word('молим', ud_id=2)
+    """
+
+    def __init__(self, source=None, diplomatic=None, ud_id=1):
+        self.source = source
+        self.diplomatic = diplomatic
+        self.ud_id = ud_id
+
+
 def make_text(text_id=DEFAULT_TEXT_ID, title=DEFAULT_TITLE, **fields):
     """One text of the corpus."""
     return Text.objects.create(text_id=text_id, text_name=title, **fields)

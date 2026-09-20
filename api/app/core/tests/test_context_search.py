@@ -221,11 +221,28 @@ class ContextSearchEndpointTests(TestCase):
         self.assertEqual(result['context_ud_id'], 2)
         self.assertEqual(result['context_source'], 'дојдовме')
 
+    def test_both_words_are_given_with_their_place_in_the_sentence(self):
+        result = self.search(
+            pos=f'{PRONOUN_TAG}*', near_pos='Vmp*', near_from=-2, near_to=-2
+        ).json()['results'][0]
+        sentence = result['source_sentence']
+
+        def word_at(span):
+            start, end = span
+            return sentence[start:end]
+
+        self.assertEqual(word_at(result['match_span']), 'ние')
+        self.assertEqual(word_at(result['context_span']), 'дојдовме')
+
     def test_a_search_for_one_word_alone_has_no_such_word(self):
         result = self.search(pos=f'{PRONOUN_TAG}*').json()['results'][0]
 
         self.assertIsNone(result['context_ud_id'])
         self.assertIsNone(result['context_source'])
+        self.assertIsNone(result['context_span'])
+        # The matched word is still placed, since the list marks it either way.
+        start, end = result['match_span']
+        self.assertEqual(result['source_sentence'][start:end], 'ние')
 
     def test_the_condition_narrows_the_result(self):
         response = self.search(

@@ -2,10 +2,9 @@ import {computed, ref} from 'vue'
 import {defineStore} from 'pinia'
 import {useAPI} from '~/composables/useAPI'
 import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
-import {findMsdCategory} from '~/features/search/msd.constants'
-import {buildMsdPattern} from '~/features/search/msd.pattern'
+import {createContextCriteria} from '~/features/search/context-criteria'
+import {createMorphologySelection} from '~/features/search/morphology-selection'
 import {countPages} from '~/features/pagination/pagination'
-import type {MsdSelection} from '~/features/search/msd.types'
 import type {
   SearchInputKey,
   SearchKind,
@@ -25,8 +24,10 @@ export const useSearchStore = defineStore('search', () => {
   // The morphology search: a part of speech, and the values chosen for its
   // properties. The tag pattern the corpus receives follows from these two, so
   // it is computed rather than stored next to them.
-  const morphologyCategoryCode = ref<string | null>(null)
-  const morphologySelection = ref<MsdSelection>({})
+  const morphology = createMorphologySelection()
+  // A word that has to stand near the match. It belongs to the search as a
+  // whole and not to one tab, because every tab offers it.
+  const context = createContextCriteria()
   // Whether the free-text search also matches inside longer words. Off by
   // default: someone looking for a word form wants that form.
   const partialText = ref(false)
@@ -55,45 +56,19 @@ export const useSearchStore = defineStore('search', () => {
     parent,
   } satisfies Record<SearchInputKey, {value: string | null}>
 
-  const morphologyCategory = computed(() => findMsdCategory(morphologyCategoryCode.value))
-
-  const morphologyPattern = computed(() =>
-    morphologyCategory.value
-      ? buildMsdPattern(morphologyCategory.value, morphologySelection.value)
-      : ''
-  )
-
   const pageCount = computed(() => countPages(resultCount.value ?? 0, SEARCH_PAGE_SIZE))
 
   const selectSearchKind = (kind: SearchKind) => {
     activeSearchKind.value = kind
   }
 
-  /** Choose a part of speech. Its properties start over. */
-  const selectMorphologyCategory = (code: string | null) => {
-    morphologyCategoryCode.value = code
-    // A gender chosen for a noun says nothing about a verb, and the properties
-    // are not even the same ones, so nothing is carried over.
-    morphologySelection.value = {}
-  }
-
-  /** Choose the value of one property, or let it mean "any" again with null. */
-  const setMorphologyValue = (propertyName: string, code: string | null) => {
-    const selection = {...morphologySelection.value}
-
-    if (code) {
-      selection[propertyName] = code
-    } else {
-      delete selection[propertyName]
-    }
-
-    morphologySelection.value = selection
-  }
-
+  /** Empty the form of one tab, the nearby word it asks about included. */
   const resetSearchInput = (kind: SearchKind) => {
+    context.reset()
+
     if (kind === 'tag') {
       // Dropping the part of speech drops the properties chosen under it.
-      selectMorphologyCategory(null)
+      morphology.reset()
       return
     }
 
@@ -121,8 +96,15 @@ export const useSearchStore = defineStore('search', () => {
 
     // Built from the chosen part of speech and properties rather than read
     // from a field, which is why it is not part of SEARCH_REQUEST_FIELDS.
-    if (kind === 'tag' && morphologyPattern.value) {
-      parameters.pos = morphologyPattern.value
+    if (kind === 'tag' && morphology.pattern.value) {
+      parameters.pos = morphology.pattern.value
+    }
+
+    // The nearby word, when one was described. It rides along with every tab,
+    // and on its own it is not a search: the corpus needs a word to look for
+    // before it can ask what stands next to it.
+    if (Object.keys(parameters).length) {
+      Object.assign(parameters, context.toParameters())
     }
 
     // A flag rather than a value, so it is not part of SEARCH_REQUEST_FIELDS.
@@ -192,10 +174,17 @@ export const useSearchStore = defineStore('search', () => {
     activeSearchKind,
     textQuery,
     lemma,
-    morphologyCategoryCode,
-    morphologySelection,
-    morphologyCategory,
-    morphologyPattern,
+    // The morphology chooser is spread flat, so a component reads
+    // searchStore.morphologyPattern rather than reaching through an object.
+    morphologyCategoryCode: morphology.categoryCode,
+    morphologySelection: morphology.selection,
+    morphologyCategory: morphology.category,
+    morphologyPattern: morphology.pattern,
+    selectMorphologyCategory: morphology.selectCategory,
+    setMorphologyValue: morphology.setValue,
+    // The nearby word keeps its own object: it holds a whole small form of
+    // its own, and one prefix per field would read worse than context.lemma.
+    context,
     partialText,
     udTag,
     parent,
@@ -207,8 +196,6 @@ export const useSearchStore = defineStore('search', () => {
     page,
     pageCount,
     selectSearchKind,
-    selectMorphologyCategory,
-    setMorphologyValue,
     resetSearchInput,
     submitSearch,
     goToPage,

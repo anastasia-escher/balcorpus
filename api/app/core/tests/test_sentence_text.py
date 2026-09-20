@@ -4,15 +4,7 @@ from django.test import TestCase
 
 from core.processing.sentence_text import diplomatic_text, join_tokens, source_text
 
-from .corpus_fixtures import make_sentence
-
-
-class Word:
-    """A stand-in for a Token, so the plain joining can be tested on its own."""
-
-    def __init__(self, source=None, diplomatic=None):
-        self.source = source
-        self.diplomatic = diplomatic
+from .corpus_fixtures import Word, make_sentence
 
 
 class JoinTokensTests(TestCase):

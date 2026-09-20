@@ -23,6 +23,39 @@ export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestFie
   ],
 }
 
+/**
+ * The parameter each way of describing a word is sent under when it describes
+ * the *nearby* word rather than the searched one.
+ */
+export const CONTEXT_PARAMETER_BY_KIND: Record<SearchKind, string> = {
+  text: 'near_q',
+  lemma: 'near_lemma',
+  tag: 'near_pos',
+  ud: 'near_ud',
+}
+
+/**
+ * How far from the match the nearby word may stand. The corpus looks at most
+ * three words to either side, so these are all the distances there are.
+ */
+export const CONTEXT_DISTANCES: readonly ContextDistanceOption[] = [
+  {value: 'anywhereNear', labelKey: 'search.context.distances.anywhereNear', offsetFrom: -3, offsetTo: 3},
+  {value: 'anywhereBefore', labelKey: 'search.context.distances.anywhereBefore', offsetFrom: -3, offsetTo: -1},
+  {value: 'exactly1Before', labelKey: 'search.context.distances.exactly1Before', offsetFrom: -1, offsetTo: -1},
+  {value: 'exactly2Before', labelKey: 'search.context.distances.exactly2Before', offsetFrom: -2, offsetTo: -2},
+  {value: 'exactly3Before', labelKey: 'search.context.distances.exactly3Before', offsetFrom: -3, offsetTo: -3},
+  {value: 'anywhereAfter', labelKey: 'search.context.distances.anywhereAfter', offsetFrom: 1, offsetTo: 3},
+  {value: 'exactly1After', labelKey: 'search.context.distances.exactly1After', offsetFrom: 1, offsetTo: 1},
+  {value: 'exactly2After', labelKey: 'search.context.distances.exactly2After', offsetFrom: 2, offsetTo: 2},
+  {value: 'exactly3After', labelKey: 'search.context.distances.exactly3After', offsetFrom: 3, offsetTo: 3},
+]
+
+/** The distance a context condition starts out with: anywhere close by. */
+export const DEFAULT_CONTEXT_DISTANCE = 'anywhereNear'
+
+export const findContextDistance = (value: string): ContextDistanceOption | undefined =>
+  CONTEXT_DISTANCES.find(distance => distance.value === value)
+
 export const UD_TAG_OPTIONS: readonly SearchOption[] = [
   { labelKey: 'search.udTags.root', value: 'root' },
   { labelKey: 'search.udTags.acl', value: 'acl' },

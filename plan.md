@@ -6,10 +6,11 @@ Tracking note for the work in progress; delete when the feature is done.
       `processing/context_search.py` (new), `processing/token_search.py`
       (shared criteria builder), `views.py` (wiring), `serializers.py`
       (`context_ud_id`, `context_source`), tests.
-- [ ] Step 2 — backend highlight spans: `processing/sentence_highlight.py`,
-      serializer fields, tests.
-- [ ] Step 3 — frontend data: `search.types.ts`, `search.constants.ts`,
-      `stores/search.ts`.
+- [x] Step 2 — backend highlight spans: `processing/sentence_spans.py`,
+      serializer fields (`match_span`, `context_span`), tests.
+- [x] Step 3 — frontend data: `context-criteria.ts` and
+      `morphology-selection.ts` (new), types, distance options, store wiring.
+      Only checkable once step 4 puts it on screen.
 - [ ] Step 4 — frontend UI: `SearchContextFilter.vue` (new), reusable
       morphology fields, wiring into the four forms, `en.json`.
 - [ ] Step 5 — frontend rendering: `highlight.ts`, `SearchResults.vue`.

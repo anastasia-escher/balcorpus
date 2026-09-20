@@ -19,6 +19,22 @@ export interface SearchRequestField {
   parameterName: string
 }
 
+/**
+ * One distance the nearby word may be looked for at, as the two ends of a
+ * window of tokens. A negative number counts words in front of the match.
+ *
+ * Example: { value: 'exactly2Before', labelKey: '…', offsetFrom: -2, offsetTo: -2 }
+ */
+export interface ContextDistanceOption {
+  value: string
+  labelKey: string
+  offsetFrom: number
+  offsetTo: number
+}
+
+/** Where in a sentence a word stands, as [start, end] character positions. */
+export type SentenceSpan = [number, number]
+
 export interface SearchResult {
   id: number
   source: string | null
@@ -33,6 +49,12 @@ export interface SearchResult {
   speaker_name: string | null
   source_sentence: string
   diplomatic_sentence: string
+  /** The word found standing near the match, when the search asked for one. */
+  context_ud_id: number | null
+  context_source: string | null
+  /** Where the two words stand in the sentence above, ready to be marked. */
+  match_span: SentenceSpan | null
+  context_span: SentenceSpan | null
 }
 
 export interface SearchResponse {

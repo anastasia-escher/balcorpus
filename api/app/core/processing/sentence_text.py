@@ -1,29 +1,21 @@
 """Assembling the readable text of a sentence out of its tokens."""
 
-# Punctuation is stored as a token of its own, but when the sentence is read
-# back it belongs to the word in front of it: "Да молим ." -> "Да молим."
-PUNCTUATION_GLUED_TO_PREVIOUS_WORD = {'.', ',', '!', '?', ';', ':'}
+from core.processing.sentence_spans import join_tokens_with_spans
 
 
 def join_tokens(tokens, field):
     """Join the given field of each token into one readable string.
 
     ``tokens`` is any iterable of Token objects, ``field`` the name of the
-    column to read, usually 'source' or 'diplomatic'.
+    column to read, usually 'source' or 'diplomatic'.  Where each token ended
+    up is dropped here; a caller that needs to mark a word inside the sentence
+    asks ``sentence_spans`` for it instead.
 
     Example: tokens with source "Да", "молим", "." give "Да молим."
     """
-    words = []
-    for token in tokens:
-        word = getattr(token, field, '') or ''
-        if not word:
-            continue
-        if word in PUNCTUATION_GLUED_TO_PREVIOUS_WORD and words:
-            words[-1] += word
-        else:
-            words.append(word)
+    text, _spans = join_tokens_with_spans(tokens, field)
 
-    return ' '.join(words).strip()
+    return text
 
 
 def source_text(sentence):

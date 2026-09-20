@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Text, Sentence, Token, Speaker
-from .processing import sentence_text
+from .processing import sentence_spans, sentence_text
 
 class SpeakerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -27,6 +27,10 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
     # nearby. Both are None for a search that did not ask.
     context_ud_id = serializers.SerializerMethodField()
     context_source = serializers.SerializerMethodField()
+    # Where the two words sit in the sentence above, so that the result list
+    # can mark them without searching the string for them again.
+    match_span = serializers.SerializerMethodField()
+    context_span = serializers.SerializerMethodField()
 
     class Meta:
         model = Token
@@ -35,7 +39,7 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
             'pos_tag', 'pos_ext', 'head_ud_id', 'ud_type', 'time',
             'sentence_id', 'text_id', 'text_name', 'speaker_id', 'speaker_name',
             'source_sentence', 'diplomatic_sentence',
-            'context_ud_id', 'context_source',
+            'context_ud_id', 'context_source', 'match_span', 'context_span',
         ]
 
     def get_source_sentence(self, token):
@@ -53,6 +57,34 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
         """The written form of the nearby word, e.g. "дојдовме"."""
         neighbour = self.find_context_token(token)
         return neighbour.source if neighbour else None
+
+    def get_match_span(self, token):
+        """Where the matched word stands, as [start, end], or None."""
+        return self.spans_of_displayed_sentence(token).get(token.ud_id)
+
+    def get_context_span(self, token):
+        """Where the word found beside it stands, or None."""
+        context_ud_id = self.get_context_ud_id(token)
+        if context_ud_id is None:
+            return None
+
+        return self.spans_of_displayed_sentence(token).get(context_ud_id)
+
+    def spans_of_displayed_sentence(self, token):
+        """Where each token sits in the sentence the result list displays.
+
+        The list reads the source sentence and falls back to the diplomatic
+        transcription for a text that has no source, so the positions follow
+        the same choice; otherwise they would point into a sentence nobody is
+        looking at.
+        """
+        tokens = token.sentence.tokens.all()
+        text, spans = sentence_spans.join_tokens_with_spans(tokens, 'source')
+
+        if text:
+            return spans
+
+        return sentence_spans.join_tokens_with_spans(tokens, 'diplomatic')[1]
 
     def find_context_token(self, token):
         """The token the search found beside this one, or None.
