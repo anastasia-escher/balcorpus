@@ -16,19 +16,20 @@ from .serializers import (
     TokenSearchResultSerializer,
 )
 
-# The criteria a search needs at least one of; 'parent' only narrows a result
-# down further, so on its own it would ask for the whole corpus.
-SEARCH_CRITERIA = ['q', 'lemma', 'pos', 'ud']
-
-# The same criteria, asked about a word standing near the one being searched
-# for. They are read under their own names so that a search can describe both
-# words at once: ?pos=Pp1-p*&near_pos=Vmp*&near_from=-2&near_to=-2
-CONTEXT_CRITERIA = {
-    'near_q': 'text',
-    'near_lemma': 'lemma',
-    'near_pos': 'pos',
-    'near_ud': 'ud',
+# The ways a request can describe a word, as {parameter: name in the query}.
+# A search needs at least one of them; 'parent' only narrows a result down
+# further, so on its own it would ask for the whole corpus.
+WORD_CRITERIA = {
+    'q': 'text',
+    'lemma': 'lemma',
+    'pos': 'pos',
+    'ud': 'ud',
 }
+
+# The word that has to stand near the match is described with the same
+# parameters under this prefix, so that one request can describe both words:
+# ?pos=Pp1-p*&near_pos=Vmp*&near_from=-2&near_to=-2
+NEARBY_PREFIX = 'near_'
 
 # Query parameters that are read as yes/no rather than as text.
 TRUE_VALUES = {'1', 'true', 'yes', 'on'}
@@ -51,28 +52,41 @@ def read_number(request, name):
         return None
 
 
-def read_context_criteria(request):
-    """Read the description of the word that must stand near the match.
+def read_word(request, prefix=''):
+    """Read how the request describes one word.
 
-    Example: ?near_pos=Vmp*&near_partial=true gives
+    Without a prefix that is the word being searched for; with
+    prefix=NEARBY_PREFIX it is the word that has to stand near it.
+
+    Example: ?near_pos=Vmp*&near_partial=true with prefix='near_' gives
     {'text': '', 'lemma': '', 'pos': 'Vmp*', 'ud': '', 'partial_text': True}
     """
-    criteria = {
-        name: request.query_params.get(parameter, '').strip()
-        for parameter, name in CONTEXT_CRITERIA.items()
+    word = {
+        name: request.query_params.get(prefix + parameter, '').strip()
+        for parameter, name in WORD_CRITERIA.items()
     }
-    criteria['partial_text'] = read_flag(request, 'near_partial')
+    word['partial_text'] = read_flag(request, prefix + 'partial')
 
-    return criteria
+    return word
 
 
-def describes_a_neighbour(criteria):
-    """True when the request actually said something about the nearby word.
+def describes_a_word(word):
+    """True when the request actually said which word it is looking for.
 
     ``partial_text`` is not part of the answer: on its own it only says how a
     word would be matched, not which word to look for.
     """
-    return any(criteria[name] for name in CONTEXT_CRITERIA.values())
+    return any(word[name] for name in WORD_CRITERIA.values())
+
+
+def read_offsets(request):
+    """The distances from the match the nearby word may stand at, e.g. [-2]."""
+    # A missing end counts as 0, the word itself, so a request without a
+    # distance finds nothing instead of failing.
+    return offsets_between(
+        read_number(request, NEARBY_PREFIX + 'from') or 0,
+        read_number(request, NEARBY_PREFIX + 'to') or 0,
+    )
 
 
 class CorpusPagination(PageNumberPagination):
@@ -180,49 +194,24 @@ class TokenViewSet(PublicCorpusViewSet):
             ?pos=Pp1-p*&near_pos=Vmp*&near_from=-2&near_to=-2
 
         reads as "a first person plural pronoun with a past tense verb exactly
-        two words in front of it".  Leaving the distance out means anywhere
-        within three words to either side.
+        two words in front of it".
         """
-        criteria = {
-            name: request.query_params.get(name, '').strip()
-            for name in SEARCH_CRITERIA + ['parent']
-        }
+        searched_word = read_word(request)
+        nearby_word = read_word(request, prefix=NEARBY_PREFIX)
 
-        if not any(criteria[name] for name in SEARCH_CRITERIA):
+        if not describes_a_word(searched_word):
             return Response(
                 {'detail': 'Provide text, a lemma, a PoS tag, or a UD tag.'},
                 status=400,
             )
 
-        context_criteria = read_context_criteria(request)
-        distance_given = any(
-            request.query_params.get(name, '').strip() for name in ['near_from', 'near_to']
-        )
-
-        if distance_given and not describes_a_neighbour(context_criteria):
-            return Response(
-                {'detail': 'Describe the nearby word too: near_q, near_lemma, '
-                           'near_pos or near_ud.'},
-                status=400,
-            )
-
         queryset = build_search_queryset(
-            text=criteria['q'],
-            lemma=criteria['lemma'],
-            pos=criteria['pos'],
-            ud=criteria['ud'],
-            parent=criteria['parent'],
-            partial_text=read_flag(request, 'partial'),
+            parent=request.query_params.get('parent', '').strip(),
+            **searched_word,
         )
 
-        if describes_a_neighbour(context_criteria):
-            queryset = add_context_condition(
-                queryset,
-                offsets_between(
-                    read_number(request, 'near_from'), read_number(request, 'near_to')
-                ),
-                context_criteria,
-            )
+        if describes_a_word(nearby_word):
+            queryset = add_context_condition(queryset, read_offsets(request), nearby_word)
 
         page = self.paginate_queryset(queryset)
         serializer = TokenSearchResultSerializer(page or queryset, many=True)

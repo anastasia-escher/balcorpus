@@ -45,3 +45,20 @@ def join_tokens_with_spans(tokens, field):
         spans[token.ud_id] = (start, len(text))
 
     return text, spans
+
+
+def displayed_sentence(tokens):
+    """The reading of a sentence a search result shows, and where each token sits in it.
+
+    That is the sentence as written in the source; a text that has no source
+    falls back to its diplomatic transcription.  The choice is made here, once,
+    so that the text and the positions of the marked words cannot disagree.
+
+    Example: ("Да молим.", {1: (0, 2), 2: (3, 8), 3: (8, 9)})
+    """
+    text, spans = join_tokens_with_spans(tokens, 'source')
+
+    if text:
+        return text, spans
+
+    return join_tokens_with_spans(tokens, 'diplomatic')

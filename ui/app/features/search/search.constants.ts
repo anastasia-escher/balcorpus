@@ -3,12 +3,17 @@ import type { SearchKind, SearchOption, SearchRequestField, SearchTab } from './
 /** How many matches one page of results holds. */
 export const SEARCH_PAGE_SIZE = 25
 
-export const SEARCH_TABS: readonly SearchTab[] = [
-  { kind: 'text', labelKey: 'search.tabs.text' },
+// The order the tabs are read in, and with them the one the page opens on:
+// the linguistic searches come first, the plain word search last.
+export const SEARCH_TABS = [
   { kind: 'lemma', labelKey: 'search.tabs.lemma' },
   { kind: 'tag', labelKey: 'search.tabs.tag' },
   { kind: 'ud', labelKey: 'search.tabs.ud' },
-]
+  { kind: 'text', labelKey: 'search.tabs.text' },
+] as const satisfies readonly SearchTab[]
+
+/** The tab the page opens on: whichever one is written first above. */
+export const FIRST_SEARCH_TAB: SearchKind = SEARCH_TABS[0].kind
 
 export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestField[]> = {
   text: [{ inputKey: 'textQuery', parameterName: 'q' }],
@@ -39,15 +44,15 @@ export const CONTEXT_PARAMETER_BY_KIND: Record<SearchKind, string> = {
  * three words to either side, so these are all the distances there are.
  */
 export const CONTEXT_DISTANCES: readonly ContextDistanceOption[] = [
-  {value: 'anywhereNear', labelKey: 'search.context.distances.anywhereNear', offsetFrom: -3, offsetTo: 3},
-  {value: 'anywhereBefore', labelKey: 'search.context.distances.anywhereBefore', offsetFrom: -3, offsetTo: -1},
-  {value: 'exactly1Before', labelKey: 'search.context.distances.exactly1Before', offsetFrom: -1, offsetTo: -1},
-  {value: 'exactly2Before', labelKey: 'search.context.distances.exactly2Before', offsetFrom: -2, offsetTo: -2},
-  {value: 'exactly3Before', labelKey: 'search.context.distances.exactly3Before', offsetFrom: -3, offsetTo: -3},
-  {value: 'anywhereAfter', labelKey: 'search.context.distances.anywhereAfter', offsetFrom: 1, offsetTo: 3},
-  {value: 'exactly1After', labelKey: 'search.context.distances.exactly1After', offsetFrom: 1, offsetTo: 1},
-  {value: 'exactly2After', labelKey: 'search.context.distances.exactly2After', offsetFrom: 2, offsetTo: 2},
-  {value: 'exactly3After', labelKey: 'search.context.distances.exactly3After', offsetFrom: 3, offsetTo: 3},
+  {value: 'anywhereNear', labelKey: 'search.nearbyWord.distances.anywhereNear', offsetFrom: -3, offsetTo: 3},
+  {value: 'anywhereBefore', labelKey: 'search.nearbyWord.distances.anywhereBefore', offsetFrom: -3, offsetTo: -1},
+  {value: 'exactly1Before', labelKey: 'search.nearbyWord.distances.exactly1Before', offsetFrom: -1, offsetTo: -1},
+  {value: 'exactly2Before', labelKey: 'search.nearbyWord.distances.exactly2Before', offsetFrom: -2, offsetTo: -2},
+  {value: 'exactly3Before', labelKey: 'search.nearbyWord.distances.exactly3Before', offsetFrom: -3, offsetTo: -3},
+  {value: 'anywhereAfter', labelKey: 'search.nearbyWord.distances.anywhereAfter', offsetFrom: 1, offsetTo: 3},
+  {value: 'exactly1After', labelKey: 'search.nearbyWord.distances.exactly1After', offsetFrom: 1, offsetTo: 1},
+  {value: 'exactly2After', labelKey: 'search.nearbyWord.distances.exactly2After', offsetFrom: 2, offsetTo: 2},
+  {value: 'exactly3After', labelKey: 'search.nearbyWord.distances.exactly3After', offsetFrom: 3, offsetTo: 3},
 ]
 
 /** The distance a context condition starts out with: anywhere close by. */

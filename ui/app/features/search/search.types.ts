@@ -47,8 +47,8 @@ export interface SearchResult {
   text_name: string
   speaker_id: string | null
   speaker_name: string | null
-  source_sentence: string
-  diplomatic_sentence: string
+  /** The sentence the match stands in, in the reading the list shows. */
+  sentence: string
   /** The word found standing near the match, when the search asked for one. */
   context_ud_id: number | null
   context_source: string | null

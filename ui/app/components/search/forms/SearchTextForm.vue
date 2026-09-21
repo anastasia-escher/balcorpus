@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import {useSearchStore} from '~/stores/search'
@@ -37,6 +38,8 @@ const submit = () => {
           </span>
         </span>
       </label>
+
+      <SearchContextFilter />
 
       <SearchFormActions @reset="searchStore.resetSearchInput('text')" />
     </form>

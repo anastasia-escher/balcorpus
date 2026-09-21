@@ -2,7 +2,7 @@
 
 from django.test import TestCase
 
-from core.processing.sentence_text import diplomatic_text, join_tokens, source_text
+from core.processing.sentence_text import join_tokens, source_text
 
 from .corpus_fixtures import Word, make_sentence
 
@@ -41,7 +41,3 @@ class SentenceTextTests(TestCase):
     def test_source_text_reads_the_sentence_as_it_was_written(self):
         sentence = make_sentence('Сè е во строг ред и чистота .')
         self.assertEqual(source_text(sentence), 'Сè е во строг ред и чистота.')
-
-    def test_diplomatic_text_is_empty_when_the_corpus_has_none(self):
-        sentence = make_sentence('Сè е во строг ред')
-        self.assertEqual(diplomatic_text(sentence), '')

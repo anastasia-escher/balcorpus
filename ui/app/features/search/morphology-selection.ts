@@ -19,9 +19,7 @@ export function createMorphologySelection() {
 
   const category = computed(() => findMsdCategory(categoryCode.value))
 
-  const pattern = computed(() =>
-    category.value ? buildMsdPattern(category.value, selection.value) : ''
-  )
+  const pattern = computed(() => (category.value ? buildMsdPattern(category.value, selection.value) : ''))
 
   /** Choose a part of speech. Its properties start over. */
   const selectCategory = (code: string | null) => {

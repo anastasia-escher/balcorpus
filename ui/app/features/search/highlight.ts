@@ -1,59 +1,79 @@
 /**
- * Splitting a sentence around the word form that was matched, so the result
- * list can show it the way a concordance does: the hit standing out inside
- * the sentence it came from.
+ * Cutting a sentence into the pieces the result list draws: the words that
+ * were matched, and the plain text around them.
+ *
+ * The corpus says where each matched word stands, because only it can know:
+ * it assembled the sentence out of its tokens. Looking the word up in the
+ * finished string here would be guesswork — the same form may stand in the
+ * sentence twice, and a search with a nearby word marks two places at once.
  */
 
-export interface SentenceParts {
-  before: string
-  match: string
-  after: string
-}
+import type {SentenceSpan} from './search.types'
 
-/** True for anything a language uses as a letter, Cyrillic included. */
-function isLetter(character: string | undefined): boolean {
-  return character !== undefined && /\p{L}/u.test(character)
+/** What a piece of the sentence is: one of the matches, or plain text. */
+export type SentenceMark = 'match' | 'nearby' | null
+
+export interface SentencePiece {
+  text: string
+  mark: SentenceMark
 }
 
 /**
- * Find the word form inside the sentence and split the sentence there.
+ * Split the sentence at the given places, in the order they are read.
  *
- * Only a whole word counts, so looking for "со" in "Драма со музика" matches
- * the preposition and not the "со" inside another word. When the form cannot
- * be found the whole sentence comes back as `before`, and the caller simply
- * renders it unmarked.
+ * Example: splitSentenceIntoPieces('и ние и', [2, 5], [0, 1]) ->
+ *          [{text: 'и', mark: 'nearby'}, {text: ' ', mark: null},
+ *           {text: 'ние', mark: 'match'}, {text: ' и', mark: null}]
  *
- * Example: splitSentenceAroundToken('Драма со музика', 'со')
- *          -> { before: 'Драма ', match: 'со', after: ' музика' }
+ * A span the corpus did not send, or one that does not fit the sentence, is
+ * left out, so a sentence with nothing to mark comes back as one plain piece.
  */
-export function splitSentenceAroundToken(
-  sentence: string | null | undefined,
-  token: string | null | undefined
-): SentenceParts {
-  const text = sentence ?? ''
-  if (!text || !token) {
-    return {before: text, match: '', after: ''}
-  }
+export function splitSentenceIntoPieces(
+  sentence: string,
+  matchSpan: SentenceSpan | null,
+  nearbySpan: SentenceSpan | null
+): SentencePiece[] {
+  const marked: {span: SentenceSpan; mark: SentenceMark}[] = []
 
-  let searchFrom = 0
-  while (searchFrom <= text.length) {
-    const start = text.indexOf(token, searchFrom)
-    if (start === -1) {
-      break
+  /** Keep a span, unless it is missing or does not fit this sentence. */
+  const keep = (span: SentenceSpan | null, mark: SentenceMark) => {
+    if (!span) {
+      return
     }
 
-    const end = start + token.length
-    const standsAlone = !isLetter(text[start - 1]) && !isLetter(text[end])
-    if (standsAlone) {
-      return {
-        before: text.slice(0, start),
-        match: text.slice(start, end),
-        after: text.slice(end),
-      }
+    const [start, end] = span
+    if (start >= 0 && start < end && end <= sentence.length) {
+      marked.push({span, mark})
     }
-
-    searchFrom = start + 1
   }
 
-  return {before: text, match: '', after: ''}
+  keep(matchSpan, 'match')
+  keep(nearbySpan, 'nearby')
+  marked.sort((one, other) => one.span[0] - other.span[0])
+
+  const pieces: SentencePiece[] = []
+  let readUpTo = 0
+
+  for (const {span, mark} of marked) {
+    const [start, end] = span
+
+    // Two words cannot share a place in the sentence; should the corpus ever
+    // say they do, the second one is passed over rather than drawn twice.
+    if (start < readUpTo) {
+      continue
+    }
+
+    if (start > readUpTo) {
+      pieces.push({text: sentence.slice(readUpTo, start), mark: null})
+    }
+
+    pieces.push({text: sentence.slice(start, end), mark})
+    readUpTo = end
+  }
+
+  if (readUpTo < sentence.length) {
+    pieces.push({text: sentence.slice(readUpTo), mark: null})
+  }
+
+  return pieces
 }

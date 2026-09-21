@@ -3,7 +3,7 @@ import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import SearchResultContext from '~/components/search/SearchResultContext.vue'
 import {SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
 import {pageRange} from '~/features/pagination/pagination'
-import {splitSentenceAroundToken} from '~/features/search/highlight'
+import {splitSentenceIntoPieces} from '~/features/search/highlight'
 import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
 import {useSentenceContext} from '~/composables/useSentenceContext'
@@ -14,16 +14,20 @@ const searchStore = useSearchStore()
 const {t} = useI18n()
 const context = useSentenceContext()
 
-/**
- * The word form as it was found in the text. A hit carries two readings:
- * ``source``, the form as it stands in the original, and ``diplomatic``, a
- * transcription of it. Most have only the first.
- */
-const wordForm = (result: SearchResult) => result.source || result.diplomatic || ''
+/** The sentence the hit came from, cut up so the matched words can be marked. */
+const sentencePieces = (result: SearchResult) =>
+  splitSentenceIntoPieces(result.sentence, result.match_span, result.context_span)
 
-/** The sentence the hit came from, split so the hit can be marked. */
-const sentenceParts = (result: SearchResult) =>
-  splitSentenceAroundToken(result.source_sentence || result.diplomatic_sentence, wordForm(result))
+/** How a marked piece of the sentence is painted, and what it is called. */
+const markStyles: Record<string, string> = {
+  match: 'bg-terracotta-100 font-semibold text-terracotta-900',
+  nearby: 'bg-stone-200 font-semibold text-stone-800',
+}
+
+const markTitles: Record<string, string> = {
+  match: 'search.nearbyWord.matchTitle',
+  nearby: 'search.nearbyWord.nearbyTitle',
+}
 
 /** Which matches of the whole result set this page is showing. */
 const shownRange = computed(() => ({
@@ -37,6 +41,7 @@ const annotations = (result: SearchResult) =>
     {label: t('search.results.labels.lemma'), value: result.lemma},
     {label: t('search.results.labels.partOfSpeech'), value: result.pos_tag},
     {label: t('search.results.labels.ud'), value: result.ud_type},
+    {label: t('search.results.labels.nearby'), value: result.context_source},
   ].filter(entry => Boolean(entry.value))
 </script>
 
@@ -63,12 +68,15 @@ const annotations = (result: SearchResult) =>
     <ol v-else class="mt-6 divide-y divide-stone-200 border-t border-stone-200">
       <li v-for="result in searchStore.results" :key="result.id" class="py-5">
         <p class="font-serif text-lg leading-relaxed text-stone-800">
-          {{ sentenceParts(result).before
-          }}<mark
-            v-if="sentenceParts(result).match"
-            class="bg-terracotta-100 px-0.5 font-semibold text-terracotta-900">
-            {{ sentenceParts(result).match }}</mark
-          >{{ sentenceParts(result).after }}
+          <template v-for="(piece, index) in sentencePieces(result)" :key="index"
+            ><mark
+              v-if="piece.mark"
+              class="px-0.5"
+              :class="markStyles[piece.mark]"
+              :title="t(markTitles[piece.mark])"
+              >{{ piece.text }}</mark
+            ><template v-else>{{ piece.text }}</template></template
+          >
         </p>
 
         <dl class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-xs text-stone-500">

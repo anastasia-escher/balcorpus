@@ -272,7 +272,8 @@
       "labels": {
         "lemma": "Lemma",
         "partOfSpeech": "PoS",
-        "ud": "UD"
+        "ud": "UD",
+        "nearby": "Nearby"
       },
       "showingRange": "Showing {first}–{last} of {total} matches."
     },
@@ -281,6 +282,37 @@
       "hide": "Hide context",
       "loading": "Loading the surrounding sentences…",
       "empty": "No surrounding sentences were found."
+    },
+    "nearbyWord": {
+      "add": "+ Ask for a word standing nearby",
+      "hide": "Drop the nearby word",
+      "title": "A word standing nearby",
+      "summary": "Keep only the matches that have another word close to them. The corpus looks at most three words to either side, punctuation counted as a word.",
+      "distanceLabel": "Where it stands",
+      "kindLabel": "Described by",
+      "kinds": {
+        "text": "Word form",
+        "lemma": "Lemma",
+        "tag": "Morphology",
+        "ud": "UD relation"
+      },
+      "textPlaceholder": "Enter a word…",
+      "lemmaPlaceholder": "Enter a lemma",
+      "udPlaceholder": "Select a UD tag",
+      "askingFor": "Looking for:",
+      "distances": {
+        "anywhereNear": "Anywhere within three words",
+        "anywhereBefore": "Up to three words before",
+        "exactly1Before": "Exactly one word before",
+        "exactly2Before": "Exactly two words before",
+        "exactly3Before": "Exactly three words before",
+        "anywhereAfter": "Up to three words after",
+        "exactly1After": "Exactly one word after",
+        "exactly2After": "Exactly two words after",
+        "exactly3After": "Exactly three words after"
+      },
+      "matchTitle": "The word searched for",
+      "nearbyTitle": "The word standing nearby"
     }
   },
   "pagination": {

@@ -39,12 +39,6 @@ class OffsetsTests(TestCase):
     def test_a_window_covers_everything_between_its_ends(self):
         self.assertEqual(offsets_between(-3, -1), [-3, -2, -1])
 
-    def test_the_ends_may_be_given_in_either_order(self):
-        self.assertEqual(offsets_between(-1, -3), [-3, -2, -1])
-
-    def test_an_end_that_was_not_given_reaches_as_far_as_the_search_looks(self):
-        self.assertEqual(offsets_between(), [-3, -2, -1, 1, 2, 3])
-
     def test_the_searched_word_is_not_its_own_neighbour(self):
         # 0 is the token itself, so a window across it leaves it out.
         self.assertEqual(offsets_between(-1, 1), [-1, 1])
@@ -128,16 +122,16 @@ class ContextConditionTests(TestCase):
             [],
         )
 
-    def test_without_a_description_of_the_neighbour_nothing_is_narrowed(self):
-        self.assertEqual(
-            self.pronouns_with_a_neighbour(offsets_between(-2, -2)),
-            [('ние', None), ('Ние', None)],
-        )
+    def test_without_a_description_of_the_neighbour_nothing_matches(self):
+        # A condition nobody filled in cannot be met, and quietly dropping it
+        # would answer with the pronouns of the whole corpus instead.
+        self.assertEqual(self.pronouns_with_a_neighbour(offsets_between(-2, -2)), [])
 
-    def test_an_empty_window_narrows_nothing_either(self):
+    def test_a_window_holding_no_position_matches_nothing_either(self):
+        # near_from=0&near_to=0 asks for a neighbour standing where the
+        # searched word itself stands, which nothing can do.
         self.assertEqual(
-            self.pronouns_with_a_neighbour(offsets_between(0, 0), pos='Vmp*'),
-            [('ние', None), ('Ние', None)],
+            self.pronouns_with_a_neighbour(offsets_between(0, 0), pos='Vmp*'), []
         )
 
 
@@ -173,6 +167,35 @@ class SentenceBoundaryTests(TestCase):
         )
 
         self.assertEqual(list(queryset), [])
+
+
+class ContextWithParentTests(TestCase):
+    """The one search that joins a sentence's tokens, together with the
+    condition about a nearby word. The join can repeat rows, so this is where
+    a wrong count or a doubled match would show."""
+
+    def setUp(self):
+        # "The comedy is nicely written": the subject hangs on the root, and
+        # an auxiliary stands right after it.
+        make_sentence(
+            'Комедијата е убаво напишана .',
+            pos_tags=['Ncfsny', 'Vapip3s-n', 'Rgp', 'Ap-fs-n', 'Z'],
+            heads=[4, 4, 4, 0, 4],
+            relations=['nsubj', 'aux', 'advmod', 'root', 'punct'],
+        )
+
+    def test_a_subject_of_the_root_is_found_once_with_its_neighbour(self):
+        queryset = add_context_condition(
+            build_search_queryset(ud='nsubj', parent='root'),
+            offsets_between(1, 1),
+            {'pos': 'Va*'},
+        )
+
+        self.assertEqual(
+            [(token.source, token.context_ud_id) for token in queryset],
+            [('Комедијата', 2)],
+        )
+        self.assertEqual(queryset.count(), 1)
 
 
 class NearestNeighbourTests(TestCase):
@@ -225,7 +248,7 @@ class ContextSearchEndpointTests(TestCase):
         result = self.search(
             pos=f'{PRONOUN_TAG}*', near_pos='Vmp*', near_from=-2, near_to=-2
         ).json()['results'][0]
-        sentence = result['source_sentence']
+        sentence = result['sentence']
 
         def word_at(span):
             start, end = span
@@ -242,7 +265,7 @@ class ContextSearchEndpointTests(TestCase):
         self.assertIsNone(result['context_span'])
         # The matched word is still placed, since the list marks it either way.
         start, end = result['match_span']
-        self.assertEqual(result['source_sentence'][start:end], 'ние')
+        self.assertEqual(result['sentence'][start:end], 'ние')
 
     def test_the_condition_narrows_the_result(self):
         response = self.search(
@@ -251,13 +274,9 @@ class ContextSearchEndpointTests(TestCase):
 
         self.assertEqual(response.json()['count'], 0)
 
-    def test_a_distance_without_a_word_to_look_for_is_refused(self):
-        response = self.search(pos=f'{PRONOUN_TAG}*', near_from=-2, near_to=-2)
+    def test_a_window_that_holds_no_position_finds_nothing(self):
+        response = self.search(
+            pos=f'{PRONOUN_TAG}*', near_pos='Vmp*', near_from=0, near_to=0
+        )
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn('detail', response.json())
-
-    def test_a_neighbour_without_a_distance_is_looked_for_all_around(self):
-        result = self.search(pos=f'{PRONOUN_TAG}*', near_pos='Vmp*').json()['results'][0]
-
-        self.assertEqual(result['context_ud_id'], 2)
+        self.assertEqual(response.json()['count'], 0)

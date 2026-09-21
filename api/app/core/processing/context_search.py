@@ -30,21 +30,16 @@ def clamp_offset(offset):
     return max(-MAXIMUM_DISTANCE, min(offset, MAXIMUM_DISTANCE))
 
 
-def offsets_between(offset_from=None, offset_to=None):
-    """The distances a neighbour is allowed to stand at.
+def offsets_between(offset_from, offset_to):
+    """The distances a neighbour is allowed to stand at, both ends included.
 
-    Both ends are inclusive and may be given in either order.  An end that was
-    not given means as far as the search looks, so with neither of them the
-    window is the whole three words to each side.  0 is left out: the searched
-    token is not its own neighbour.
+    0 is left out: the searched token is not its own neighbour.
 
     Example: offsets_between(-3, -1) -> [-3, -2, -1]   three words before
              offsets_between(2, 2) -> [2]              exactly two words after
-             offsets_between() -> [-3, -2, -1, 1, 2, 3]
     """
-    first = clamp_offset(-MAXIMUM_DISTANCE if offset_from is None else offset_from)
-    last = clamp_offset(MAXIMUM_DISTANCE if offset_to is None else offset_to)
-    first, last = sorted([first, last])
+    first = clamp_offset(offset_from)
+    last = clamp_offset(offset_to)
 
     return [offset for offset in range(first, last + 1) if offset != 0]
 
@@ -57,6 +52,10 @@ def position_filter(offsets):
     one plain equality, and they are joined by OR; with at most six of them
     that stays easier to read — and easier for the database — than arithmetic
     on a range.
+
+    ``offsets`` must not be empty: an empty filter would let every token of
+    the sentence through, turning "within three words" into "anywhere in the
+    sentence".  ``add_context_condition`` is what keeps that from happening.
     """
     positions = Q()
     for offset in offsets:
@@ -98,13 +97,15 @@ def add_context_condition(queryset, offsets, criteria):
     looked up again afterwards: one subquery answers both questions, so the
     result carries the word to highlight without a second query per match.
 
-    With nothing to look for — no criteria, or a window that came out empty —
-    the search is returned untouched, i.e. as a search for the main word only.
+    A condition that cannot be met — no word described, or a window that holds
+    no position at all, as ``near_from=0&near_to=0`` does — answers with
+    nothing.  Dropping it instead would hand back a search for the main word
+    alone, which looks like an answer and is not the one that was asked for.
     """
     conditions = criteria_filter(**criteria)
 
     if not offsets or not conditions:
-        return queryset
+        return queryset.none()
 
     queryset = queryset.annotate(context_ud_id=nearby_token_subquery(offsets, conditions))
 

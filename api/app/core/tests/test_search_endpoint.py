@@ -41,7 +41,7 @@ class SearchEndpointTests(TestCase):
         result = self.search(lemma='убав').json()['results'][0]
 
         self.assertEqual(result['source'], 'убаво')
-        self.assertEqual(result['source_sentence'], 'Комедијата е убаво напишана.')
+        self.assertEqual(result['sentence'], 'Комедијата е убаво напишана.')
         self.assertEqual(result['speaker_name'], 'Антон Панов')
         self.assertEqual(result['text_name'], 'Печалбари')
 

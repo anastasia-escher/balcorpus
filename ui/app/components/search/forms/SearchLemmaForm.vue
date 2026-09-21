@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import {useSearchStore} from '~/stores/search'
@@ -24,6 +25,8 @@ const submit = () => {
         class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.lemma.placeholder')" />
+      <SearchContextFilter />
+
       <SearchFormActions @reset="searchStore.resetSearchInput('lemma')" />
     </form>
   </section>

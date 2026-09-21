@@ -21,8 +21,3 @@ def join_tokens(tokens, field):
 def source_text(sentence):
     """The sentence as it is written in the source, e.g. "Да молим." """
     return join_tokens(sentence.tokens.all(), 'source')
-
-
-def diplomatic_text(sentence):
-    """The sentence in its diplomatic transcription, if the corpus has one."""
-    return join_tokens(sentence.tokens.all(), 'diplomatic')

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import {computed} from 'vue'
@@ -51,6 +52,8 @@ const submit = () => {
         :placeholder="t('search.forms.ud.parentPlaceholder')"
         class="search-control w-full"
         size="xl" />
+      <SearchContextFilter />
+
       <SearchFormActions @reset="searchStore.resetSearchInput('ud')" />
     </form>
   </section>

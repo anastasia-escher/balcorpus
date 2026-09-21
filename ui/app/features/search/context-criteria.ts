@@ -1,11 +1,11 @@
 import {computed, ref} from 'vue'
-import {
-  CONTEXT_PARAMETER_BY_KIND,
-  DEFAULT_CONTEXT_DISTANCE,
-  findContextDistance,
-} from './search.constants'
+import {CONTEXT_PARAMETER_BY_KIND, DEFAULT_CONTEXT_DISTANCE, findContextDistance} from './search.constants'
 import {createMorphologySelection} from './morphology-selection'
 import type {SearchKind} from './search.types'
+
+// The way of describing the nearby word the block starts out with. Morphology
+// is what this block is mostly used for: "a verb in the aorist".
+const DEFAULT_CONTEXT_KIND: SearchKind = 'tag'
 
 /**
  * The second half of a search: a word that has to stand near the match.
@@ -23,7 +23,7 @@ export function createContextCriteria() {
   // because all four search tabs show the same block and it should stay as
   // the user left it when they move between them.
   const isOpen = ref(false)
-  const kind = ref<SearchKind>('tag')
+  const kind = ref<SearchKind>(DEFAULT_CONTEXT_KIND)
   const textQuery = ref('')
   const lemma = ref('')
   const udTag = ref<string | null>(null)
@@ -31,7 +31,7 @@ export function createContextCriteria() {
   const distanceCode = ref(DEFAULT_CONTEXT_DISTANCE)
 
   /** What the chosen way of describing the word amounts to, e.g. 'V???a*'. */
-  const value = computed(() => {
+  const query = computed(() => {
     if (kind.value === 'text') {
       return textQuery.value.trim()
     }
@@ -45,7 +45,7 @@ export function createContextCriteria() {
   })
 
   /** True once the block says something the corpus can look for. */
-  const isFilledIn = computed(() => Boolean(value.value))
+  const isFilledIn = computed(() => Boolean(query.value))
 
   /**
    * The parameters this block adds to a search, or nothing at all when it has
@@ -61,14 +61,15 @@ export function createContextCriteria() {
     }
 
     return {
-      [CONTEXT_PARAMETER_BY_KIND[kind.value]]: value.value,
+      [CONTEXT_PARAMETER_BY_KIND[kind.value]]: query.value,
       near_from: String(distance.offsetFrom),
       near_to: String(distance.offsetTo),
     }
   }
 
-  /** Empty the block, leaving it open if it was open. */
+  /** Put the block back the way it is first seen, leaving it open if it was. */
   const reset = () => {
+    kind.value = DEFAULT_CONTEXT_KIND
     textQuery.value = ''
     lemma.value = ''
     udTag.value = null
@@ -76,9 +77,25 @@ export function createContextCriteria() {
     distanceCode.value = DEFAULT_CONTEXT_DISTANCE
   }
 
+  /**
+   * Open the block, or close it and drop what it asked for.
+   *
+   * Closing has to empty it: a folded-away block is invisible, and a search
+   * that silently kept asking about a word nobody can see would be a puzzle.
+   */
+  const toggle = () => {
+    isOpen.value = !isOpen.value
+
+    if (!isOpen.value) {
+      reset()
+    }
+  }
+
   return {
     isOpen,
+    toggle,
     kind,
+    query,
     textQuery,
     lemma,
     udTag,

@@ -2,11 +2,10 @@
 
 from django.test import TestCase
 
-from core.processing.sentence_spans import join_tokens_with_spans
+from core.processing.sentence_spans import displayed_sentence, join_tokens_with_spans
 
 from .corpus_fixtures import Word
 
-SEARCH_URL = '/api/v1/tokens/search/'
 
 
 class JoinTokensWithSpansTests(TestCase):
@@ -52,3 +51,17 @@ class JoinTokensWithSpansTests(TestCase):
 
     def test_no_tokens_give_an_empty_sentence_and_no_places(self):
         self.assertEqual(join_tokens_with_spans([], 'source'), ('', {}))
+
+
+class DisplayedSentenceTests(TestCase):
+    """Which reading of a sentence a search result shows."""
+
+    def test_the_source_is_shown_when_the_corpus_has_it(self):
+        words = [Word('Да', 'da', ud_id=1), Word('молим', 'molim', ud_id=2)]
+
+        self.assertEqual(displayed_sentence(words), ('Да молим', {1: (0, 2), 2: (3, 8)}))
+
+    def test_a_text_without_a_source_falls_back_to_its_transcription(self):
+        words = [Word(None, 'da', ud_id=1), Word(None, 'molim', ud_id=2)]
+
+        self.assertEqual(displayed_sentence(words), ('da molim', {1: (0, 2), 2: (3, 8)}))
