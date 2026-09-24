@@ -27,7 +27,7 @@ const shownRange = computed(() => ({
 }))
 
 /** An empty query asks for the whole catalogue, which is what Clear wants. */
-const narrowing = (search: string) => (search ? {q: search} : {})
+const narrowing = (search: string): Record<string, string> => (search ? {q: search} : {})
 
 /** Put into the address whatever the list is actually showing now. */
 const rememberInUrl = () => listUrl.writeToUrl({page: textList.page.value, search: currentSearch.value})

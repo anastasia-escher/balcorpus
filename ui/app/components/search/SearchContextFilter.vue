@@ -8,7 +8,7 @@
  * searches are about one word only.
  */
 import MorphologyFields from '~/components/search/MorphologyFields.vue'
-import {computed} from 'vue'
+import {computed, useId} from 'vue'
 import {CONTEXT_DISTANCES, UD_TAG_OPTIONS} from '~/features/search/search.constants'
 import {SEARCH_KINDS} from '~/features/search/search.types'
 import {useSearchStore} from '~/stores/search'
@@ -16,6 +16,11 @@ import {useI18n} from 'vue-i18n'
 
 const searchStore = useSearchStore()
 const {t} = useI18n()
+
+// A prefix of this block's own, so that every label names the field
+// under it and the names stay apart from any other form on the page.
+const fieldPrefix = useId()
+const fieldId = (name: string) => `${fieldPrefix}-${name}`
 
 // The block's own state lives in the store, because all four search tabs
 // show this same block and it must survive moving between them.
@@ -62,10 +67,13 @@ const udTagOptions = computed(() =>
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <label class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          <label
+            :for="fieldId('distance')"
+            class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
             {{ t('search.nearbyWord.distanceLabel') }}
           </label>
           <USelect
+            :id="fieldId('distance')"
             v-model="context.distanceCode"
             :items="distanceOptions"
             class="search-control w-full"
@@ -73,27 +81,44 @@ const udTagOptions = computed(() =>
         </div>
 
         <div>
-          <label class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          <label
+            :for="fieldId('kind')"
+            class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
             {{ t('search.nearbyWord.kindLabel') }}
           </label>
-          <USelect v-model="context.kind" :items="kindOptions" class="search-control w-full" size="lg" />
+          <USelect
+            :id="fieldId('kind')"
+            v-model="context.kind"
+            :items="kindOptions"
+            class="search-control w-full"
+            size="lg" />
         </div>
       </div>
 
       <!-- One field per way of describing the word; only the chosen one shows. -->
-      <UInput
-        v-if="context.kind === 'text'"
-        v-model="context.textQuery"
-        class="search-control w-full"
-        size="lg"
-        :placeholder="t('search.nearbyWord.textPlaceholder')" />
+      <div v-if="context.kind === 'text'">
+        <label :for="fieldId('text')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          {{ t('search.nearbyWord.kinds.text') }}
+        </label>
+        <UInput
+          :id="fieldId('text')"
+          v-model="context.textQuery"
+          class="search-control w-full"
+          size="lg"
+          :placeholder="t('search.nearbyWord.textPlaceholder')" />
+      </div>
 
-      <UInput
-        v-else-if="context.kind === 'lemma'"
-        v-model="context.lemma"
-        class="search-control w-full"
-        size="lg"
-        :placeholder="t('search.nearbyWord.lemmaPlaceholder')" />
+      <div v-else-if="context.kind === 'lemma'">
+        <label :for="fieldId('lemma')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          {{ t('search.nearbyWord.kinds.lemma') }}
+        </label>
+        <UInput
+          :id="fieldId('lemma')"
+          v-model="context.lemma"
+          class="search-control w-full"
+          size="lg"
+          :placeholder="t('search.nearbyWord.lemmaPlaceholder')" />
+      </div>
 
       <MorphologyFields
         v-else-if="context.kind === 'tag'"
@@ -102,13 +127,18 @@ const udTagOptions = computed(() =>
         @select-category="context.morphology.selectCategory"
         @set-value="context.morphology.setValue" />
 
-      <USelect
-        v-else-if="context.kind === 'ud'"
-        v-model="context.udTag"
-        :items="udTagOptions"
-        :placeholder="t('search.nearbyWord.udPlaceholder')"
-        class="search-control w-full"
-        size="lg" />
+      <div v-else-if="context.kind === 'ud'">
+        <label :for="fieldId('ud')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          {{ t('search.nearbyWord.kinds.ud') }}
+        </label>
+        <USelect
+          :id="fieldId('ud')"
+          v-model="context.udTag"
+          :items="udTagOptions"
+          :placeholder="t('search.nearbyWord.udPlaceholder')"
+          class="search-control w-full"
+          size="lg" />
+      </div>
 
       <p v-if="context.isFilledIn" class="text-xs text-stone-400">
         {{ t('search.nearbyWord.askingFor') }}

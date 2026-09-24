@@ -32,8 +32,8 @@ export const useSearchStore = defineStore('search', () => {
   // Whether the free-text search also matches inside longer words. Off by
   // default: someone looking for a word form wants that form.
   const partialText = ref(false)
-  const udTag = ref<string | null>(null)
-  const parent = ref<string | null>(null)
+  const udTag = ref<string | undefined>()
+  const parent = ref<string | undefined>()
   const results = ref<SearchResult[]>([])
   const resultCount = ref<number | null>(null)
   const loading = ref(false)
@@ -55,7 +55,7 @@ export const useSearchStore = defineStore('search', () => {
     lemma,
     udTag,
     parent,
-  } satisfies Record<SearchInputKey, {value: string | null}>
+  } satisfies Record<SearchInputKey, {value: string | undefined}>
 
   const pageCount = computed(() => countPages(resultCount.value ?? 0, SEARCH_PAGE_SIZE))
 
@@ -74,7 +74,8 @@ export const useSearchStore = defineStore('search', () => {
     }
 
     for (const {inputKey} of SEARCH_REQUEST_FIELDS[kind]) {
-      searchInputs[inputKey].value = inputKey === 'udTag' || inputKey === 'parent' ? null : ''
+      searchInputs[inputKey].value =
+        inputKey === 'udTag' || inputKey === 'parent' ? undefined : ''
     }
   }
 
