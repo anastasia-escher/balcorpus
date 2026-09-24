@@ -35,11 +35,18 @@ def offsets_between(offset_from, offset_to):
 
     0 is left out: the searched token is not its own neighbour.
 
+    Ends given the wrong way round describe the same window, so they are
+    swapped rather than answered with nothing.
+
     Example: offsets_between(-3, -1) -> [-3, -2, -1]   three words before
              offsets_between(2, 2) -> [2]              exactly two words after
+             offsets_between(2, -2) -> [-2, -1, 1, 2]  same as (-2, 2)
     """
     first = clamp_offset(offset_from)
     last = clamp_offset(offset_to)
+
+    if first > last:
+        first, last = last, first
 
     return [offset for offset in range(first, last + 1) if offset != 0]
 

@@ -13,7 +13,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      baseURL: process.env.NUXT_PUBLIC_API_BASE_URL || 'https://balgram.iling.spb.ru',
+      // Written into the site when it is built, not read when it runs.
+      // Empty means "the same server the site came from": on Plesk the site
+      // and /api/v1/ live on one domain. Local development sets it in .env.
+      baseURL: process.env.NUXT_PUBLIC_API_BASE_URL ?? '',
     },
   },
   app: {

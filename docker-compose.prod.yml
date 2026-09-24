@@ -26,8 +26,8 @@ services:
       - -c
       - |
         mkdir -p /app/dist
-        npm install
-        npm run build
+        yarn install --frozen-lockfile
+        yarn build
         cp -a /app/.output/public/. /app/dist/
         rm -rf /app/.output
   api:

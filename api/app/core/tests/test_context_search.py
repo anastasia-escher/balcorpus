@@ -39,6 +39,10 @@ class OffsetsTests(TestCase):
     def test_a_window_covers_everything_between_its_ends(self):
         self.assertEqual(offsets_between(-3, -1), [-3, -2, -1])
 
+    def test_a_window_given_the_wrong_way_round_is_the_same_window(self):
+        self.assertEqual(offsets_between(-1, -3), [-3, -2, -1])
+        self.assertEqual(offsets_between(2, -2), offsets_between(-2, 2))
+
     def test_the_searched_word_is_not_its_own_neighbour(self):
         # 0 is the token itself, so a window across it leaves it out.
         self.assertEqual(offsets_between(-1, 1), [-1, 1])

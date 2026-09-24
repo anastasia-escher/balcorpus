@@ -1,75 +1,36 @@
-# Nuxt Minimal Starter
+# Balcorpus website
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+The Nuxt site of the corpus. It is a static single-page app: the build is a
+folder of plain files that talk to the API under `/api/v1/`.
 
-## Setup
+Always use **yarn**, never npm or pnpm. `yarn.lock` holds the exact versions
+that were tested, and only yarn reads it; `--frozen-lockfile` stops with an
+error instead of quietly installing different versions.
 
-Make sure to install dependencies:
+## Development
 
-```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
-```
-
-## Development Server
-
-Start the development server on `http://localhost:3000`:
+Normally run through Docker from the project root (see the main README). On
+its own:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
+yarn install --frozen-lockfile
 yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
-
-Build the application for production:
+## Tests
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
+yarn vitest run
+yarn nuxi typecheck
 ```
 
-Locally preview production build:
+## Production build
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+yarn install --frozen-lockfile
+NUXT_PUBLIC_API_BASE_URL= yarn build
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+The result is in `.output/public/`. How it gets to the server is described in
+`php/ЗАГРУЗКА.md`. The empty `NUXT_PUBLIC_API_BASE_URL` makes the site ask
+the same domain it was loaded from.
