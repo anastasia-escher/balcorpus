@@ -50,7 +50,7 @@ const udTagOptions = computed(() =>
 </script>
 
 <template>
-  <div class="border-t border-stone-200 pt-5">
+  <div class="pt-5">
     <button
       type="button"
       class="text-sm text-stone-500 underline-offset-4 transition-colors hover:text-terracotta-700 hover:underline"

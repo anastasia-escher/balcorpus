@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
@@ -6,6 +7,7 @@ from rest_framework.response import Response
 
 from .models import Text, Speaker
 from .processing.context_search import add_context_condition, offsets_between
+from .processing.search_export.search_csv import MAX_ROWS as MAX_CSV_ROWS, write_search_csv
 from .processing.sentence_context import clamp_window, sentences_around
 from .processing.text_search import build_text_queryset
 from .processing.token_search import build_search_queryset
@@ -30,6 +32,8 @@ WORD_CRITERIA = {
 # parameters under this prefix, so that one request can describe both words:
 # ?pos=Pp1-p*&near_pos=Vmp*&near_from=-2&near_to=-2
 NEARBY_PREFIX = 'near_'
+
+NO_WORD_MESSAGE = 'Provide text, a lemma, a PoS tag, or a UD tag.'
 
 # Query parameters that are read as yes/no rather than as text.
 TRUE_VALUES = {'1', 'true', 'yes', 'on'}
@@ -77,6 +81,24 @@ def describes_a_word(word):
     word would be matched, not which word to look for.
     """
     return any(word[name] for name in WORD_CRITERIA.values())
+
+
+def build_search_from_request(request):
+    """The tokens a search request asks for, or None when it names no word."""
+    searched_word = read_word(request)
+    if not describes_a_word(searched_word):
+        return None
+
+    queryset = build_search_queryset(
+        parent=request.query_params.get('parent', '').strip(),
+        **searched_word,
+    )
+
+    nearby_word = read_word(request, prefix=NEARBY_PREFIX)
+    if describes_a_word(nearby_word):
+        queryset = add_context_condition(queryset, read_offsets(request), nearby_word)
+
+    return queryset
 
 
 def read_offsets(request):
@@ -196,22 +218,9 @@ class TokenViewSet(PublicCorpusViewSet):
         reads as "a first person plural pronoun with a past tense verb exactly
         two words in front of it".
         """
-        searched_word = read_word(request)
-        nearby_word = read_word(request, prefix=NEARBY_PREFIX)
-
-        if not describes_a_word(searched_word):
-            return Response(
-                {'detail': 'Provide text, a lemma, a PoS tag, or a UD tag.'},
-                status=400,
-            )
-
-        queryset = build_search_queryset(
-            parent=request.query_params.get('parent', '').strip(),
-            **searched_word,
-        )
-
-        if describes_a_word(nearby_word):
-            queryset = add_context_condition(queryset, read_offsets(request), nearby_word)
+        queryset = build_search_from_request(request)
+        if queryset is None:
+            return Response({'detail': NO_WORD_MESSAGE}, status=400)
 
         page = self.paginate_queryset(queryset)
         serializer = TokenSearchResultSerializer(page or queryset, many=True)
@@ -219,3 +228,24 @@ class TokenViewSet(PublicCorpusViewSet):
         if page is not None:
             return self.get_paginated_response(serializer.data)
         return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='search/csv')
+    def search_csv(self, request):
+        """The whole result of a search as one CSV file, not a page of it.
+
+        Takes the same parameters as ``search``.
+        """
+        queryset = build_search_from_request(request)
+        if queryset is None:
+            return Response({'detail': NO_WORD_MESSAGE}, status=400)
+
+        if queryset.count() > MAX_CSV_ROWS:
+            return Response(
+                {'detail': f'More than {MAX_CSV_ROWS} matches. Narrow the search.'},
+                status=400,
+            )
+
+        response = HttpResponse(content_type='text/csv; charset=utf-8')
+        response['Content-Disposition'] = 'attachment; filename="search_results.csv"'
+        write_search_csv(response, queryset)
+        return response

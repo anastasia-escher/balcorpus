@@ -96,6 +96,14 @@ export const useSearchStore = defineStore('search', () => {
       }
     }
 
+    // 'parent' only narrows another criterion down further: on its own it
+    // asks for every token in the corpus, which the corpus refuses. Dropping
+    // it here leaves an empty form, so the reader is told to enter something
+    // rather than shown a failed request.
+    if (parameters.parent && !parameters.ud) {
+      delete parameters.parent
+    }
+
     // Built from the chosen part of speech and properties rather than read
     // from a field, which is why it is not part of SEARCH_REQUEST_FIELDS.
     if (kind === 'tag' && morphology.pattern.value) {
