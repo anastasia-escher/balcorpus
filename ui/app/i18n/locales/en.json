@@ -59,7 +59,7 @@
       },
       "lemma": {
         "title": "Lemma",
-        "description": "Search tokens by lemma, i.e. basic or dictionary form of the word. Nouns are usually given in sg.nom (e.g. slovo 'word'), adjectives in m.sg.nom (e.g. nov 'new'), verbs in 1sg.prs (e.g. stana 'stand up').",
+        "description": "Search tokens by lemma, i.e. basic or dictionary form of the word. Nouns are usually given in sg.nom (e.g. слово 'word'), adjectives in m.sg.nom (e.g. нов 'new'), verbs in 1sg.prs (e.g. стана 'stand up').",
         "placeholder": "Enter a lemma"
       },
       "tag": {
