@@ -275,7 +275,9 @@
         "ud": "UD",
         "nearby": "Nearby"
       },
-      "showingRange": "Showing {first}–{last} of {total} matches."
+      "showingRange": "Showing {first}–{last} of {total} matches.",
+      "downloadCsv": "Download CSV",
+      "tooManyForCsv": "Too many matches to download (more than {max}). Narrow the search."
     },
     "context": {
       "show": "Show context",

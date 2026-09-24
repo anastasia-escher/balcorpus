@@ -204,6 +204,7 @@ export const useSearchStore = defineStore('search', () => {
     hasSearched,
     page,
     pageCount,
+    submittedParameters,
     selectSearchKind,
     resetSearchInput,
     submitSearch,

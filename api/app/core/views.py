@@ -223,11 +223,8 @@ class TokenViewSet(PublicCorpusViewSet):
             return Response({'detail': NO_WORD_MESSAGE}, status=400)
 
         page = self.paginate_queryset(queryset)
-        serializer = TokenSearchResultSerializer(page or queryset, many=True)
-
-        if page is not None:
-            return self.get_paginated_response(serializer.data)
-        return Response(serializer.data)
+        serializer = TokenSearchResultSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='search/csv')
     def search_csv(self, request):

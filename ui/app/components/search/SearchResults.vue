@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import SearchResultContext from '~/components/search/SearchResultContext.vue'
-import {SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
+import {SEARCH_CSV_MAX_ROWS, SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
 import {pageRange} from '~/features/pagination/pagination'
 import {splitSentenceIntoPieces} from '~/features/search/highlight'
 import {computed} from 'vue'
 import {useSearchStore} from '~/stores/search'
 import {useSentenceContext} from '~/composables/useSentenceContext'
 import {useI18n} from 'vue-i18n'
+import {useRuntimeConfig} from '#app'
 import type {SearchResult} from '~/features/search/search.types'
 
 const searchStore = useSearchStore()
 const {t} = useI18n()
 const context = useSentenceContext()
+const config = useRuntimeConfig()
+
+/** The whole result of the search on screen as a CSV file, all pages at once. */
+const csvUrl = computed(() => {
+  const query = new URLSearchParams(searchStore.submittedParameters)
+  return `${config.public.baseURL}/api/v1/tokens/search/csv/?${query}`
+})
 
 /** The sentence the hit came from, cut up so the matched words can be marked. */
 const sentencePieces = (result: SearchResult) =>
@@ -52,9 +60,23 @@ const annotations = (result: SearchResult) =>
   </p>
 
   <section v-else-if="searchStore.hasSearched" class="mt-12">
-    <h2 class="font-serif text-lg text-stone-900">
-      {{ t('search.results.title', {count: searchStore.resultCount}) }}
-    </h2>
+    <div class="flex flex-wrap items-baseline justify-between gap-x-5 gap-y-1">
+      <h2 class="font-serif text-lg text-stone-900">
+        {{ t('search.results.title', {count: searchStore.resultCount}) }}
+      </h2>
+
+      <template v-if="searchStore.results.length">
+        <p v-if="(searchStore.resultCount ?? 0) > SEARCH_CSV_MAX_ROWS" class="text-xs text-stone-500">
+          {{ t('search.results.tooManyForCsv', {max: SEARCH_CSV_MAX_ROWS}) }}
+        </p>
+        <a
+          v-else
+          :href="csvUrl"
+          class="text-sm text-stone-500 underline-offset-4 transition-colors hover:text-terracotta-700 hover:underline">
+          {{ t('search.results.downloadCsv') }}
+        </a>
+      </template>
+    </div>
 
     <p v-if="!searchStore.results.length" class="mt-4 text-sm text-stone-600">
       {{ t('search.results.empty') }}
