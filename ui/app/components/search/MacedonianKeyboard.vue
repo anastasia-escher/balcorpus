@@ -12,7 +12,12 @@ import {useI18n} from 'vue-i18n'
 
 const {t} = useI18n()
 const word = defineModel<string>({required: true})
-const props = defineProps<{input: HTMLInputElement | null | undefined}>()
+// withoutDisclaimer: for a second keyboard on the same form, where the
+// warning is already shown above the first one.
+const props = defineProps<{
+  input: HTMLInputElement | null | undefined
+  withoutDisclaimer?: boolean
+}>()
 
 // The Macedonian alphabet in its usual order, with ѐ and ѝ after е and и:
 // they are written with their own characters, so a plain е or и won't
@@ -45,10 +50,12 @@ const insertLetter = async (letter: string) => {
 
 <template>
   <div>
-    <p class="text-xs leading-relaxed text-stone-500">{{ t('search.keyboard.disclaimer') }}</p>
+    <p v-if="!withoutDisclaimer" class="mb-3 text-xs leading-relaxed text-stone-500">
+      {{ t('search.keyboard.disclaimer') }}
+    </p>
     <!-- mousedown.prevent stops a key from taking the focus, so the cursor
          stays in the search field and typing can go on after a click. -->
-    <div class="mt-3 flex flex-wrap gap-1.5">
+    <div class="flex flex-wrap gap-1.5">
       <button
         v-for="letter in LETTERS"
         :key="letter"

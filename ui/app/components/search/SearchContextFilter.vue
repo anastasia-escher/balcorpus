@@ -7,8 +7,9 @@
  * four ways the tab above it does. It starts folded away, because most
  * searches are about one word only.
  */
+import MacedonianKeyboard from '~/components/search/MacedonianKeyboard.vue'
 import MorphologyFields from '~/components/search/MorphologyFields.vue'
-import {computed, useId} from 'vue'
+import {computed, useId, useTemplateRef} from 'vue'
 import {CONTEXT_DISTANCES, UD_TAG_OPTIONS} from '~/features/search/search.constants'
 import {SEARCH_KINDS} from '~/features/search/search.types'
 import {useSearchStore} from '~/stores/search'
@@ -25,6 +26,10 @@ const fieldId = (name: string) => `${fieldPrefix}-${name}`
 // The block's own state lives in the store, because all four search tabs
 // show this same block and it must survive moving between them.
 const context = searchStore.context
+
+// The keyboards need the <input> itself to know where the cursor is.
+const textField = useTemplateRef('textField')
+const lemmaField = useTemplateRef('lemmaField')
 
 const distanceOptions = computed(() =>
   CONTEXT_DISTANCES.map(distance => ({
@@ -104,10 +109,16 @@ const udTagOptions = computed(() =>
         </label>
         <UInput
           :id="fieldId('text')"
+          ref="textField"
           v-model="context.textQuery"
           class="search-control w-full"
           size="lg"
           :placeholder="t('search.nearbyWord.textPlaceholder')" />
+        <MacedonianKeyboard
+          v-model="context.textQuery"
+          :input="textField?.inputRef"
+          without-disclaimer
+          class="mt-3" />
       </div>
 
       <div v-else-if="context.kind === 'lemma'">
@@ -118,10 +129,16 @@ const udTagOptions = computed(() =>
         </label>
         <UInput
           :id="fieldId('lemma')"
+          ref="lemmaField"
           v-model="context.lemma"
           class="search-control w-full"
           size="lg"
           :placeholder="t('search.nearbyWord.lemmaPlaceholder')" />
+        <MacedonianKeyboard
+          v-model="context.lemma"
+          :input="lemmaField?.inputRef"
+          without-disclaimer
+          class="mt-3" />
       </div>
 
       <MorphologyFields

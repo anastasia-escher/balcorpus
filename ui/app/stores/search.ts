@@ -127,6 +127,9 @@ export const useSearchStore = defineStore('search', () => {
     // and on its own it is not a search: the corpus needs a word to look for
     // before it can ask what stands next to it.
     if (Object.keys(parameters).length) {
+      // The nearby word gets the same Latin look-alike fix as the main field.
+      context.textQuery.value = fixLatinLookalikes(context.textQuery.value)
+      context.lemma.value = fixLatinLookalikes(context.lemma.value)
       Object.assign(parameters, context.toParameters())
     }
 

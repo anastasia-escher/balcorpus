@@ -15,15 +15,24 @@ const LATIN_TO_CYRILLIC: Record<string, string> = {
 const CYRILLIC_LETTER = /\p{Script=Cyrillic}/u
 
 /**
- * Swap Latin look-alikes for their Cyrillic letters, but only in a word that
- * already has Cyrillic in it. A word typed fully in Latin ("slovo") is left
- * alone: there is no telling it was meant to be Cyrillic, and swapping only
- * some of its letters would give nonsense like "ѕlоvо".
+ * Swap Latin look-alikes for their Cyrillic letters, one word at a time.
+ * Only a word that already has Cyrillic in it is changed, so the words of
+ * one field are judged apart: "тоj slovo" becomes "тој slovo".
  *
  * Example: fixLatinLookalikes('тоj') === 'тој', fixLatinLookalikes('slovo') === 'slovo'
  * and fixLatinLookalikes('сè') === 'сѐ'
  */
-export function fixLatinLookalikes(word: string): string {
+export function fixLatinLookalikes(text: string): string {
+  // \S+ is a run of anything but spaces, i.e. one word with its punctuation.
+  return text.replace(/\S+/g, fixWord)
+}
+
+/**
+ * A word typed fully in Latin ("slovo") is left alone: there is no telling it
+ * was meant to be Cyrillic, and swapping only some of its letters would give
+ * nonsense like "ѕlоvо".
+ */
+function fixWord(word: string): string {
   if (!CYRILLIC_LETTER.test(word)) {
     return word
   }

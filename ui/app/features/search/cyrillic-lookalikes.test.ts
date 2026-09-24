@@ -24,6 +24,11 @@ describe('fixLatinLookalikes', () => {
     expect(fixLatinLookalikes('slovo')).toBe('slovo')
   })
 
+  it('judges each word of the field on its own', () => {
+    expect(fixLatinLookalikes('тоj slovo')).toBe('тој slovo')
+    expect(fixLatinLookalikes('тој slovo')).toBe('тој slovo')
+  })
+
   it('leaves a correct Cyrillic word as it is', () => {
     expect(fixLatinLookalikes('тој')).toBe('тој')
   })
