@@ -310,9 +310,7 @@
         "exactly1After": "Exactly one word after",
         "exactly2After": "Exactly two words after",
         "exactly3After": "Exactly three words after"
-      },
-      "matchTitle": "The word searched for",
-      "nearbyTitle": "The word standing nearby"
+      }
     }
   },
   "pagination": {

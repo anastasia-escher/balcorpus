@@ -31,8 +31,4 @@ describe('splitSentenceIntoPieces', () => {
   it('leaves the sentence plain when there is nothing to mark', () => {
     expect(splitSentenceIntoPieces('Да молим.', null, null)).toEqual([{text: 'Да молим.', mark: null}])
   })
-
-  it('ignores a span that does not fit the sentence', () => {
-    expect(splitSentenceIntoPieces('Да', [0, 99], null)).toEqual([{text: 'Да', mark: null}])
-  })
 })

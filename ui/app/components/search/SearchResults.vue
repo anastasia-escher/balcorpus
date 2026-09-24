@@ -18,15 +18,10 @@ const context = useSentenceContext()
 const sentencePieces = (result: SearchResult) =>
   splitSentenceIntoPieces(result.sentence, result.match_span, result.context_span)
 
-/** How a marked piece of the sentence is painted, and what it is called. */
+/** How a marked piece of the sentence is painted. */
 const markStyles: Record<string, string> = {
   match: 'bg-terracotta-100 font-semibold text-terracotta-900',
   nearby: 'bg-stone-200 font-semibold text-stone-800',
-}
-
-const markTitles: Record<string, string> = {
-  match: 'search.nearbyWord.matchTitle',
-  nearby: 'search.nearbyWord.nearbyTitle',
 }
 
 /** Which matches of the whole result set this page is showing. */
@@ -73,7 +68,6 @@ const annotations = (result: SearchResult) =>
               v-if="piece.mark"
               class="px-0.5"
               :class="markStyles[piece.mark]"
-              :title="t(markTitles[piece.mark])"
               >{{ piece.text }}</mark
             ><template v-else>{{ piece.text }}</template></template
           >

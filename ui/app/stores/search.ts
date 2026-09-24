@@ -1,11 +1,7 @@
 import {computed, ref} from 'vue'
 import {defineStore} from 'pinia'
 import {useAPI} from '~/composables/useAPI'
-import {
-  FIRST_SEARCH_TAB,
-  SEARCH_PAGE_SIZE,
-  SEARCH_REQUEST_FIELDS,
-} from '~/features/search/search.constants'
+import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
 import {createContextCriteria} from '~/features/search/context-criteria'
 import {createMorphologySelection} from '~/features/search/morphology-selection'
 import {countPages} from '~/features/pagination/pagination'
@@ -22,7 +18,8 @@ const SEARCH_FAILURE_ERROR_KEY = 'search.errors.failed'
 const FIRST_PAGE = 1
 
 export const useSearchStore = defineStore('search', () => {
-  const activeSearchKind = ref<SearchKind>(FIRST_SEARCH_TAB)
+  // The page opens on the first tab.
+  const activeSearchKind = ref<SearchKind>('lemma')
   const textQuery = ref('')
   const lemma = ref('')
   // The morphology search: a part of speech, and the values chosen for its

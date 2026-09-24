@@ -3,17 +3,13 @@ import type { SearchKind, SearchOption, SearchRequestField, SearchTab } from './
 /** How many matches one page of results holds. */
 export const SEARCH_PAGE_SIZE = 25
 
-// The order the tabs are read in, and with them the one the page opens on:
-// the linguistic searches come first, the plain word search last.
-export const SEARCH_TABS = [
+// The linguistic searches come first, the plain word search last.
+export const SEARCH_TABS: readonly SearchTab[] = [
   { kind: 'lemma', labelKey: 'search.tabs.lemma' },
   { kind: 'tag', labelKey: 'search.tabs.tag' },
   { kind: 'ud', labelKey: 'search.tabs.ud' },
   { kind: 'text', labelKey: 'search.tabs.text' },
-] as const satisfies readonly SearchTab[]
-
-/** The tab the page opens on: whichever one is written first above. */
-export const FIRST_SEARCH_TAB: SearchKind = SEARCH_TABS[0].kind
+]
 
 export const SEARCH_REQUEST_FIELDS: Record<SearchKind, readonly SearchRequestField[]> = {
   text: [{ inputKey: 'textQuery', parameterName: 'q' }],

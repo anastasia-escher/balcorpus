@@ -25,8 +25,7 @@ export interface SentencePiece {
  *          [{text: 'и', mark: 'nearby'}, {text: ' ', mark: null},
  *           {text: 'ние', mark: 'match'}, {text: ' и', mark: null}]
  *
- * A span the corpus did not send, or one that does not fit the sentence, is
- * left out, so a sentence with nothing to mark comes back as one plain piece.
+ * A span that is null is simply not marked.
  */
 export function splitSentenceIntoPieces(
   sentence: string,
@@ -35,20 +34,13 @@ export function splitSentenceIntoPieces(
 ): SentencePiece[] {
   const marked: {span: SentenceSpan; mark: SentenceMark}[] = []
 
-  /** Keep a span, unless it is missing or does not fit this sentence. */
-  const keep = (span: SentenceSpan | null, mark: SentenceMark) => {
-    if (!span) {
-      return
-    }
-
-    const [start, end] = span
-    if (start >= 0 && start < end && end <= sentence.length) {
-      marked.push({span, mark})
-    }
+  if (matchSpan) {
+    marked.push({span: matchSpan, mark: 'match'})
+  }
+  if (nearbySpan) {
+    marked.push({span: nearbySpan, mark: 'nearby'})
   }
 
-  keep(matchSpan, 'match')
-  keep(nearbySpan, 'nearby')
   marked.sort((one, other) => one.span[0] - other.span[0])
 
   const pieces: SentencePiece[] = []
@@ -56,12 +48,6 @@ export function splitSentenceIntoPieces(
 
   for (const {span, mark} of marked) {
     const [start, end] = span
-
-    // Two words cannot share a place in the sentence; should the corpus ever
-    // say they do, the second one is passed over rather than drawn twice.
-    if (start < readUpTo) {
-      continue
-    }
 
     if (start > readUpTo) {
       pieces.push({text: sentence.slice(readUpTo, start), mark: null})
