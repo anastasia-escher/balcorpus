@@ -2,6 +2,7 @@
 import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
+import MacedonianKeyboard from '~/components/search/MacedonianKeyboard.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
@@ -25,6 +26,7 @@ const submit = () => {
         class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.lemma.placeholder')" />
+      <MacedonianKeyboard @insert="letter => (searchStore.lemma += letter)" />
       <SearchContextFilter />
 
       <SearchFormActions @reset="searchStore.resetSearchInput('lemma')" />

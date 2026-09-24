@@ -45,6 +45,11 @@
       "submit": "Submit",
       "reset": "Reset"
     },
+    "keyboard": {
+      "disclaimer": "The corpus is written in the Cyrillic alphabet, so make sure every letter you type is Cyrillic. For example, \"тој\" with the Cyrillic ј and \"тоj\" with a Latin j look the same, but to the computer they are two different words, and the second one will find nothing. Use the keyboard to find the right letters.",
+      "show": "Show Cyrillic keyboard",
+      "hide": "Hide Cyrillic keyboard"
+    },
     "forms": {
       "text": {
         "title": "Word or lemma",

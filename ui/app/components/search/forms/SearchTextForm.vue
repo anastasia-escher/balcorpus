@@ -2,6 +2,7 @@
 import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
+import MacedonianKeyboard from '~/components/search/MacedonianKeyboard.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
@@ -26,6 +27,7 @@ const submit = () => {
         class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.text.placeholder')" />
+      <MacedonianKeyboard @insert="letter => (searchStore.textQuery += letter)" />
       <label class="flex cursor-pointer items-start gap-2 text-sm text-stone-600">
         <input
           v-model="searchStore.partialText"
