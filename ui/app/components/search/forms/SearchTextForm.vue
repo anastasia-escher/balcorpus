@@ -5,9 +5,12 @@ import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
 import MacedonianKeyboard from '~/components/search/MacedonianKeyboard.vue'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
+import {useTemplateRef} from 'vue'
 
 const searchStore = useSearchStore()
 const {t} = useI18n()
+// The keyboard needs the <input> itself to know where the cursor is.
+const field = useTemplateRef('field')
 
 const submit = () => {
   searchStore.submitSearch('text')
@@ -23,11 +26,12 @@ const submit = () => {
 
     <form class="space-y-6" @submit.prevent="submit">
       <UInput
+        ref="field"
         v-model="searchStore.textQuery"
         class="search-control w-full"
         size="xl"
         :placeholder="t('search.forms.text.placeholder')" />
-      <MacedonianKeyboard @insert="letter => (searchStore.textQuery += letter)" />
+      <MacedonianKeyboard v-model="searchStore.textQuery" :input="field?.inputRef" />
       <label class="flex cursor-pointer items-start gap-2 text-sm text-stone-600">
         <input
           v-model="searchStore.partialText"

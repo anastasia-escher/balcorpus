@@ -14,10 +14,13 @@ const {t} = useI18n()
     <section class="mt-10 max-w-2xl">
       <h2 class="font-serif text-xl text-stone-900">{{ t('about.corpus.heading') }}</h2>
       <p class="mt-4 text-sm leading-relaxed text-stone-600">
-        {{ t('about.corpus.whatItIs') }}
+        {{ t('about.corpus.collection') }}
       </p>
       <p class="mt-3 text-sm leading-relaxed text-stone-600">
-        {{ t('about.corpus.annotation') }}
+        {{ t('about.corpus.research') }}
+      </p>
+      <p class="mt-3 text-sm leading-relaxed text-stone-600">
+        {{ t('about.corpus.future') }}
       </p>
     </section>
 

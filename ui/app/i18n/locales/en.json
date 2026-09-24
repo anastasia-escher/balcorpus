@@ -21,8 +21,9 @@
     "title": "About",
     "corpus": {
       "heading": "About the corpus",
-      "whatItIs": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      "annotation": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."
+      "collection": "This corpus is a large-scale collection of literary texts in Macedonian — over 100 books, comprising approximately 8 million tokens. In its first edition, the corpus focuses primarily on written literary language, bringing together texts from a range of authors, genres, and periods to provide a broad empirical basis for linguistic research.",
+      "research": "The corpus is designed to support research on the vocabulary, grammar, syntax, style, and variation of Macedonian in literary contexts. The texts are accompanied by relevant metadata, enabling both qualitative and quantitative analysis.",
+      "future": "The corpus is still under construction. Future editions will expand its scope beyond literary writing to include spoken and dialectal data, thereby providing a more comprehensive representation of Macedonian across different modes, varieties, and communicative contexts."
     },
     "contributors": {
       "heading": "Contributors"

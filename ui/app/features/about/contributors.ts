@@ -5,7 +5,7 @@
  * than in the locale files; only the headings around them go through i18n.
  *
  * One entry looks like:
- * { name: "Anastasia Escher", affiliation: "ETH Zurich, NEXUS Personalized Health" }
+ * { name: "Anastasia Escher", affiliation: "ETH Zurich" }
  */
 
 export interface Contributor {
@@ -14,5 +14,8 @@ export interface Contributor {
 }
 
 export const CONTRIBUTORS: readonly Contributor[] = [
-  {name: 'Anastasia Escher', affiliation: 'ETH Zurich, NEXUS Personalized Health'},
+  {name: 'Olivier Winistörfer', affiliation: 'University of Zurich, Department of Romance Studies'},
+  {name: 'Anastasia Escher', affiliation: 'ETH Zurich'},
+  {name: 'Maxim Makartsev', affiliation: 'University of Oldenburg'},
+  {name: 'Elena Garkusha', affiliation: 'Moscow State University'},
 ]
