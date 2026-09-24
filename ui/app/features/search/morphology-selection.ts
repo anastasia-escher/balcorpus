@@ -46,5 +46,5 @@ export function createMorphologySelection() {
     selectCategory(null)
   }
 
-  return {categoryCode, selection, category, pattern, selectCategory, setValue, reset}
+  return {categoryCode, selection, pattern, selectCategory, setValue, reset}
 }

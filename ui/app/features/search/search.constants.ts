@@ -1,4 +1,4 @@
-import type { SearchKind, SearchOption, SearchRequestField, SearchTab } from './search.types'
+import type { ContextDistanceOption, SearchKind, SearchOption, SearchRequestField, SearchTab } from './search.types'
 
 /** How many matches one page of results holds. */
 export const SEARCH_PAGE_SIZE = 25

@@ -41,6 +41,23 @@ class JoinTokensWithSpansTests(TestCase):
         self.assertEqual(spans[1], (0, 1))
         self.assertEqual(spans[3], (6, 7))
 
+    def test_several_punctuation_marks_all_stick(self):
+        text, _spans = self.spans_of(
+            Word('Чувај', ud_id=1), Word('боже', ud_id=2), Word(',', ud_id=3),
+            Word('брани', ud_id=4), Word('!', ud_id=5),
+        )
+
+        self.assertEqual(text, 'Чувај боже, брани!')
+
+    def test_punctuation_at_the_start_keeps_its_place(self):
+        # There is no word in front of it to stick to.
+        text, _spans = self.spans_of(Word('(', ud_id=1), Word('Спиро', ud_id=2))
+
+        self.assertEqual(text, '( Спиро')
+
+    def test_a_field_the_corpus_does_not_have_gives_an_empty_sentence(self):
+        self.assertEqual(self.spans_of(Word('Да', ud_id=1), field='diplomatic'), ('', {}))
+
     def test_a_word_the_corpus_does_not_have_gets_no_place(self):
         text, spans = self.spans_of(
             Word('Да', ud_id=1), Word(None, ud_id=2), Word('молим', ud_id=3)

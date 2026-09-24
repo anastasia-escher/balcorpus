@@ -2,39 +2,9 @@
 
 from django.test import TestCase
 
-from core.processing.sentence_text import join_tokens, source_text
+from core.processing.sentence_text import source_text
 
-from .corpus_fixtures import Word, make_sentence
-
-
-class JoinTokensTests(TestCase):
-    def test_words_are_separated_by_spaces(self):
-        words = [Word('Да'), Word('молим')]
-        self.assertEqual(join_tokens(words, 'source'), 'Да молим')
-
-    def test_punctuation_sticks_to_the_word_before_it(self):
-        words = [Word('Да'), Word('молим'), Word('.')]
-        self.assertEqual(join_tokens(words, 'source'), 'Да молим.')
-
-    def test_several_punctuation_marks_all_stick(self):
-        words = [Word('Чувај'), Word('боже'), Word(','), Word('брани'), Word('!')]
-        self.assertEqual(join_tokens(words, 'source'), 'Чувај боже, брани!')
-
-    def test_punctuation_at_the_start_keeps_its_place(self):
-        # There is no word in front of it to stick to.
-        words = [Word('('), Word('Спиро')]
-        self.assertEqual(join_tokens(words, 'source'), '( Спиро')
-
-    def test_an_empty_word_is_skipped_rather_than_doubling_a_space(self):
-        words = [Word('Да'), Word(None), Word('молим')]
-        self.assertEqual(join_tokens(words, 'source'), 'Да молим')
-
-    def test_no_tokens_give_an_empty_string(self):
-        self.assertEqual(join_tokens([], 'source'), '')
-
-    def test_a_field_the_corpus_does_not_have_gives_an_empty_string(self):
-        words = [Word(source='Да'), Word(source='молим')]
-        self.assertEqual(join_tokens(words, 'diplomatic'), '')
+from .corpus_fixtures import make_sentence
 
 
 class SentenceTextTests(TestCase):

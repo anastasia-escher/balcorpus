@@ -58,8 +58,8 @@ def read_word(request, prefix=''):
     Without a prefix that is the word being searched for; with
     prefix=NEARBY_PREFIX it is the word that has to stand near it.
 
-    Example: ?near_pos=Vmp*&near_partial=true with prefix='near_' gives
-    {'text': '', 'lemma': '', 'pos': 'Vmp*', 'ud': '', 'partial_text': True}
+    Example: ?near_pos=Vmp* with prefix='near_' gives
+    {'text': '', 'lemma': '', 'pos': 'Vmp*', 'ud': '', 'partial_text': False}
     """
     word = {
         name: request.query_params.get(prefix + parameter, '').strip()

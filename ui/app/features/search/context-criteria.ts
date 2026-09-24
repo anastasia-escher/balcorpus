@@ -26,7 +26,7 @@ export function createContextCriteria() {
   const kind = ref<SearchKind>(DEFAULT_CONTEXT_KIND)
   const textQuery = ref('')
   const lemma = ref('')
-  const udTag = ref<string | null>(null)
+  const udTag = ref<string | undefined>()
   const morphology = createMorphologySelection()
   const distanceCode = ref(DEFAULT_CONTEXT_DISTANCE)
 
@@ -72,7 +72,7 @@ export function createContextCriteria() {
     kind.value = DEFAULT_CONTEXT_KIND
     textQuery.value = ''
     lemma.value = ''
-    udTag.value = null
+    udTag.value = undefined
     morphology.reset()
     distanceCode.value = DEFAULT_CONTEXT_DISTANCE
   }

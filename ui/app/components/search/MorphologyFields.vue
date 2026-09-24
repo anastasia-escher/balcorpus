@@ -6,7 +6,7 @@
  * and one standing near it — so they know nothing about the search itself:
  * they are given what is chosen and report back what the user chose.
  */
-import {computed} from 'vue'
+import {computed, useId} from 'vue'
 import {MSD_CATEGORIES, findMsdCategory} from '~/features/search/msd.constants'
 import {useI18n} from 'vue-i18n'
 import type {MsdProperty, MsdSelection} from '~/features/search/msd.types'
@@ -26,6 +26,13 @@ const emit = defineEmits<{
 }>()
 
 const {t} = useI18n()
+
+// Each copy of these fields gets its own prefix, so that the chooser for
+// the searched word and the one for the word beside it do not both call
+// their gender dropdown the same thing.
+const fieldPrefix = useId()
+const categoryFieldId = `${fieldPrefix}-category`
+const propertyFieldId = (property: MsdProperty) => `${fieldPrefix}-${property.name}`
 
 const categoryOptions = computed(() =>
   MSD_CATEGORIES.map(category => ({
@@ -52,10 +59,13 @@ const chooseValue = (property: MsdProperty, chosen: string) => {
 <template>
   <div class="space-y-4">
     <div>
-      <label class="mb-2 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+      <label
+        :for="categoryFieldId"
+        class="mb-2 block text-xs tracking-[0.12em] text-stone-500 uppercase">
         {{ t('search.forms.tag.categoryLabel') }}
       </label>
       <USelect
+        :id="categoryFieldId"
         :model-value="categoryCode ?? undefined"
         :items="categoryOptions"
         :placeholder="t('search.forms.tag.categoryPlaceholder')"
@@ -68,10 +78,13 @@ const chooseValue = (property: MsdProperty, chosen: string) => {
          noun has no tense and a verb has no definiteness. -->
     <div v-if="properties.length" class="grid gap-4 sm:grid-cols-2">
       <div v-for="property in properties" :key="property.name">
-        <label class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <label
+          :for="propertyFieldId(property)"
+          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
           {{ t(property.labelKey) }}
         </label>
         <USelect
+          :id="propertyFieldId(property)"
           :model-value="chosenValue(property)"
           :items="valueOptions(property)"
           class="search-control w-full"

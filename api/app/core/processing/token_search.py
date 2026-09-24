@@ -11,7 +11,8 @@ from django.db.models import F, Q
 from core.models import Token
 
 # MULTEXT-East tags use '?' for "any character in this position", so a query
-# like "N?sny" should find singular animate nouns of every gender.
+# like "N?fsny" finds definite feminine singular nouns, common and proper
+# alike, because only the second position is left open.
 POS_WILDCARD = '?'
 
 # A '*' at the end of a query means "and anything, or nothing, after this".
@@ -45,7 +46,7 @@ def pos_tag_regex(pos):
     meaning: '?' stands for one character, and a closing '*' for the rest of
     the tag, however long it is. A '*' anywhere else is just a star.
 
-    Example: "N?sny" becomes "^N.sny$", and "P??f*" becomes "^P..f.*$"
+    Example: "N?fsny" becomes "^N.fsny$", and "P??f*" becomes "^P..f.*$"
     """
     has_open_tail = pos.endswith(POS_TAIL_WILDCARD)
     if has_open_tail:

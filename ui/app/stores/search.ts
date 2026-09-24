@@ -179,7 +179,6 @@ export const useSearchStore = defineStore('search', () => {
     // searchStore.morphologyPattern rather than reaching through an object.
     morphologyCategoryCode: morphology.categoryCode,
     morphologySelection: morphology.selection,
-    morphologyCategory: morphology.category,
     morphologyPattern: morphology.pattern,
     selectMorphologyCategory: morphology.selectCategory,
     setMorphologyValue: morphology.setValue,
