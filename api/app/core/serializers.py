@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from .models import Text, Sentence, Token, Speaker
-from .processing import sentence_spans, sentence_text
+from .processing import sentence_spans
 
 class SpeakerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -108,7 +108,9 @@ class SentenceContextSerializer(serializers.ModelSerializer):
         fields = ['sentence_id', 'speaker_name', 'source_sentence']
 
     def get_source_sentence(self, sentence):
-        return sentence_text.source_text(sentence)
+        # The spans are for marking a word; a sentence shown whole needs only its text.
+        text, _spans = sentence_spans.join_tokens_with_spans(sentence.tokens.all(), 'source')
+        return text
 
 
 class TextSerializer(serializers.ModelSerializer):

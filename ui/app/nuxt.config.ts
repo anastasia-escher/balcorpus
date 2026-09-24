@@ -6,7 +6,6 @@ export default defineNuxtConfig({
     static: true,
     devProxy: {
       '/api/v1': 'http://api:5000/api/v1',
-      '/swagger': 'http://api:5000/api/v1/swagger',
       '/admin': 'http://api:5000/admin',
       '/media': 'http://api:5000/media',
       '/static': 'http://api:5000/static',
@@ -42,7 +41,6 @@ export default defineNuxtConfig({
     ],
     '@nuxt/ui',
     '@nuxtjs/i18n',
-    '@nuxtjs/leaflet',
   ],
 
   i18n: {

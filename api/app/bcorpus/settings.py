@@ -40,7 +40,6 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = (environ.get("DJANGO_DEBUG", "False")) == "True"
 LOG_LEVEL = environ.get("DJANGO_LOG_LEVEL", "INFO")
-LOG_SQL = False
 
 # Application definition
 
@@ -51,19 +50,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_filters",
     "django_extensions",
     "corsheaders",
     "rest_framework",
-    "drf_auto_endpoint",
     "core",
-    "django_json_widget"
 ]
-
-if DEBUG:
-    INSTALLED_APPS += [
-        "drf_yasg",
-    ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -155,9 +146,6 @@ MEDIA_ROOT = "/vol/web/media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-DISABLE_BROWSABLE_API = False
-DISABLE_AUTH = False
-
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.SessionAuthentication",
@@ -185,18 +173,6 @@ REST_FRAMEWORK = {
 # so the limits are off there; the tests of the limits switch them on again.
 if sys.argv[1:2] == ["test"]:
     REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": None, "export": None}
-
-if DISABLE_BROWSABLE_API:
-    REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
-        "rest_framework.renderers.JSONRenderer",
-        # "rest_framework_csv.renderers.CSVRenderer",
-    ]
-
-if DISABLE_AUTH:
-    REST_FRAMEWORK["DEFAULT_AUTHENTICATION_CLASSES"] = []
-    REST_FRAMEWORK["DEFAULT_PERMISSION_CLASSES"] = []
-
-FIXTURE_DIRS = []
 
 ###
 # SECURITY
@@ -244,9 +220,3 @@ LOGGING = {
     },
     "loggers": {},
 }
-if LOG_SQL:
-    LOGGING["loggers"]["django.db.backends"] = {
-        "level": "DEBUG",
-        "handlers": ["console"],
-        "propagate": False,
-    }

@@ -4,4 +4,3 @@ flake8
 pur
 pytest-django
 pytest-cov
-drf-yasg
