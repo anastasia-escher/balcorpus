@@ -5,9 +5,9 @@ for one, far too few to need an index. A plain case-insensitive match over
 the columns a reader actually remembers is enough.
 """
 
-from django.db.models import Q
+from django.db.models import Exists, OuterRef, Q
 
-from core.models import Text
+from core.models import Sentence, Text
 
 
 def build_text_queryset(query=''):
@@ -20,9 +20,17 @@ def build_text_queryset(query=''):
     reader remembers; the text_id is matched as well because it is written in
     Latin letters, so someone typing "pechalbari" still finds "Печалбари".
 
+    Every text is told whether it has been annotated yet, because that is
+    what decides whether the search can reach it: the catalogue holds a
+    hundred texts, and the annotation is being done one at a time.
+
     Example: build_text_queryset('панов') -> the texts Антон Панов wrote
     """
-    texts = Text.objects.all().prefetch_related('authors')
+    texts = (
+        Text.objects.all()
+        .prefetch_related('authors')
+        .annotate(is_annotated=Exists(Sentence.objects.filter(text_id=OuterRef('text_id'))))
+    )
 
     query = (query or '').strip()
     if not query:

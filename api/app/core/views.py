@@ -1,13 +1,15 @@
 from django.http import HttpResponse
 from rest_framework import mixins, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 
 from .models import Text, Speaker
 from .processing.context_search import add_context_condition, offsets_between
-from .processing.search_export.search_csv import MAX_ROWS as MAX_CSV_ROWS, write_search_csv
+from .processing.search_export.search_xlsx import MAX_ROWS as MAX_EXPORT_ROWS, write_search_xlsx
 from .processing.sentence_context import clamp_window, sentences_around
 from .processing.text_search import build_text_queryset
 from .processing.token_search import build_search_queryset
@@ -17,6 +19,7 @@ from .serializers import (
     SentenceContextSerializer,
     TokenSearchResultSerializer,
 )
+from .throttling import ExportRateThrottle
 
 # The ways a request can describe a word, as {parameter: name in the query}.
 # A search needs at least one of them; 'parent' only narrows a result down
@@ -34,6 +37,12 @@ WORD_CRITERIA = {
 NEARBY_PREFIX = 'near_'
 
 NO_WORD_MESSAGE = 'Provide text, a lemma, a PoS tag, or a UD tag.'
+
+XLSX_CONTENT_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+# No search needs a longer value, and a long one only makes the pattern
+# matches in the database slower.
+MAX_PARAMETER_LENGTH = 100
 
 # Query parameters that are read as yes/no rather than as text.
 TRUE_VALUES = {'1', 'true', 'yes', 'on'}
@@ -126,7 +135,17 @@ class PublicCorpusViewSet(viewsets.GenericViewSet):
     """
 
     permission_classes = [AllowAny]
+    throttle_classes = [AnonRateThrottle]
     pagination_class = CorpusPagination
+
+    def initial(self, request, *args, **kwargs):
+        """Refuse an over-long query parameter before any action runs."""
+        # Checks permissions and the request rate first.
+        super().initial(request, *args, **kwargs)
+
+        for name, value in request.query_params.items():
+            if len(value) > MAX_PARAMETER_LENGTH:
+                raise ValidationError({name: f'Longer than {MAX_PARAMETER_LENGTH} characters.'})
 
 
 class BrowsableCorpusViewSet(
@@ -154,6 +173,24 @@ class TextViewSet(BrowsableCorpusViewSet):
             /api/v1/texts/?q=панов
         """
         return build_text_queryset(self.request.query_params.get('q', ''))
+
+    @action(detail=False, methods=['get'], url_path='coverage')
+    def coverage(self, request):
+        """How much of the catalogue the search can actually reach.
+
+        The corpus holds a hundred texts and is annotated one text at a time,
+        so a search that finds nothing may simply have looked at one text out
+        of a hundred. The search page says so, and these are the two numbers
+        it says it with:
+
+            {'annotated': 1, 'total': 104}
+        """
+        texts = build_text_queryset()
+
+        return Response({
+            'total': texts.count(),
+            'annotated': texts.filter(is_annotated=True).count(),
+        })
 
 
 class SpeakerViewSet(BrowsableCorpusViewSet):
@@ -226,9 +263,14 @@ class TokenViewSet(PublicCorpusViewSet):
         serializer = TokenSearchResultSerializer(page, many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=False, methods=['get'], url_path='search/csv')
-    def search_csv(self, request):
-        """The whole result of a search as one CSV file, not a page of it.
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='search/xlsx',
+        throttle_classes=[AnonRateThrottle, ExportRateThrottle],
+    )
+    def search_xlsx(self, request):
+        """The whole result of a search as one Excel file, not a page of it.
 
         Takes the same parameters as ``search``.
         """
@@ -236,13 +278,13 @@ class TokenViewSet(PublicCorpusViewSet):
         if queryset is None:
             return Response({'detail': NO_WORD_MESSAGE}, status=400)
 
-        if queryset.count() > MAX_CSV_ROWS:
+        if queryset.count() > MAX_EXPORT_ROWS:
             return Response(
-                {'detail': f'More than {MAX_CSV_ROWS} matches. Narrow the search.'},
+                {'detail': f'More than {MAX_EXPORT_ROWS} matches. Narrow the search.'},
                 status=400,
             )
 
-        response = HttpResponse(content_type='text/csv; charset=utf-8')
-        response['Content-Disposition'] = 'attachment; filename="search_results.csv"'
-        write_search_csv(response, queryset)
+        response = HttpResponse(content_type=XLSX_CONTENT_TYPE)
+        response['Content-Disposition'] = 'attachment; filename="search_results.xlsx"'
+        write_search_xlsx(response, queryset)
         return response

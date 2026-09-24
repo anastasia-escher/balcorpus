@@ -121,11 +121,14 @@ class TextSerializer(serializers.ModelSerializer):
     """
 
     authors = SpeakerSerializer(many=True, read_only=True)
+    # Whether the text has been annotated, and so whether the search reaches
+    # it. Counted on the queryset by build_text_queryset, not stored.
+    is_annotated = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = Text
         fields = [
             'text_id', 'text_name', 'data_genre', 'text_genre', 'variety',
             'variety_note', 'text_date', 'year_note', 'source',
-            'short_description', 'authors',
+            'short_description', 'authors', 'is_annotated',
         ]

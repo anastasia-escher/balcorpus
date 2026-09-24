@@ -34,6 +34,7 @@
     "errorSummary": "Error {statusCode}"
   },
   "search": {
+    "coverage": "The search covers {annotated} of {total} texts — the other texts are not available yet.",
     "tabs": {
       "text": "By Full Text",
       "lemma": "By Lemma",
@@ -276,8 +277,8 @@
         "nearby": "Nearby"
       },
       "showingRange": "Showing {first}–{last} of {total} matches.",
-      "downloadCsv": "Download CSV",
-      "tooManyForCsv": "Too many matches to download (more than {max}). Narrow the search."
+      "downloadExcel": "Download Excel",
+      "tooManyForExport": "Too many matches to download (more than {max}). Narrow the search."
     },
     "context": {
       "show": "Show context",
@@ -321,8 +322,9 @@
     "next": "Next"
   },
   "texts": {
+    "annotated": "annotated",
     "title": "Texts of the corpus",
-    "subtitle": "Every text the corpus holds, with the metadata recorded for it.",
+    "subtitle": "Every text the corpus holds. The annotated ones can be searched; the other texts are not available yet.",
     "loading": "Loading the texts…",
     "failed": "The list of texts could not be loaded. Please try again.",
     "showingRange": "Showing {first}–{last} of {total} texts.",

@@ -4,11 +4,11 @@ import type { ContextDistanceOption, SearchKind, SearchOption, SearchRequestFiel
 export const SEARCH_PAGE_SIZE = 25
 
 /**
- * The most matches the corpus puts into one CSV file. A copy of MAX_ROWS in
- * api/app/core/processing/search_export/search_csv.py: above it the server
+ * The most matches the corpus puts into one Excel file. A copy of MAX_ROWS in
+ * api/app/core/processing/search_export/search_xlsx.py: above it the server
  * refuses, so the page asks for a narrower search instead of offering a link.
  */
-export const SEARCH_CSV_MAX_ROWS = 10_000
+export const SEARCH_EXPORT_MAX_ROWS = 10_000
 
 // The linguistic searches come first, the plain word search last.
 export const SEARCH_TABS: readonly SearchTab[] = [

@@ -5,18 +5,19 @@ from django.test import TestCase
 from .corpus_fixtures import make_sentence, make_speaker, make_text
 
 TEXTS_URL = '/api/v1/texts/'
+COVERAGE_URL = '/api/v1/texts/coverage/'
 
 
 class TextEndpointTests(TestCase):
     def setUp(self):
         text = make_text()
-        speaker = make_speaker()
-        text.authors.add(speaker)
+        self.speaker = make_speaker()
+        text.authors.add(self.speaker)
         make_sentence(
             'Комедијата е убаво напишана .',
             lemmas=['комедија', 'сум', 'убав', 'напишан', '.'],
             text=text,
-            speaker=speaker,
+            speaker=self.speaker,
         )
 
     def test_a_text_carries_its_metadata_and_its_authors(self):
@@ -38,6 +39,35 @@ class TextEndpointTests(TestCase):
         result = self.client.get(f'{TEXTS_URL}panov_pechalbari_1936/').json()
 
         self.assertNotIn('sentences', result)
+
+    def test_a_text_says_whether_it_has_been_annotated(self):
+        # The catalogue holds far more texts than the search can reach, so a
+        # text has to say which of the two it is.
+        make_text(text_id='krle_parite_1938', title='Парите')
+
+        results = {text['text_id']: text['is_annotated']
+                   for text in self.client.get(TEXTS_URL).json()['results']}
+
+        self.assertTrue(results['panov_pechalbari_1936'])
+        self.assertFalse(results['krle_parite_1938'])
+
+    def test_the_coverage_says_how_much_of_the_catalogue_is_annotated(self):
+        make_text(text_id='krle_parite_1938', title='Парите')
+
+        answer = self.client.get(COVERAGE_URL).json()
+
+        self.assertEqual(answer, {'total': 2, 'annotated': 1})
+
+    def test_the_coverage_counts_a_text_once_however_many_sentences_it_has(self):
+        text = make_text(text_id='krle_parite_1938', title='Парите')
+        for number in (1, 2):
+            make_sentence(
+                'Парите се отепувачка', text=text, speaker=self.speaker, sentence_id=number
+            )
+
+        answer = self.client.get(COVERAGE_URL).json()
+
+        self.assertEqual(answer, {'total': 2, 'annotated': 2})
 
     def test_the_list_is_paginated(self):
         answer = self.client.get(TEXTS_URL).json()

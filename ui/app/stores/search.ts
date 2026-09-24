@@ -47,6 +47,12 @@ export const useSearchStore = defineStore('search', () => {
   // the same search, so it must not read the form again: the user may have
   // typed something new into it in the meantime.
   const submittedParameters = ref<Record<string, string>>({})
+  // Searches are counted so that only the newest one may show its answer. Two
+  // of them started shortly after one another come back in whatever order the
+  // corpus happens to answer in, and a slow first answer would otherwise
+  // overwrite the fast second one: the list would then show a search the form
+  // no longer describes.
+  let newestRequest = 0
 
   const requestAPI = useAPI()
 
@@ -129,6 +135,8 @@ export const useSearchStore = defineStore('search', () => {
 
   /** Ask the corpus for one page of the search that is already on screen. */
   const fetchPage = async (wantedPage: number) => {
+    const thisRequest = (newestRequest += 1)
+
     loading.value = true
     searchErrorKey.value = null
 
@@ -141,6 +149,12 @@ export const useSearchStore = defineStore('search', () => {
         },
       })
 
+      // Another search was started while this one was on its way, so this
+      // answer is no longer the one on screen and is dropped.
+      if (thisRequest !== newestRequest) {
+        return
+      }
+
       if (error.value || !data.value) {
         clearSearchResults()
         searchErrorKey.value = SEARCH_FAILURE_ERROR_KEY
@@ -152,7 +166,9 @@ export const useSearchStore = defineStore('search', () => {
       page.value = wantedPage
       hasSearched.value = true
     } finally {
-      loading.value = false
+      if (thisRequest === newestRequest) {
+        loading.value = false
+      }
     }
   }
 

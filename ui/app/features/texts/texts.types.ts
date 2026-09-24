@@ -48,6 +48,7 @@ export interface SpeakerDetails {
  *     data_genre: 'literature', text_genre: 'prose', variety: 'standard',
  *     variety_note: null, text_date: '1961', year_note: null, source: null,
  *     short_description: null, authors: [ …one SpeakerDetails… ],
+ *     is_annotated: true,
  *   }
  */
 export interface TextMetadata {
@@ -62,4 +63,6 @@ export interface TextMetadata {
   source: string | null
   short_description: string | null
   authors: SpeakerDetails[]
+  /** Whether the text has been annotated, and so whether it can be searched. */
+  is_annotated: boolean
 }

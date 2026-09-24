@@ -44,6 +44,13 @@ const {t} = useI18n()
         <tr v-for="text in texts" :key="text.text_id" class="transition-colors hover:bg-paper-dark">
           <td class="px-3 py-4 font-serif text-base leading-snug text-stone-900">
             {{ text.text_name }}
+            <!-- Only the annotated texts can be searched, and today that is
+                 one text in a hundred, so the mark goes on those. -->
+            <span
+              v-if="text.is_annotated"
+              class="ml-2 rounded-sm bg-terracotta-50 px-1.5 py-0.5 align-middle font-sans text-[0.625rem] tracking-[0.08em] text-terracotta-700 uppercase">
+              {{ t('texts.annotated') }}
+            </span>
           </td>
           <td class="px-3 py-4 text-sm text-stone-700">
             <SpeakerNames :speakers="text.authors" />

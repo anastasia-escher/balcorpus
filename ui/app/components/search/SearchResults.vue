@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import SearchResultContext from '~/components/search/SearchResultContext.vue'
-import {SEARCH_CSV_MAX_ROWS, SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
+import {SEARCH_EXPORT_MAX_ROWS, SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
 import {pageRange} from '~/features/pagination/pagination'
 import {splitSentenceIntoPieces} from '~/features/search/highlight'
 import {computed} from 'vue'
@@ -16,10 +16,10 @@ const {t} = useI18n()
 const context = useSentenceContext()
 const config = useRuntimeConfig()
 
-/** The whole result of the search on screen as a CSV file, all pages at once. */
-const csvUrl = computed(() => {
+/** The whole result of the search on screen as an Excel file, all pages at once. */
+const exportUrl = computed(() => {
   const query = new URLSearchParams(searchStore.submittedParameters)
-  return `${config.public.baseURL}/api/v1/tokens/search/csv/?${query}`
+  return `${config.public.baseURL}/api/v1/tokens/search/xlsx/?${query}`
 })
 
 /** The sentence the hit came from, cut up so the matched words can be marked. */
@@ -66,14 +66,18 @@ const annotations = (result: SearchResult) =>
       </h2>
 
       <template v-if="searchStore.results.length">
-        <p v-if="(searchStore.resultCount ?? 0) > SEARCH_CSV_MAX_ROWS" class="text-xs text-stone-500">
-          {{ t('search.results.tooManyForCsv', {max: SEARCH_CSV_MAX_ROWS}) }}
+        <p v-if="(searchStore.resultCount ?? 0) > SEARCH_EXPORT_MAX_ROWS" class="text-xs text-stone-500">
+          {{ t('search.results.tooManyForExport', {max: SEARCH_EXPORT_MAX_ROWS}) }}
         </p>
+        <!-- A new tab, so that a refusal (too many requests) opens there instead
+             of replacing the results. A file that downloads closes it again. -->
         <a
           v-else
-          :href="csvUrl"
+          :href="exportUrl"
+          target="_blank"
+          rel="noopener"
           class="text-sm text-stone-500 underline-offset-4 transition-colors hover:text-terracotta-700 hover:underline">
-          {{ t('search.results.downloadCsv') }}
+          {{ t('search.results.downloadExcel') }}
         </a>
       </template>
     </div>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SearchCoverageNote from '~/components/search/SearchCoverageNote.vue'
 import SearchResults from '~/components/search/SearchResults.vue'
 import SearchTabs from '~/components/search/SearchTabs.vue'
 import SearchLemmaForm from '~/components/search/forms/SearchLemmaForm.vue'
@@ -43,6 +44,8 @@ const {t} = useI18n()
           <SearchUdForm v-else />
         </div>
       </div>
+
+      <SearchCoverageNote />
 
       <SearchResults />
     </div>

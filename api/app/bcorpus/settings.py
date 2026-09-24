@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
+import sys
 from os import environ
 from pathlib import Path
 
@@ -170,7 +171,20 @@ REST_FRAMEWORK = {
         "rest_framework.renderers.BrowsableAPIRenderer",
         # "rest_framework_csv.renderers.CSVRenderer",
     ),
+    # Requests per visitor's IP address. A reader paging through results
+    # stays far below these; a script looping over the public API does not.
+    # 'export' counts on top of 'anon', because each download builds a file
+    # of up to 10 000 rows.
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "60/min",
+        "export": "5/min",
+    },
 }
+
+# The test suite sends far more than 60 requests a minute from one address,
+# so the limits are off there; the tests of the limits switch them on again.
+if sys.argv[1:2] == ["test"]:
+    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": None, "export": None}
 
 if DISABLE_BROWSABLE_API:
     REST_FRAMEWORK["DEFAULT_RENDERER_CLASSES"] = [
