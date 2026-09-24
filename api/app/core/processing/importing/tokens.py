@@ -217,17 +217,14 @@ def import_tokens(path, allow_unknown_speakers=False):
     logger.info(f'Reading {path}')
     rows, column_names = parse_rows(path, problems)
 
+    # A file whose columns have shifted makes every later check meaningless,
+    # so it is reported on its own.
     check_columns(column_names, problems)
     if problems.has_errors():
         raise DataProblems(path, problems.errors, problems.warnings)
 
     sentence_count = len({row['sentence_number'] for row in rows})
     logger.info(f'{len(rows)} rows read, {sentence_count} sentences')
-
-    # A file whose columns have shifted makes every later check meaningless,
-    # so it is reported on its own.
-    if problems.has_errors():
-        raise DataProblems(path, problems.errors, problems.warnings)
 
     logger.info('Checking the annotation before writing anything')
     known_speaker_slugs = set(Speaker.objects.values_list('speaker_id', flat=True))

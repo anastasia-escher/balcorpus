@@ -93,7 +93,7 @@ WSGI_APPLICATION = "bcorpus.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "ENGINE": "django.db.backends.postgresql",
         "HOST": environ.get("POSTGRES_HOST"),
         "PORT": environ.get("POSTGRES_PORT"),
         "NAME": environ.get("POSTGRES_DB"),
@@ -128,7 +128,6 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-US"
 TIME_ZONE = "Europe/Zurich"
 USE_I18N = True
-USE_L10N = True
 USE_TZ = True
 
 

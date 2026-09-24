@@ -9,7 +9,13 @@ from django.db import transaction
 from core.models import Speaker
 from helpers.logger import logger
 
-from .cleaning import clean_gender, clean_label, clean_number, clean_text
+from .cleaning import (
+    clean_gender,
+    clean_label,
+    clean_number,
+    clean_text,
+    clean_yes_no,
+)
 from .common_checks import (
     check_duplicate_ids,
     check_identifier,
@@ -32,6 +38,10 @@ BIRTH_NAME_COLUMN = 'birth_name'
 GENDER_COLUMN = 'sex'
 BIRTHYEAR_COLUMN = 'birth_year'
 SOURCE_ROW_COLUMN = 'source_row'
+
+# Whether the person's details may be shown publicly. The column is optional:
+# a table without it, or an empty cell, means yes.
+SHOW_METADATA_COLUMN = 'show_metadata'
 
 EXAMPLE_SPEAKER_ID = 'vasil_iljoski'
 
@@ -71,6 +81,13 @@ def build_fields(row):
     if SOURCE_ROW_COLUMN in row:
         fields['source_row'] = clean_number(row[SOURCE_ROW_COLUMN])
 
+    # Always set, so that clearing the cell in the table shows the person's
+    # details again on the next import.
+    show_metadata = clean_yes_no(row.get(SHOW_METADATA_COLUMN))
+    if show_metadata is None:
+        show_metadata = True
+    fields['show_metadata'] = show_metadata
+
     return fields
 
 
@@ -91,6 +108,7 @@ def parse_rows(path, problems):
             'row_number': row_number,
             'record_id': clean_text(row.get(SPEAKER_ID_COLUMN)),
             'typed_birthyear': clean_text(row.get(BIRTHYEAR_COLUMN)),
+            'typed_show_metadata': clean_text(row.get(SHOW_METADATA_COLUMN)),
             'fields': build_fields(row),
         })
 
@@ -119,6 +137,15 @@ def check_rows(rows, column_names, problems):
             problems.warning(
                 f"{BIRTHYEAR_COLUMN} is '{row['typed_birthyear']}', which is "
                 'not a year, so it was left empty',
+                row['row_number'],
+            )
+        # Unlike the year, a misread answer here is not harmless: guessing
+        # "yes" would publish details someone wanted hidden. So it stops.
+        typed_answer = row['typed_show_metadata']
+        if typed_answer and clean_yes_no(typed_answer) is None:
+            problems.error(
+                f"{SHOW_METADATA_COLUMN} is '{typed_answer}'; write yes or no, "
+                'or leave it empty for yes',
                 row['row_number'],
             )
 

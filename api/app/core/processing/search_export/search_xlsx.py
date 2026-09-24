@@ -7,6 +7,7 @@ semicolon for Russian or German. An .xlsx file opens the same everywhere.
 
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
+from openpyxl.cell.cell import ILLEGAL_CHARACTERS_RE
 
 from core.serializers import TokenSearchResultSerializer
 
@@ -36,7 +37,12 @@ def text_cell(sheet, value):
 
     openpyxl turns a string that starts with '=' into a formula, and Excel
     would run it; a cell marked as text is never run and never read as a date.
+
+    Control characters (a stray tab-like byte pasted in from Word, say) are
+    dropped: an .xlsx file cannot hold them, and openpyxl would refuse to
+    write the whole file because of one of them.
     """
+    value = ILLEGAL_CHARACTERS_RE.sub('', value)
     cell = WriteOnlyCell(sheet, value)
     cell.data_type = 's'
     return cell

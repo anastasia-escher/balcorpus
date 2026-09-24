@@ -42,7 +42,6 @@ const details = computed(() => {
     {label: t('speaker.labels.municipality'), value: speaker.municipality},
     {label: t('speaker.labels.dialectRegion'), value: speaker.dialect_region},
     {label: t('speaker.labels.education'), value: education(speaker)},
-    {label: t('speaker.labels.religion'), value: speaker.religion},
     {label: t('speaker.labels.languages'), value: languages(speaker)},
     {label: t('speaker.labels.notes'), value: speaker.notes},
   ].filter(entry => Boolean(entry.value))

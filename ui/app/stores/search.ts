@@ -187,6 +187,10 @@ export const useSearchStore = defineStore('search', () => {
     const parameters = buildSearchParameters(kind)
 
     if (!Object.keys(parameters).length) {
+      // A search still on its way must not land on top of this message,
+      // so it is made out of date, the same way a new search would.
+      newestRequest += 1
+      loading.value = false
       clearSearchResults()
       searchErrorKey.value = EMPTY_SEARCH_ERROR_KEY
       return

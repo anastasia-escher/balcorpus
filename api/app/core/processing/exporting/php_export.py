@@ -33,7 +33,7 @@ SPEAKER_COLUMNS = (
     'speaker_id', 'full_name', 'birth_name', 'gender', 'birthyear',
     'place_of_birth', 'place_type', 'municipality', 'dialect_region',
     'education_level', 'education_note', 'religion', 'l1', 'l2', 'l3',
-    'notes', 'source_row',
+    'notes', 'source_row', 'show_metadata',
 )
 
 TEXT_COLUMNS = (

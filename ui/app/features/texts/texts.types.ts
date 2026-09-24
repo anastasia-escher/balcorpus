@@ -15,7 +15,7 @@
  *     speaker_id: 'aco_shopov', full_name: 'Ацо Шопов', birth_name: null,
  *     gender: 'male', birthyear: 1923, place_of_birth: 'Shtip',
  *     place_type: 'town', municipality: null, dialect_region: 'east',
- *     education_level: 'tertiary', education_note: null, religion: 'Orthodox',
+ *     education_level: 'tertiary', education_note: null,
  *     l1: 'mk', l2: 'sr', l3: null, notes: 'ambassador to Senegal',
  *   }
  */
@@ -31,7 +31,6 @@ export interface SpeakerDetails {
   dialect_region: string | null
   education_level: string | null
   education_note: string | null
-  religion: string | null
   l1: string | null
   l2: string | null
   l3: string | null

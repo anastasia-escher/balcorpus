@@ -19,7 +19,7 @@ const {t} = useI18n()
         </a>
         <a
           class="underline-offset-2 hover:text-terracotta-700 hover:underline"
-          href="http://nl.ijs.si/ME/V3/msd/html/msd-mk.html"
+          href="https://nl.ijs.si/ME/V6/msd/html/msd-mk.html"
           target="_blank"
           rel="noopener">
           {{ t('search.forms.tag.multtextEast') }}

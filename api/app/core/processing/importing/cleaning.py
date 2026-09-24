@@ -34,11 +34,19 @@ LATIN_TO_CYRILLIC = str.maketrans({
 FIRST_CYRILLIC_CHARACTER = 'Ѐ'
 LAST_CYRILLIC_CHARACTER = 'ӿ'
 
+# How a yes/no cell may be written. The editors work in several languages,
+# so each answer is accepted in the ones they use. Compared in lower case.
+YES_VALUES = {'yes', 'y', 'true', '1', 'ja', 'да', 'д'}
+NO_VALUES = {'no', 'n', 'false', '0', 'nein', 'нет', 'не', 'н'}
+
 # Gender is written sometimes with a Latin M, sometimes with a Cyrillic М.
 # It is a closed set of values, so it gets an explicit mapping.
 GENDER_VALUES = {'M': 'М', 'М': 'М', 'F': 'Ж', 'Ж': 'Ж', 'W': 'Ж'}
 
-WORD_PATTERN = re.compile(r'\w+')
+# A word is a run of letters and digits.  The underscore is left out on
+# purpose, although \w would match it: "Пустина_processed_FINAL" is three
+# words, and only the Cyrillic one may have its letters changed.
+WORD_PATTERN = re.compile(r'[^\W_]+')
 
 
 def has_cyrillic(text):
@@ -68,6 +76,7 @@ def fix_alphabet(text):
         "Диjалектен" (Latin j)  -> "Дијалектен" (Cyrillic ј)
         "NA (амб – Боливиjа)"   -> "NA (амб – Боливија)"
         "vasil_iljoski"         -> unchanged
+        "Пустина_processed"     -> unchanged
     """
     return WORD_PATTERN.sub(lambda match: fix_word(match.group()), text)
 
@@ -123,6 +132,24 @@ def clean_number(value):
         return int(float(text))
     except ValueError:
         return None
+
+
+def clean_yes_no(value):
+    """Read a yes/no cell as True or False, or None when it is empty or unclear.
+
+    Example: "yes" -> True, "Нет" -> False, 0 -> False, "" -> None, "maybe" -> None
+    """
+    text = clean_text(value)
+    if text is None:
+        return None
+
+    answer = text.lower()
+    if answer in YES_VALUES:
+        return True
+    if answer in NO_VALUES:
+        return False
+
+    return None
 
 
 def clean_gender(value):

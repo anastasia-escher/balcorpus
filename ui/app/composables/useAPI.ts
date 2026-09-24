@@ -28,8 +28,8 @@ interface APIResponse<T> {
 /**
  * Simplified API composable for client-side rendering only.
  * Call it during component setup, then use its returned request function in
- * event handlers. This keeps PrimeVue's Toast injection in Vue's setup scope.
- * @returns A request function that shows a PrimeVue toast on errors.
+ * event handlers. This keeps Nuxt UI's useToast() in Vue's setup scope.
+ * @returns A request function that shows a toast on errors.
  */
 export const useAPI = () => {
   const config = useRuntimeConfig()

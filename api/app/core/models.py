@@ -35,6 +35,9 @@ class Speaker(models.Model):
     l3 = models.CharField(max_length=50, blank=True, null=True)
     # Remarks the source files kept inside cells meant to hold a value.
     notes = models.TextField(blank=True, null=True)
+    # False keeps this person's details out of the public API: only the name,
+    # gender and languages are shown. The details stay in the database.
+    show_metadata = models.BooleanField(default=True)
     # Row number in the editors' spreadsheet, so a record can be checked
     # against their own copy.
     source_row = models.PositiveIntegerField(blank=True, null=True)

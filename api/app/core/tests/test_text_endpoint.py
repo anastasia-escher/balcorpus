@@ -27,6 +27,38 @@ class TextEndpointTests(TestCase):
         self.assertEqual(result['text_name'], 'Печалбари')
         self.assertEqual(result['authors'][0]['speaker_id'], 'anton_panov')
 
+    def test_a_hidden_speaker_shows_only_name_gender_and_languages(self):
+        self.speaker.gender = 'М'
+        self.speaker.l1 = 'mk'
+        self.speaker.birthyear = 1905
+        self.speaker.notes = 'ambassador'
+        self.speaker.show_metadata = False
+        self.speaker.save()
+
+        author = self.client.get(TEXTS_URL).json()['results'][0]['authors'][0]
+
+        self.assertEqual(author['full_name'], self.speaker.full_name)
+        self.assertEqual(author['gender'], 'М')
+        self.assertEqual(author['l1'], 'mk')
+        self.assertIsNone(author['birthyear'])
+        self.assertIsNone(author['notes'])
+
+    def test_a_speaker_shows_all_details_by_default(self):
+        self.speaker.birthyear = 1905
+        self.speaker.save()
+
+        author = self.client.get(TEXTS_URL).json()['results'][0]['authors'][0]
+
+        self.assertEqual(author['birthyear'], 1905)
+
+    def test_religion_is_never_shown(self):
+        self.speaker.religion = 'Orthodox'
+        self.speaker.save()
+
+        author = self.client.get(TEXTS_URL).json()['results'][0]['authors'][0]
+
+        self.assertNotIn('religion', author)
+
     def test_a_text_does_not_carry_its_sentences(self):
         # A text holds thousands of tokens; nesting them made this endpoint
         # answer with megabytes.

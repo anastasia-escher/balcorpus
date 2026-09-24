@@ -3,13 +3,36 @@ from rest_framework import serializers
 from .models import Text, Sentence, Token, Speaker
 from .processing import sentence_spans
 
+# What stays visible of a person whose show_metadata is False.
+ALWAYS_PUBLIC_SPEAKER_FIELDS = {'speaker_id', 'full_name', 'gender', 'l1', 'l2', 'l3'}
+
+
 class SpeakerSerializer(serializers.ModelSerializer):
+    def to_representation(self, speaker):
+        """The speaker's details, emptied for a person who is not to be described.
+
+        Hidden fields are sent as null rather than left out, so every speaker
+        has the same shape and the site simply shows nothing for them:
+            {'speaker_id': 'anton_panov', 'full_name': 'Антон Панов',
+             'birthyear': None, 'notes': None, ..., 'l1': 'mk'}
+        """
+        data = super().to_representation(speaker)
+        if speaker.show_metadata:
+            return data
+
+        for field in data:
+            if field not in ALWAYS_PUBLIC_SPEAKER_FIELDS:
+                data[field] = None
+        return data
+
     class Meta:
         model = Speaker
+        # Religion is kept in the database but never shown on the site, so it
+        # is not in this list.
         fields = [
             'speaker_id', 'full_name', 'birth_name', 'gender', 'birthyear',
             'place_of_birth', 'place_type', 'municipality', 'dialect_region',
-            'education_level', 'education_note', 'religion', 'l1', 'l2', 'l3',
+            'education_level', 'education_note', 'l1', 'l2', 'l3',
             'notes',
         ]
 

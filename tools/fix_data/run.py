@@ -9,7 +9,6 @@ workbooks in data/fixed_data, and prints everything it could not translate or
 could not match, so the gaps are visible rather than silent.
 """
 
-import sys
 from pathlib import Path
 
 import openpyxl
@@ -137,4 +136,4 @@ def report(problems):
 
 
 if __name__ == '__main__':
-    sys.exit(0 if not convert() else 0)
+    convert()

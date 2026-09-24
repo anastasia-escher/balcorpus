@@ -10,15 +10,10 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("action", type=str, help="The action to execute")
 
-    def init(self):
-        pass
-
     def clean(self):
         call_command("flush")
-        call_command("makemigrations", "core")
         call_command("migrate")
         call_command("initadmin")
-        self.init()
 
     def reset(self):
         """
@@ -37,7 +32,7 @@ class Command(BaseCommand):
                 )
                 # disconnect our own connection
                 cursor.execute(
-                    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{dbname}'"
+                    f"SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='{dbname}'"
                 )
             # make sure everything is disconnected
             connections.close_all()
@@ -51,8 +46,6 @@ class Command(BaseCommand):
         try:
             if options.get("action") == "clean":
                 self.clean()
-            elif options.get("action") == "init":
-                self.init()
             elif options.get("action") == "reset":
                 self.reset()
         except Exception as ex:

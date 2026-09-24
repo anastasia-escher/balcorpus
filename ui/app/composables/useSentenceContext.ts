@@ -36,14 +36,20 @@ export function useSentenceContext() {
     loadingResults.value[key] = true
 
     try {
-      const {data} = await requestAPI<ContextResponse>('sentences/context/', {
+      const {data, error} = await requestAPI<ContextResponse>('sentences/context/', {
         params: {
           text: result.text_id,
           sentence: String(result.sentence_id),
         },
       })
 
-      sentencesByResult.value[key] = data.value?.results ?? []
+      // A failed request is not remembered, so opening the result again
+      // tries once more instead of showing an empty context for good.
+      if (error.value || !data.value) {
+        return
+      }
+
+      sentencesByResult.value[key] = data.value.results
     } finally {
       loadingResults.value[key] = false
     }
@@ -54,7 +60,10 @@ export function useSentenceContext() {
     const key = contextKey(result)
     openResults.value[key] = !openResults.value[key]
 
-    if (openResults.value[key] && !(key in sentencesByResult.value)) {
+    const alreadyFetched = key in sentencesByResult.value
+    const alreadyLoading = Boolean(loadingResults.value[key])
+
+    if (openResults.value[key] && !alreadyFetched && !alreadyLoading) {
       await fetchContext(result)
     }
   }

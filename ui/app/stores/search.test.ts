@@ -19,10 +19,15 @@ const corpus = vi.hoisted(() => ({
 
 vi.mock('~/composables/useAPI', () => ({
   useAPI: () => async (_endpoint: string, options: {params: Record<string, string>}) => {
-    const {delay, count} = corpus.answers[options.params.pos]
+    const pos = String(options.params.pos)
+    const answer = corpus.answers[pos]
+    if (!answer) {
+      throw new Error(`The test corpus has no answer for pos=${pos}`)
+    }
+    const {delay, count} = answer
 
     await new Promise(resolve => setTimeout(resolve, delay))
-    corpus.answered.push(options.params.pos)
+    corpus.answered.push(pos)
 
     return {
       data: {value: {count, next: null, previous: null, results: []}},

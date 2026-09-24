@@ -40,10 +40,12 @@ class TextAdmin(admin.ModelAdmin):
 @admin.register(Speaker)
 class SpeakerAdmin(admin.ModelAdmin):
     list_display = ('speaker_id', 'full_name', 'gender', 'birthyear', 'place_of_birth',
-                    'municipality', 'dialect_region', 'education_level', 'religion', 'l1', 'l2', 'l3')
+                    'municipality', 'dialect_region', 'education_level', 'religion', 'l1', 'l2', 'l3',
+                    'show_metadata')
     search_fields = ('speaker_id', 'full_name', 'birth_name', 'place_of_birth',
                      'municipality', 'notes')
-    list_filter = ('gender', 'place_type', 'dialect_region', 'education_level', 'religion', 'l1')
+    list_filter = ('gender', 'place_type', 'dialect_region', 'education_level', 'religion', 'l1',
+                   'show_metadata')
     ordering = ['speaker_id']
 
 @admin.register(Sentence)
