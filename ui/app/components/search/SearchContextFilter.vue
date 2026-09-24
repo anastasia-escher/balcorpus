@@ -97,7 +97,9 @@ const udTagOptions = computed(() =>
 
       <!-- One field per way of describing the word; only the chosen one shows. -->
       <div v-if="context.kind === 'text'">
-        <label :for="fieldId('text')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <label
+          :for="fieldId('text')"
+          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
           {{ t('search.nearbyWord.kinds.text') }}
         </label>
         <UInput
@@ -109,7 +111,9 @@ const udTagOptions = computed(() =>
       </div>
 
       <div v-else-if="context.kind === 'lemma'">
-        <label :for="fieldId('lemma')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <label
+          :for="fieldId('lemma')"
+          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
           {{ t('search.nearbyWord.kinds.lemma') }}
         </label>
         <UInput
@@ -128,7 +132,9 @@ const udTagOptions = computed(() =>
         @set-value="context.morphology.setValue" />
 
       <div v-else-if="context.kind === 'ud'">
-        <label :for="fieldId('ud')" class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <label
+          :for="fieldId('ud')"
+          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
           {{ t('search.nearbyWord.kinds.ud') }}
         </label>
         <USelect
