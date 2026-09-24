@@ -5,9 +5,8 @@
  * with a Latin j look the same, but the second one finds nothing.
  *
  * Clicking a key sends the letter up with `insert`; the form decides where it
- * goes. It starts folded away, like the nearby word block.
+ * goes.
  */
-import {ref} from 'vue'
 import {useI18n} from 'vue-i18n'
 
 const {t} = useI18n()
@@ -22,22 +21,12 @@ const LETTERS = [
   'а', 'б', 'в', 'г', 'д', 'ѓ', 'е', 'ѐ', 'ж', 'з', 'ѕ', 'и', 'ѝ', 'ј', 'к', 'л', 'љ',
   'м', 'н', 'њ', 'о', 'п', 'р', 'с', 'т', 'ќ', 'у', 'ф', 'х', 'ц', 'ч', 'џ', 'ш',
 ]
-
-const isOpen = ref(false)
 </script>
 
 <template>
   <div>
     <p class="text-xs leading-relaxed text-stone-500">{{ t('search.keyboard.disclaimer') }}</p>
-    <button
-      type="button"
-      class="mt-2 text-sm text-stone-500 underline-offset-4 transition-colors hover:text-terracotta-700 hover:underline"
-      :aria-expanded="isOpen"
-      @click="isOpen = !isOpen">
-      {{ isOpen ? t('search.keyboard.hide') : t('search.keyboard.show') }}
-    </button>
-
-    <div v-if="isOpen" class="mt-3 flex flex-wrap gap-1.5">
+    <div class="mt-3 flex flex-wrap gap-1.5">
       <button
         v-for="letter in LETTERS"
         :key="letter"

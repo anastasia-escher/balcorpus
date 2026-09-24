@@ -3,6 +3,7 @@ import {defineStore} from 'pinia'
 import {useAPI} from '~/composables/useAPI'
 import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
 import {createContextCriteria} from '~/features/search/context-criteria'
+import {fixLatinLookalikes} from '~/features/search/cyrillic-lookalikes'
 import {createMorphologySelection} from '~/features/search/morphology-selection'
 import {countPages} from '~/features/pagination/pagination'
 import type {
@@ -96,6 +97,12 @@ export const useSearchStore = defineStore('search', () => {
     const parameters: Record<string, string> = {}
 
     for (const {inputKey, parameterName} of SEARCH_REQUEST_FIELDS[kind]) {
+      // A Latin j typed into a Cyrillic word would match nothing. The fixed
+      // word is written back, so the field shows what was really searched.
+      if (inputKey === 'textQuery' || inputKey === 'lemma') {
+        searchInputs[inputKey].value = fixLatinLookalikes(searchInputs[inputKey].value)
+      }
+
       const value = searchInputs[inputKey].value?.trim()
       if (value) {
         parameters[parameterName] = value
