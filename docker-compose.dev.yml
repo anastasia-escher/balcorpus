@@ -40,5 +40,36 @@ services:
     volumes:
       - ./docs/:/docs/:z
 
+  # The PHP backend that runs in production (see php/ЗАГРУЗКА.md), here only
+  # to be checked against Django. It shares nothing with the services above.
+  php:
+    build:
+      context: php
+    ports:
+      - "5131:80"
+    volumes:
+      # Laid out as on the server: httpdocs and private side by side.
+      - ./php/httpdocs:/var/www/html
+      - ./php/private:/var/www/private
+      - ./data/php_ready:/var/www/private/data:ro
+    restart: unless-stopped
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:11.4
+    # Only the four variables it needs, not the whole .env with Django's secrets.
+    environment:
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:33130:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+
 volumes:
   ui_node_modules:
+  mariadb_data:

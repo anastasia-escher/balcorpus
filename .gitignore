@@ -180,3 +180,6 @@ data/php_ready/
 
 # macOS leaves these in every folder it has been looked at in.
 .DS_Store
+
+# PHP backend: database password and loader secret
+php/private/config.php
