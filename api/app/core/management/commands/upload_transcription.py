@@ -12,7 +12,8 @@ class Command(BaseCommand):
         'The file is checked first: if anything is wrong with it, nothing is '
         'imported and every problem found is listed. '
         'Run import_texts and import_speakers first, so that the text and its '
-        'speakers already exist.'
+        'speakers already exist. The file may be exactly as the linguists send '
+        'it: the text is found by its title and the speakers by their names.'
     )
 
     def add_arguments(self, parser):
@@ -25,13 +26,22 @@ class Command(BaseCommand):
                 'database. Their sentences will have no speaker.'
             ),
         )
+        parser.add_argument(
+            '--text',
+            help=(
+                'The text_id of the text, e.g. panov_pechalbari_1936. Needed only '
+                'when the title in the file belongs to more than one text.'
+            ),
+        )
 
     def handle(self, *args, **options):
         path = options['annotations']
 
         try:
             summaries, warnings = import_tokens(
-                path, allow_unknown_speakers=options['allow_unknown_speakers']
+                path,
+                allow_unknown_speakers=options['allow_unknown_speakers'],
+                text_id=options['text'],
             )
         except DataProblems as problems:
             for line in problems.report():

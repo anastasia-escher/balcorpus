@@ -27,6 +27,12 @@ from .columns import (
     TIME_COLUMN,
     TOKEN_COLUMN,
 )
+from .linguist_format import (
+    drop_rows_without_a_word,
+    find_speaker_ids,
+    find_text_ids,
+    use_corpus_column_names,
+)
 from .problems import DataProblems, ProblemList
 from .table_reader import read_rows
 from .validation import check_annotation_rows
@@ -70,6 +76,7 @@ def parse_rows(path, problems):
     column_names = []
 
     for row_number, row in enumerate(read_rows(path, problems), start=2):
+        row = use_corpus_column_names(row)
         if not column_names:
             column_names = list(row)
 
@@ -124,8 +131,9 @@ def check_texts_exist(rows, problems):
     known = set(Text.objects.filter(text_id__in=named_texts).values_list('text_id', flat=True))
     for text_id in sorted(named_texts - known):
         problems.error(
-            f"the text '{text_id}' is not in the database. Import the metadata "
-            'table first: manage.py import_texts <file>.'
+            f"no text has the text_id or the title '{text_id}'. Add the text to "
+            'the metadata table and import it first (manage.py import_texts '
+            '<file>), or name it with --text.'
         )
 
 
@@ -205,8 +213,12 @@ def write_text_rows(text, rows):
     }
 
 
-def import_tokens(path, allow_unknown_speakers=False):
+def import_tokens(path, allow_unknown_speakers=False, text_id=None):
     """Check an annotation file and, if it is clean, import it.
+
+    The file may be in the corpus format or exactly as the linguists send it
+    (see linguist_format). ``text_id`` names the text for every row, for a
+    file whose title belongs to more than one text.
 
     Raises DataProblems when the file has errors; in that case the database is
     left untouched.  Returns one summary per text found in the file, and the
@@ -222,6 +234,10 @@ def import_tokens(path, allow_unknown_speakers=False):
     check_columns(column_names, problems)
     if problems.has_errors():
         raise DataProblems(path, problems.errors, problems.warnings)
+
+    rows = drop_rows_without_a_word(rows, problems)
+    find_text_ids(rows, text_id, problems)
+    find_speaker_ids(rows, problems)
 
     sentence_count = len({row['sentence_number'] for row in rows})
     logger.info(f'{len(rows)} rows read, {sentence_count} sentences')

@@ -146,8 +146,8 @@ def check_speakers(rows, known_speaker_slugs, problems, allow_unknown):
 
     for slug, row_number in first_row_of_slug.items():
         message = (
-            f"the speaker '{slug}' is not in the database. Import the speaker "
-            "table first, or pass --allow-unknown-speakers to import anyway"
+            f"no speaker has the speaker_id or the name '{slug}'. Import the "
+            "speaker table first, or pass --allow-unknown-speakers to import anyway"
         )
         if allow_unknown:
             problems.warning(message, row_number)
