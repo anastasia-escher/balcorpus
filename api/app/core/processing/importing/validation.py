@@ -14,22 +14,10 @@ from collections import defaultdict
 from core.models import Token
 
 from .columns import NUMERIC_CELLS, REQUIRED_NUMBERS
+from .common_checks import check_lengths
 
 # The root of a sentence has no head, which UD writes as head 0.
 ROOT_HEAD = 0
-
-def max_lengths():
-    """How long each text column of Token may be, read from the model itself.
-
-    Asking the model means the numbers cannot drift apart from the migration.
-    """
-    lengths = {}
-    for field in Token._meta.get_fields():
-        if getattr(field, 'max_length', None):
-            lengths[field.name] = field.max_length
-
-    return lengths
-
 
 def check_numeric_cells(row, problems):
     """Complain about a cell that should hold a number but does not.
@@ -45,7 +33,7 @@ def check_numeric_cells(row, problems):
             continue
 
         if typed:
-            problems.error(f"{column} is '{typed}', which is not a number", row['row_number'])
+            problems.error(f"{column} is '{typed}', which is not a whole number", row['row_number'])
         elif column in REQUIRED_NUMBERS:
             problems.error(f'{column} is empty', row['row_number'])
         else:
@@ -114,24 +102,6 @@ def check_roots(rows, problems):
         problems.warning(f'sentence {sentence} has {found}', first_row)
 
 
-def check_lengths(rows, problems):
-    """Refuse values that would not fit into their database column."""
-    lengths = max_lengths()
-
-    for row in rows:
-        for name, value in row['fields'].items():
-            limit = lengths.get(name)
-            if limit is None or value is None:
-                continue
-
-            if len(str(value)) > limit:
-                problems.error(
-                    f"{name} is {len(str(value))} characters long, but at most "
-                    f"{limit} fit: {str(value)[:40]}...",
-                    row['row_number'],
-                )
-
-
 def check_speakers(rows, known_speaker_slugs, problems, allow_unknown):
     """Every speaker named in the file should exist in the speaker table.
 
@@ -163,5 +133,5 @@ def check_annotation_rows(rows, known_speaker_slugs, problems, allow_unknown_spe
     check_duplicate_tokens(rows, problems)
     check_heads(rows, problems)
     check_roots(rows, problems)
-    check_lengths(rows, problems)
+    check_lengths(rows, Token, problems)
     check_speakers(rows, known_speaker_slugs, problems, allow_unknown_speakers)

@@ -24,8 +24,8 @@ COLUMNS = [
 class SearchExportSerializer(TokenSearchResultSerializer):
     """A search result without the positions of its words.
 
-    Those positions only tell the result list what to mark; working them out
-    would rebuild every sentence twice more for nothing.
+    Those positions only tell the result list on the site what to mark; a
+    spreadsheet has no use for them.
     """
 
     class Meta(TokenSearchResultSerializer.Meta):

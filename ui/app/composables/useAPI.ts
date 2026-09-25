@@ -40,7 +40,6 @@ export const useAPI = () => {
     try {
       const response = await $fetch<T>(`${config.public.baseURL}/api/v1/${endpoint}`, {
         query: options.params,
-        credentials: 'include',
       })
 
       return {

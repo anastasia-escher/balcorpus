@@ -1,4 +1,5 @@
 import {useRoute, useRouter} from 'vue-router'
+import {FIRST_PAGE} from '~/features/pagination/pagination'
 
 /**
  * Keeping a list's state in the address bar.
@@ -10,8 +11,6 @@ import {useRoute, useRouter} from 'vue-router'
  * Defaults are left out, so the address stays short: /texts, not
  * /texts?q=&page=1.
  */
-
-const FIRST_PAGE = 1
 
 export function useListUrl() {
   const route = useRoute()

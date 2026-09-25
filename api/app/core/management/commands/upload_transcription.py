@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from core.processing.exporting.after_import import export_texts_for_server
+from core.processing.exporting.after_import import EXPORT_FAILED_ADVICE, export_texts_for_server
 from core.processing.importing.problems import DataProblems
 from core.processing.importing.tokens import import_tokens
 from helpers.logger import logger
@@ -38,7 +38,7 @@ class Command(BaseCommand):
         path = options['annotations']
 
         try:
-            summaries, warnings = import_tokens(
+            summary, warnings = import_tokens(
                 path,
                 allow_unknown_speakers=options['allow_unknown_speakers'],
                 text_id=options['text'],
@@ -54,12 +54,13 @@ class Command(BaseCommand):
         for warning in warnings:
             logger.warning(warning)
 
-        for summary in summaries:
-            logger.info(
-                f"{summary['text_id']}: {summary['sentences']} sentences, "
-                f"{summary['tokens']} tokens imported."
-            )
+        logger.info(
+            f"{summary['text_id']}: {summary['sentences']} sentences, "
+            f"{summary['tokens']} tokens imported."
+        )
 
-        # One file may carry more than one text, so every text it touched is
-        # written out, not just the first.
-        export_texts_for_server(summary['text_id'] for summary in summaries)
+        try:
+            export_texts_for_server([summary['text_id']])
+        except OSError as error:
+            logger.error(str(error))
+            raise CommandError(EXPORT_FAILED_ADVICE)

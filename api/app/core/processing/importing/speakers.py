@@ -94,13 +94,13 @@ def build_fields(row):
 def parse_rows(path, problems):
     """Read the file, keeping the column names the file actually had.
 
-    Row 1 is the heading, so the first row of data is row 2 and the numbers in
-    an error message match what the editor sees in the spreadsheet.
+    Each row keeps the number the spreadsheet shows for it, so an error
+    message points at the line the editor sees.
     """
     parsed = []
     column_names = []
 
-    for row_number, row in enumerate(read_rows(path, problems), start=2):
+    for row_number, row in read_rows(path, problems):
         if not column_names:
             column_names = list(row)
 

@@ -7,7 +7,7 @@
   "resources": [
     {
       "name": "speakers",
-      "path": "speakers.xlsx",
+      "path": "metadata_speakers/speakers.xlsx",
       "title": "Speakers and authors",
       "description": "One row per person whose language the corpus records.",
       "profile": "tabular-data-resource",
@@ -147,6 +147,11 @@
             "name": "source_row",
             "type": "integer",
             "description": "Row number in the spreadsheet this came from, for checking against the editors’ own copy."
+          },
+          {
+            "name": "show_metadata",
+            "type": "string",
+            "description": "Whether the details of this person may be shown on the site: yes or no. Empty means yes. With no, only the name, sex and languages are shown."
           }
         ],
         "primaryKey": "speaker_id",
@@ -158,7 +163,7 @@
     },
     {
       "name": "texts",
-      "path": "texts.xlsx",
+      "path": "metadata_texts/texts.xlsx",
       "title": "Texts",
       "description": "One row per document of the corpus.",
       "profile": "tabular-data-resource",

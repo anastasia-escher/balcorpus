@@ -1,22 +1,14 @@
 import {computed, ref} from 'vue'
 import {defineStore} from 'pinia'
-import {useAPI} from '~/composables/useAPI'
+import {usePaginatedList} from '~/composables/usePaginatedList'
 import {SEARCH_PAGE_SIZE, SEARCH_REQUEST_FIELDS} from '~/features/search/search.constants'
 import {createContextCriteria} from '~/features/search/context-criteria'
 import {fixLatinLookalikes} from '~/features/search/cyrillic-lookalikes'
 import {createMorphologySelection} from '~/features/search/morphology-selection'
-import {countPages} from '~/features/pagination/pagination'
-import type {
-  SearchInputKey,
-  SearchKind,
-  SearchResponse,
-  SearchResult,
-} from '~/features/search/search.types'
+import type {SearchInputKey, SearchKind, SearchResult} from '~/features/search/search.types'
 
 const EMPTY_SEARCH_ERROR_KEY = 'search.errors.empty'
 const SEARCH_FAILURE_ERROR_KEY = 'search.errors.failed'
-
-const FIRST_PAGE = 1
 
 export const useSearchStore = defineStore('search', () => {
   // The page opens on the first tab.
@@ -35,27 +27,30 @@ export const useSearchStore = defineStore('search', () => {
   const partialText = ref(false)
   const udTag = ref<string | undefined>()
   const parent = ref<string | undefined>()
-  const results = ref<SearchResult[]>([])
-  const resultCount = ref<number | null>(null)
-  const loading = ref(false)
-  const searchErrorKey = ref<string | null>(null)
+
+  // The results arrive a page at a time, like every list of the corpus. The
+  // shared list also makes sure that of two searches started one after the
+  // other, only the newer one's answer is shown, whatever order they come in.
+  const resultList = usePaginatedList<SearchResult>('tokens/search/', SEARCH_PAGE_SIZE)
+
+  // Whether the form was sent empty; the reader is then told to fill it in.
+  const submittedEmpty = ref(false)
   const hasSearched = ref(false)
-
-  // The corpus sends one page at a time, so the page being looked at is part
-  // of the search rather than something the interface does on its own.
-  const page = ref(FIRST_PAGE)
-  // The criteria of the search now on screen. Paging asks for another page of
-  // the same search, so it must not read the form again: the user may have
-  // typed something new into it in the meantime.
+  // The criteria of the search now on screen, for the Excel export link.
+  // They are kept apart from the form, which the user may already have
+  // changed again.
   const submittedParameters = ref<Record<string, string>>({})
-  // Searches are counted so that only the newest one may show its answer. Two
-  // of them started shortly after one another come back in whatever order the
-  // corpus happens to answer in, and a slow first answer would otherwise
-  // overwrite the fast second one: the list would then show a search the form
-  // no longer describes.
-  let newestRequest = 0
 
-  const requestAPI = useAPI()
+  /** Which message to show instead of results, as an i18n key, or null. */
+  const searchErrorKey = computed(() => {
+    if (submittedEmpty.value) {
+      return EMPTY_SEARCH_ERROR_KEY
+    }
+    if (resultList.failed.value) {
+      return SEARCH_FAILURE_ERROR_KEY
+    }
+    return null
+  })
 
   const searchInputs = {
     textQuery,
@@ -63,8 +58,6 @@ export const useSearchStore = defineStore('search', () => {
     udTag,
     parent,
   } satisfies Record<SearchInputKey, {value: string | undefined}>
-
-  const pageCount = computed(() => countPages(resultCount.value ?? 0, SEARCH_PAGE_SIZE))
 
   const selectSearchKind = (kind: SearchKind) => {
     activeSearchKind.value = kind
@@ -84,13 +77,6 @@ export const useSearchStore = defineStore('search', () => {
       searchInputs[inputKey].value =
         inputKey === 'udTag' || inputKey === 'parent' ? undefined : ''
     }
-  }
-
-  const clearSearchResults = () => {
-    results.value = []
-    resultCount.value = null
-    hasSearched.value = false
-    page.value = FIRST_PAGE
   }
 
   const buildSearchParameters = (kind: SearchKind) => {
@@ -143,71 +129,31 @@ export const useSearchStore = defineStore('search', () => {
     return parameters
   }
 
-  /** Ask the corpus for one page of the search that is already on screen. */
-  const fetchPage = async (wantedPage: number) => {
-    const thisRequest = (newestRequest += 1)
-
-    loading.value = true
-    searchErrorKey.value = null
-
-    try {
-      const {data, error} = await requestAPI<SearchResponse>('tokens/search/', {
-        params: {
-          ...submittedParameters.value,
-          page: String(wantedPage),
-          page_size: String(SEARCH_PAGE_SIZE),
-        },
-      })
-
-      // Another search was started while this one was on its way, so this
-      // answer is no longer the one on screen and is dropped.
-      if (thisRequest !== newestRequest) {
-        return
-      }
-
-      if (error.value || !data.value) {
-        clearSearchResults()
-        searchErrorKey.value = SEARCH_FAILURE_ERROR_KEY
-        return
-      }
-
-      results.value = data.value.results
-      resultCount.value = data.value.count
-      page.value = wantedPage
-      hasSearched.value = true
-    } finally {
-      if (thisRequest === newestRequest) {
-        loading.value = false
-      }
-    }
-  }
-
   /** Run a new search, starting at its first page. */
   const submitSearch = async (kind: SearchKind) => {
     const parameters = buildSearchParameters(kind)
+    hasSearched.value = false
 
     if (!Object.keys(parameters).length) {
-      // A search still on its way must not land on top of this message,
-      // so it is made out of date, the same way a new search would.
-      newestRequest += 1
-      loading.value = false
-      clearSearchResults()
-      searchErrorKey.value = EMPTY_SEARCH_ERROR_KEY
+      // clear() also drops a search still on its way, so that it cannot
+      // land on top of this message.
+      resultList.clear()
+      submittedEmpty.value = true
       return
     }
 
+    submittedEmpty.value = false
     submittedParameters.value = parameters
-    hasSearched.value = false
-    await fetchPage(FIRST_PAGE)
+
+    const applied = await resultList.load(parameters)
+    if (applied && !resultList.failed.value) {
+      hasSearched.value = true
+    }
   }
 
   /** Move to another page of the search now on screen. */
   const goToPage = async (wantedPage: number) => {
-    if (wantedPage < FIRST_PAGE || wantedPage > pageCount.value || wantedPage === page.value) {
-      return
-    }
-
-    await fetchPage(wantedPage)
+    await resultList.goToPage(wantedPage)
   }
 
   return {
@@ -227,13 +173,13 @@ export const useSearchStore = defineStore('search', () => {
     partialText,
     udTag,
     parent,
-    results,
-    resultCount,
-    loading,
+    results: resultList.items,
+    resultCount: resultList.itemCount,
+    loading: resultList.loading,
     searchErrorKey,
     hasSearched,
-    page,
-    pageCount,
+    page: resultList.page,
+    pageCount: resultList.pageCount,
     submittedParameters,
     selectSearchKind,
     resetSearchInput,

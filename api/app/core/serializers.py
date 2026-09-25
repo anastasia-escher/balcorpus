@@ -64,8 +64,19 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
             'sentence', 'context_ud_id', 'context_source', 'match_span', 'context_span',
         ]
 
+    def sentence_with_spans(self, token):
+        """The sentence of this result, and where each of its words stands.
+
+        Three fields need it, so it is put together once per result and kept
+        on the token, instead of being rebuilt from the tokens for each field.
+        """
+        if not hasattr(token, 'built_sentence'):
+            token.built_sentence = sentence_spans.displayed_sentence(token.sentence.tokens.all())
+
+        return token.built_sentence
+
     def get_sentence(self, token):
-        text, _spans = sentence_spans.displayed_sentence(token.sentence.tokens.all())
+        text, _spans = self.sentence_with_spans(token)
         return text
 
     def get_context_ud_id(self, token):
@@ -100,7 +111,7 @@ class TokenSearchResultSerializer(serializers.ModelSerializer):
 
     def span_of(self, token, ud_id):
         """Where the token numbered ``ud_id`` stands in this result's sentence."""
-        _text, spans = sentence_spans.displayed_sentence(token.sentence.tokens.all())
+        _text, spans = self.sentence_with_spans(token)
         return spans.get(ud_id)
 
     def find_context_token(self, token):
@@ -131,8 +142,10 @@ class SentenceContextSerializer(serializers.ModelSerializer):
         fields = ['sentence_id', 'speaker_name', 'source_sentence']
 
     def get_source_sentence(self, sentence):
+        # Read the same way as the sentence of a search result: the source
+        # form, or the diplomatic transcription for a text that has no source.
         # The spans are for marking a word; a sentence shown whole needs only its text.
-        text, _spans = sentence_spans.join_tokens_with_spans(sentence.tokens.all(), 'source')
+        text, _spans = sentence_spans.displayed_sentence(sentence.tokens.all())
         return text
 
 

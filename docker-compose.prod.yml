@@ -1,3 +1,5 @@
+# Not in use: production runs on Plesk with PHP (see php/ЗАГРУЗКА.md).
+# Kept in case the hosting changes and Django is served from our own server.
 services:
   ws:
     image: ethnexus/smnrp:2.5.1

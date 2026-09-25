@@ -4,12 +4,6 @@ export default defineNuxtConfig({
   ssr: false,
   nitro: {
     static: true,
-    devProxy: {
-      '/api/v1': 'http://api:5000/api/v1',
-      '/admin': 'http://api:5000/admin',
-      '/media': 'http://api:5000/media',
-      '/static': 'http://api:5000/static',
-    },
   },
   runtimeConfig: {
     public: {
@@ -33,18 +27,7 @@ export default defineNuxtConfig({
     fallback: 'light',
     storageKey: 'balcorpus-color-mode',
   },
-  modules: [
-    '@pinia/nuxt',
-    [
-      'pinia-plugin-persistedstate/nuxt',
-      {
-        storage: 'localStorage', // ← switch from cookies to Web‑storage
-        debug: true, // optional: console traces for hydrate/save
-      },
-    ],
-    '@nuxt/ui',
-    '@nuxtjs/i18n',
-  ],
+  modules: ['@pinia/nuxt', '@nuxt/ui', '@nuxtjs/i18n'],
 
   i18n: {
     vueI18n: './i18n.config.ts',

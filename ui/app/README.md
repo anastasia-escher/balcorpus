@@ -20,8 +20,8 @@ yarn dev
 ## Tests
 
 ```bash
-yarn vitest run
-yarn nuxi typecheck
+yarn test
+yarn typecheck
 ```
 
 ## Production build

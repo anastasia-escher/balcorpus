@@ -50,10 +50,10 @@ class LinguistFileTests(TestCase):
         return path
 
     def test_the_file_is_imported_as_it_was_sent(self):
-        summaries, _warnings = import_tokens(self.write_file([BYTE_ORDER_MARK_ROW] + SENTENCE_ROWS))
+        summary, _warnings = import_tokens(self.write_file([BYTE_ORDER_MARK_ROW] + SENTENCE_ROWS))
 
-        self.assertEqual(summaries[0]['text_id'], 'panov_pechalbari_1936')
-        self.assertEqual(summaries[0]['tokens'], 2)
+        self.assertEqual(summary['text_id'], 'panov_pechalbari_1936')
+        self.assertEqual(summary['tokens'], 2)
 
         sentence = Sentence.objects.get()
         self.assertEqual(sentence.sentence_id, 2)
@@ -61,7 +61,7 @@ class LinguistFileTests(TestCase):
         self.assertEqual(Token.objects.get(source='Панов').head_ud_id, 1)
 
     def test_the_byte_order_mark_row_is_left_out_and_mentioned(self):
-        _summaries, warnings = import_tokens(self.write_file([BYTE_ORDER_MARK_ROW] + SENTENCE_ROWS))
+        _summary, warnings = import_tokens(self.write_file([BYTE_ORDER_MARK_ROW] + SENTENCE_ROWS))
 
         self.assertFalse(Token.objects.filter(ud_pos='NUM').exists())
         self.assertTrue(any('no word form and no lemma' in warning for warning in warnings))
@@ -77,11 +77,38 @@ class LinguistFileTests(TestCase):
     def test_the_text_given_on_the_command_line_wins(self):
         make_text(text_id='panov_pechalbari_1950', title='Печалбари')
 
-        summaries, _warnings = import_tokens(
+        summary, _warnings = import_tokens(
             self.write_file(SENTENCE_ROWS), text_id='panov_pechalbari_1950'
         )
 
-        self.assertEqual(summaries[0]['text_id'], 'panov_pechalbari_1950')
+        self.assertEqual(summary['text_id'], 'panov_pechalbari_1950')
+
+    def test_a_file_with_two_texts_is_refused(self):
+        make_text(text_id='krle_parite_1938', title='Парите')
+        rows = SENTENCE_ROWS + [[3, 1, 'Парите', None, 'пари', 'NOUN', 'Ncfpny', '_', 0, 'root', 'Антон Панов', None, 'Парите']]
+
+        with self.assertRaises(DataProblems) as raised:
+            import_tokens(self.write_file(rows))
+
+        self.assertIn('more than one text', raised.exception.errors[0])
+
+    def test_an_error_names_the_row_excel_shows(self):
+        # write_file puts a blank row after every row, so the second token
+        # stands in row 4 of the sheet, not row 3.
+        rows = [SENTENCE_ROWS[0], SENTENCE_ROWS[1][:1] + ['x'] + SENTENCE_ROWS[1][2:]]
+
+        with self.assertRaises(DataProblems) as raised:
+            import_tokens(self.write_file(rows))
+
+        self.assertIn('row 4', ' '.join(raised.exception.errors))
+
+    def test_a_sentence_number_that_is_not_whole_is_refused(self):
+        rows = [[2.5] + SENTENCE_ROWS[0][1:]]
+
+        with self.assertRaises(DataProblems) as raised:
+            import_tokens(self.write_file(rows))
+
+        self.assertIn('not a whole number', ' '.join(raised.exception.errors))
 
     def test_an_unknown_title_is_reported(self):
         rows = [row[:-1] + ['Непознат текст'] for row in SENTENCE_ROWS]

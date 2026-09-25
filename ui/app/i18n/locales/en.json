@@ -84,6 +84,7 @@
         "descriptionThree": "One token in each sentence is marked as its root, usually representing the most verbal element.",
         "placeholder": "Select an UD tag",
         "parentPlaceholder": "UD of parent (optional)",
+        "clearParent": "Any parent",
         "universalDependencies": "Universal Dependencies"
       }
     },

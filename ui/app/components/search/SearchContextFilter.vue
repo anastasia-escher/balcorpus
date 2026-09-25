@@ -7,10 +7,12 @@
  * four ways the tab above it does. It starts folded away, because most
  * searches are about one word only.
  */
+import FieldLabel from '~/components/search/FieldLabel.vue'
 import MacedonianKeyboard from '~/components/search/MacedonianKeyboard.vue'
 import MorphologyFields from '~/components/search/MorphologyFields.vue'
 import {computed, useId, useTemplateRef} from 'vue'
-import {CONTEXT_DISTANCES, UD_TAG_OPTIONS} from '~/features/search/search.constants'
+import {CONTEXT_DISTANCES} from '~/features/search/search.constants'
+import {useUdTagOptions} from '~/composables/useUdTagOptions'
 import {SEARCH_KINDS} from '~/features/search/search.types'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
@@ -46,12 +48,7 @@ const kindOptions = computed(() =>
   }))
 )
 
-const udTagOptions = computed(() =>
-  UD_TAG_OPTIONS.map(option => ({
-    label: t(option.labelKey),
-    value: option.value,
-  }))
-)
+const udTagOptions = useUdTagOptions()
 </script>
 
 <template>
@@ -72,11 +69,9 @@ const udTagOptions = computed(() =>
 
       <div class="grid gap-4 sm:grid-cols-2">
         <div>
-          <label
-            :for="fieldId('distance')"
-            class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          <FieldLabel :field-id="fieldId('distance')">
             {{ t('search.nearbyWord.distanceLabel') }}
-          </label>
+          </FieldLabel>
           <USelect
             :id="fieldId('distance')"
             v-model="context.distanceCode"
@@ -86,11 +81,9 @@ const udTagOptions = computed(() =>
         </div>
 
         <div>
-          <label
-            :for="fieldId('kind')"
-            class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+          <FieldLabel :field-id="fieldId('kind')">
             {{ t('search.nearbyWord.kindLabel') }}
-          </label>
+          </FieldLabel>
           <USelect
             :id="fieldId('kind')"
             v-model="context.kind"
@@ -102,11 +95,9 @@ const udTagOptions = computed(() =>
 
       <!-- One field per way of describing the word; only the chosen one shows. -->
       <div v-if="context.kind === 'text'">
-        <label
-          :for="fieldId('text')"
-          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <FieldLabel :field-id="fieldId('text')">
           {{ t('search.nearbyWord.kinds.text') }}
-        </label>
+        </FieldLabel>
         <UInput
           :id="fieldId('text')"
           ref="textField"
@@ -122,11 +113,9 @@ const udTagOptions = computed(() =>
       </div>
 
       <div v-else-if="context.kind === 'lemma'">
-        <label
-          :for="fieldId('lemma')"
-          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <FieldLabel :field-id="fieldId('lemma')">
           {{ t('search.nearbyWord.kinds.lemma') }}
-        </label>
+        </FieldLabel>
         <UInput
           :id="fieldId('lemma')"
           ref="lemmaField"
@@ -149,11 +138,9 @@ const udTagOptions = computed(() =>
         @set-value="context.morphology.setValue" />
 
       <div v-else-if="context.kind === 'ud'">
-        <label
-          :for="fieldId('ud')"
-          class="mb-1.5 block text-xs tracking-[0.12em] text-stone-500 uppercase">
+        <FieldLabel :field-id="fieldId('ud')">
           {{ t('search.nearbyWord.kinds.ud') }}
-        </label>
+        </FieldLabel>
         <USelect
           :id="fieldId('ud')"
           v-model="context.udTag"

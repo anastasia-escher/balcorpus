@@ -1,5 +1,5 @@
 import {computed, ref, type Ref} from 'vue'
-import {countPages} from '~/features/pagination/pagination'
+import {FIRST_PAGE, countPages} from '~/features/pagination/pagination'
 import {useAPI} from '~/composables/useAPI'
 
 /**
@@ -19,8 +19,6 @@ interface PaginatedResponse<Item> {
   previous: string | null
   results: Item[]
 }
-
-const FIRST_PAGE = 1
 
 export function usePaginatedList<Item>(endpoint: string, pageSize: number) {
   const requestAPI = useAPI()
@@ -123,5 +121,18 @@ export function usePaginatedList<Item>(endpoint: string, pageSize: number) {
     return fetchPage(wantedPage)
   }
 
-  return {items, itemCount, page, pageCount, loading, failed, load, goToPage}
+  /**
+   * Empty the list, and drop the answer of any request still on its way,
+   * so that it cannot fill the list again after it was emptied.
+   */
+  const clear = () => {
+    latestRequest += 1
+    items.value = []
+    itemCount.value = 0
+    page.value = FIRST_PAGE
+    loading.value = false
+    failed.value = false
+  }
+
+  return {items, itemCount, page, pageCount, loading, failed, load, goToPage, clear}
 }

@@ -47,10 +47,15 @@ def check_for_duplicates(headers, problems):
 
     Earlier versions of the annotation sheet had two columns both named
     "POS_Tag"; reading such a file by name would silently drop one of them.
+
+    Columns without a heading are left out of this: Excel often counts a few
+    empty columns at the right edge of a sheet, and they hold nothing.
     """
     seen = set()
     duplicates = set()
     for header in headers:
+        if not header:
+            continue
         if header in seen:
             duplicates.add(header)
         seen.add(header)
@@ -89,10 +94,12 @@ def row_is_too_wide(values, headers, problems, row_number):
 
 
 def read_rows(path, problems):
-    """Yield every non-empty data row of the file as a dict.
+    """Yield every non-empty data row of the file, with its row number.
 
-    Example for one row of an annotation file:
-    {'sent_id': 2, 'ud_id': 1, 'source': 'Васил', 'lemma': 'васил', ...}
+    The number is the one Excel shows, blank rows included, so an error
+    message points at the right line even in a file with an empty row
+    between its sentences. Example for one row of an annotation file:
+    (5, {'sent_id': 2, 'ud_id': 1, 'source': 'Васил', 'lemma': 'васил', ...})
     """
     path = Path(path)
     suffix = path.suffix.lower()
@@ -126,7 +133,7 @@ def read_excel_rows(path, problems):
             continue
         if row_is_too_wide(values, headers, problems, row_number):
             continue
-        yield dict(zip(headers, values))
+        yield row_number, dict(zip(headers, values))
 
     workbook.close()
 
@@ -143,4 +150,4 @@ def read_csv_rows(path, problems):
                 continue
             if row_is_too_wide(values, headers, problems, row_number):
                 continue
-            yield dict(zip(headers, values))
+            yield row_number, dict(zip(headers, values))

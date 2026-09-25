@@ -2,6 +2,8 @@
 
 from django.test import TestCase
 
+from core.models import Token
+
 from core.processing.sentence_context import (
     DEFAULT_WINDOW,
     MAXIMUM_WINDOW,
@@ -105,6 +107,18 @@ class ContextEndpointTests(TestCase):
         )
         self.assertEqual(answer['results'][0]['source_sentence'], 'Реченица број 2')
         self.assertEqual(answer['results'][0]['speaker_name'], 'Антон Панов')
+
+    def test_a_sentence_without_source_forms_is_read_from_the_diplomatic_ones(self):
+        # Some texts only have a diplomatic transcription; the search already
+        # shows those, so their context must not come back empty.
+        for token in Token.objects.filter(sentence__sentence_id=4):
+            token.diplomatic = token.source.upper()
+            token.source = None
+            token.save()
+
+        answer = self.context(text=TEXT_ID, sentence=4, window=0).json()
+
+        self.assertEqual(answer['results'][0]['source_sentence'], 'РЕЧЕНИЦА БРОЈ 4')
 
     def test_the_window_can_be_narrowed(self):
         answer = self.context(text=TEXT_ID, sentence=4, window=1).json()

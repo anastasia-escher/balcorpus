@@ -10,6 +10,9 @@
  * texts each decide that for themselves.
  */
 
+/** Pages are numbered from 1, as the corpus numbers them. */
+export const FIRST_PAGE = 1
+
 /** How many page numbers are shown on either side of the current one. */
 const NEIGHBOURS = 1
 

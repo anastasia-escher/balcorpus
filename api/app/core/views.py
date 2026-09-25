@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from .models import Text, Speaker
+from .models import Speaker
 from .processing.context_search import add_context_condition, offsets_between
 from .processing.search_export.search_xlsx import MAX_ROWS as MAX_EXPORT_ROWS, write_search_xlsx
 from .processing.sentence_context import clamp_window, sentences_around
@@ -161,10 +161,6 @@ class BrowsableCorpusViewSet(
 
 
 class TextViewSet(BrowsableCorpusViewSet):
-    # The sentences are not prefetched: TextSerializer does not carry them,
-    # because a text holds thousands of tokens and a list of texts that
-    # included them answered with megabytes.
-    queryset = Text.objects.all().prefetch_related('authors')
     serializer_class = TextSerializer
 
     def get_queryset(self):

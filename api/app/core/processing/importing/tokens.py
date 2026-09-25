@@ -27,6 +27,7 @@ from .columns import (
     TIME_COLUMN,
     TOKEN_COLUMN,
 )
+from .common_checks import check_required_columns
 from .linguist_format import (
     drop_rows_without_a_word,
     find_speaker_ids,
@@ -69,13 +70,13 @@ def parse_rows(path, problems):
     Returns the rows together with the column names the file actually had, so
     the file only has to be opened once.
 
-    Row 1 of the file is the heading, so the first row of data is row 2 and the
-    numbers in an error message match what the linguist sees in Excel.
+    Each row keeps the number Excel shows for it, so an error message points
+    at the line the linguist sees.
     """
     parsed = []
     column_names = []
 
-    for row_number, row in enumerate(read_rows(path, problems), start=2):
+    for row_number, row in read_rows(path, problems):
         row = use_corpus_column_names(row)
         if not column_names:
             column_names = list(row)
@@ -98,25 +99,6 @@ def parse_rows(path, problems):
     return parsed, column_names
 
 
-def check_columns(column_names, problems):
-    """Make sure the file is the kind of file we were expecting.
-
-    A workbook where the wrong sheet was exported has none of these columns,
-    and saying so is far more useful than a hundred empty-value errors.
-    """
-    if not column_names:
-        problems.error('the file has no data rows')
-        return
-
-    missing = [column for column in REQUIRED_COLUMNS if column not in column_names]
-    if missing:
-        problems.error(
-            'these columns are missing: ' + ', '.join(missing)
-            + '. Expected an annotation file with the columns '
-            + ', '.join(REQUIRED_COLUMNS) + '.'
-        )
-
-
 def check_texts_exist(rows, problems):
     """Every text named in the file must already be in the database."""
     named_texts = {row['text_id'] for row in rows}
@@ -137,17 +119,22 @@ def check_texts_exist(rows, problems):
         )
 
 
-def group_rows_by_text(rows):
-    """Sort the rows into one bucket per text.
+def check_one_text(rows, problems):
+    """A file must hold exactly one text.
 
-    A file normally holds a single text, but nothing stops it from holding
-    several, so the grouping is done anyway.
+    That is how the linguists deliver them, and every check here counts
+    sentences within the file: with two texts, sentence 1 of each would look
+    like the same sentence written twice.
     """
-    grouped = defaultdict(list)
-    for row in rows:
-        grouped[row['text_id']].append(row)
+    named_texts = {row['text_id'] for row in rows if row['text_id']}
 
-    return grouped
+    if not named_texts:
+        problems.error('the file has no tokens')
+    elif len(named_texts) > 1:
+        problems.error(
+            'the file holds more than one text: ' + ', '.join(sorted(named_texts))
+            + '. Please send each text as a file of its own.'
+        )
 
 
 def write_text_rows(text, rows):
@@ -221,8 +208,8 @@ def import_tokens(path, allow_unknown_speakers=False, text_id=None):
     file whose title belongs to more than one text.
 
     Raises DataProblems when the file has errors; in that case the database is
-    left untouched.  Returns one summary per text found in the file, and the
-    warnings worth showing even for a file that went through.
+    left untouched.  Returns the summary of the text, and the warnings worth
+    showing even for a file that went through.
     """
     problems = ProblemList()
 
@@ -231,7 +218,7 @@ def import_tokens(path, allow_unknown_speakers=False, text_id=None):
 
     # A file whose columns have shifted makes every later check meaningless,
     # so it is reported on its own.
-    check_columns(column_names, problems)
+    check_required_columns(column_names, REQUIRED_COLUMNS, problems, 'an annotation file')
     if problems.has_errors():
         raise DataProblems(path, problems.errors, problems.warnings)
 
@@ -243,6 +230,10 @@ def import_tokens(path, allow_unknown_speakers=False, text_id=None):
     logger.info(f'{len(rows)} rows read, {sentence_count} sentences')
 
     logger.info('Checking the annotation before writing anything')
+    check_one_text(rows, problems)
+    if problems.has_errors():
+        raise DataProblems(path, problems.errors, problems.warnings)
+
     known_speaker_slugs = set(Speaker.objects.values_list('speaker_id', flat=True))
     check_annotation_rows(rows, known_speaker_slugs, problems, allow_unknown_speakers)
     check_texts_exist(rows, problems)
@@ -250,10 +241,8 @@ def import_tokens(path, allow_unknown_speakers=False, text_id=None):
     if problems.has_errors():
         raise DataProblems(path, problems.errors, problems.warnings)
 
-    summaries = []
-    for text_id, text_rows in group_rows_by_text(rows).items():
-        text = Text.objects.get(text_id=text_id)
-        logger.info(f'Writing {len(text_rows)} tokens for {text_id}')
-        summaries.append(write_text_rows(text, text_rows))
+    text = Text.objects.get(text_id=rows[0]['text_id'])
+    logger.info(f'Writing {len(rows)} tokens for {text.text_id}')
+    summary = write_text_rows(text, rows)
 
-    return summaries, problems.warnings
+    return summary, problems.warnings

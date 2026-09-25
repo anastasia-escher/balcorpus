@@ -59,4 +59,19 @@ describe('useSearchStore', () => {
     expect(store.resultCount).toBe(106)
     expect(store.loading).toBe(false)
   })
+
+  it('does not let a search still on its way fill in an emptied form', async () => {
+    const store = useSearchStore()
+
+    store.selectMorphologyCategory('Z')
+    const slowSearch = store.submitSearch('tag')
+    store.resetSearchInput('tag')
+    await store.submitSearch('tag')
+    await slowSearch
+
+    expect(store.searchErrorKey).toBe('search.errors.empty')
+    expect(store.resultCount).toBe(0)
+    expect(store.hasSearched).toBe(false)
+    expect(store.loading).toBe(false)
+  })
 })

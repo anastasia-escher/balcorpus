@@ -2,19 +2,13 @@
 import SearchContextFilter from '~/components/search/SearchContextFilter.vue'
 import SearchFormActions from '~/components/search/SearchFormActions.vue'
 import SearchFormIntro from '~/components/search/SearchFormIntro.vue'
-import {computed} from 'vue'
-import {UD_TAG_OPTIONS} from '~/features/search/search.constants'
+import {useUdTagOptions} from '~/composables/useUdTagOptions'
 import {useSearchStore} from '~/stores/search'
 import {useI18n} from 'vue-i18n'
 
 const searchStore = useSearchStore()
 const {t} = useI18n()
-const udTagOptions = computed(() =>
-  UD_TAG_OPTIONS.map(option => ({
-    label: t(option.labelKey),
-    value: option.value,
-  }))
-)
+const udTagOptions = useUdTagOptions()
 
 const submit = () => {
   searchStore.submitSearch('ud')
@@ -46,12 +40,22 @@ const submit = () => {
         :placeholder="t('search.forms.ud.placeholder')"
         class="search-control w-full"
         size="xl" />
-      <USelect
-        v-model="searchStore.parent"
-        :items="udTagOptions"
-        :placeholder="t('search.forms.ud.parentPlaceholder')"
-        class="search-control w-full"
-        size="xl" />
+      <div>
+        <USelect
+          v-model="searchStore.parent"
+          :items="udTagOptions"
+          :placeholder="t('search.forms.ud.parentPlaceholder')"
+          class="search-control w-full"
+          size="xl" />
+        <!-- The parent is optional, and a select cannot be emptied by itself. -->
+        <button
+          v-if="searchStore.parent"
+          type="button"
+          class="mt-1.5 text-xs text-stone-500 underline underline-offset-2 transition-colors hover:text-stone-900"
+          @click="searchStore.parent = undefined">
+          {{ t('search.forms.ud.clearParent') }}
+        </button>
+      </div>
       <SearchContextFilter />
 
       <SearchFormActions @reset="searchStore.resetSearchInput('ud')" />

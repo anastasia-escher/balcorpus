@@ -34,8 +34,8 @@ const markStyles: Record<string, string> = {
 
 /** Which matches of the whole result set this page is showing. */
 const shownRange = computed(() => ({
-  ...pageRange(searchStore.page, searchStore.resultCount ?? 0, SEARCH_PAGE_SIZE),
-  total: searchStore.resultCount ?? 0,
+  ...pageRange(searchStore.page, searchStore.resultCount, SEARCH_PAGE_SIZE),
+  total: searchStore.resultCount,
 }))
 
 /** The annotation of one hit, as label/value pairs, skipping what is missing. */
@@ -66,7 +66,7 @@ const annotations = (result: SearchResult) =>
       </h2>
 
       <template v-if="searchStore.results.length">
-        <p v-if="(searchStore.resultCount ?? 0) > SEARCH_EXPORT_MAX_ROWS" class="text-xs text-stone-500">
+        <p v-if="(searchStore.resultCount) > SEARCH_EXPORT_MAX_ROWS" class="text-xs text-stone-500">
           {{ t('search.results.tooManyForExport', {max: SEARCH_EXPORT_MAX_ROWS}) }}
         </p>
         <!-- A new tab, so that a refusal (too many requests) opens there instead
@@ -88,6 +88,9 @@ const annotations = (result: SearchResult) =>
 
     <ol v-else class="mt-6 divide-y divide-stone-200 border-t border-stone-200">
       <li v-for="result in searchStore.results" :key="result.id" class="py-5">
+        <!-- The odd line breaks inside the tags are on purpose: any space or
+             newline between them would show up as an extra space inside the
+             sentence, for example between a word and its full stop. -->
         <p class="font-serif text-lg leading-relaxed text-stone-800">
           <template v-for="(piece, index) in sentencePieces(result)" :key="index"
             ><mark

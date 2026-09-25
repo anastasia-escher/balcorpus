@@ -14,6 +14,14 @@ from helpers.logger import logger
 
 from .php_export import DEFAULT_OUTPUT_FOLDER, export_annotation, export_metadata
 
+# What to tell the person running an import when the database took the data
+# but the files for the server could not be written. Without it the error
+# would read like a failed import, and they would run it again for nothing.
+EXPORT_FAILED_ADVICE = (
+    'The data is in the database, but the files for the server could not be '
+    'written. Fix the problem above, then write them with: manage.py export_php'
+)
+
 
 def export_metadata_for_server(output_folder=DEFAULT_OUTPUT_FOLDER):
     """Write the three metadata files and say what went into them.

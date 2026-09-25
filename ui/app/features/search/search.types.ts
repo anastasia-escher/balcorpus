@@ -57,13 +57,6 @@ export interface SearchResult {
   context_span: SentenceSpan | null
 }
 
-export interface SearchResponse {
-  count: number
-  next: string | null
-  previous: string | null
-  results: SearchResult[]
-}
-
 /** One sentence standing next to a search result. */
 export interface ContextSentence {
   sentence_id: number

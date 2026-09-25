@@ -1,1 +1,3 @@
-
+# The site may be indexed; the API behind it is not a page to crawl.
+User-agent: *
+Disallow: /api/

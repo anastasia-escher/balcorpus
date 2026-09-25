@@ -31,7 +31,11 @@ def join_tokens_with_spans(tokens, field):
     text = ''
     spans = {}
 
-    for token in tokens:
+    # Put in sentence order here, rather than relying on whoever fetched the
+    # tokens to have sorted them.
+    ordered_tokens = sorted(tokens, key=lambda token: token.ud_id)
+
+    for token in ordered_tokens:
         word = (getattr(token, field, '') or '').strip()
         if not word:
             continue

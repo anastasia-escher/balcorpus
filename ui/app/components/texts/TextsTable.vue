@@ -13,6 +13,9 @@ defineProps<{
 }>()
 
 const {t} = useI18n()
+
+/** The column headings, in order, as keys under texts.columns. */
+const COLUMNS = ['title', 'author', 'year', 'genre', 'variety']
 </script>
 
 <template>
@@ -22,20 +25,11 @@ const {t} = useI18n()
     <table class="w-full min-w-3xl border-collapse text-left">
       <thead>
         <tr class="border-b border-stone-300">
-          <th class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
-            {{ t('texts.columns.title') }}
-          </th>
-          <th class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
-            {{ t('texts.columns.author') }}
-          </th>
-          <th class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
-            {{ t('texts.columns.year') }}
-          </th>
-          <th class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
-            {{ t('texts.columns.genre') }}
-          </th>
-          <th class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
-            {{ t('texts.columns.variety') }}
+          <th
+            v-for="column in COLUMNS"
+            :key="column"
+            class="px-3 py-3 text-xs font-medium tracking-[0.08em] text-stone-500 uppercase">
+            {{ t(`texts.columns.${column}`) }}
           </th>
         </tr>
       </thead>

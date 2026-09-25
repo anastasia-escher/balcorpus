@@ -9,10 +9,10 @@ than one of them.
 
 ```
 data/
-  input/                    what the linguists deliver, as delivered
-    metadata_speakers/        the speaker table, .xlsx
-    metadata_texts/           the text table, .xlsx
-    annotations/              one annotated text per file, .xlsx
+  input/                    what goes into the database; its README describes every column
+    metadata_speakers/        the speaker table, .xlsx -- the master copy, edited here
+    metadata_texts/           the text table, .xlsx -- the master copy, edited here
+    annotations/              one annotated text per file, .xlsx, as the linguists send it
 
   php_ready/                what the server loads -- generated, never edited
     speakers.csv
@@ -20,13 +20,22 @@ data/
     text_authors.csv
     sentences/<text_id>.csv
     tokens/<text_id>.csv
-
-  fixed_data/               the published data package, see its own README
-  transcripts/              working copies of material being prepared
 ```
 
 `data/` is mounted in the container as `/data`, which is why the commands
 below are given paths starting with `/data`.
+
+## When a new text arrives
+
+The linguists send only the annotation file. Three steps:
+
+1. Add a row for the text to `input/metadata_texts/texts.xlsx`, and a row for
+   each new person to `input/metadata_speakers/speakers.xlsx`, following the
+   rows around it. Import the tables that changed (commands 1 and 2 below).
+2. Put the linguists' file, unchanged, into `input/annotations/` and import it
+   (command 3). The text is found by the title in the file, the speakers by
+   their names.
+3. Copy the new files from `php_ready/` to the server.
 
 ## The order of work
 
@@ -54,8 +63,12 @@ docker compose exec api python manage.py import_texts /data/input/metadata_texts
 ### 3. The annotated text
 
 ```
-docker compose exec api python manage.py upload_transcription /data/input/annotations/<text_id>.xlsx
+docker compose exec api python manage.py upload_transcription /data/input/annotations/<file>.xlsx
 ```
+
+The file may be in the linguists' own format. If two texts share the title
+written in the file, the command stops, lists their `text_id`s, and the right
+one is given with `--text <text_id>`.
 
 Re-running this for a text that is already in the corpus replaces everything
 stored for it, so a corrected file can simply be imported again.
@@ -117,6 +130,7 @@ the whole corpus again.
 - **Nothing in `php_ready/` is edited by hand.** It is generated, it is not in
   git, and the next export overwrites it. A correction belongs in the file
   under `input/`, which is then imported again.
-- **Files under `input/` are kept as they were delivered.** They are the
-  record of what was received; the checks exist so that a file does not have
-  to be tidied up by hand before it can be imported.
+- **An annotation file is imported as it was delivered.** The checks exist
+  so that a file does not have to be tidied up by hand first. A correction
+  made here to a delivered file (as for `panov_pechalbari_1936.xlsx`) means
+  the linguists' original of that text must not be imported again.

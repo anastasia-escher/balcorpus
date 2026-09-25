@@ -120,18 +120,27 @@ def clean_label(value):
 
 
 def clean_number(value):
-    """Read a cell as an integer, or None when it does not hold one.
+    """Read a cell as a whole number, or None when it does not hold one.
 
-    Example: "1902" -> 1902, "" -> None, "um 1900" -> None
+    Excel may store 1902 as 1902.0, which is still a whole number. A value
+    like 1.5 is not: cutting it down to 1 would silently merge two sentences.
+
+    Example: "1902" -> 1902, 1902.0 -> 1902, "1.5" -> None, "" -> None, "um 1900" -> None
     """
     text = clean_text(value)
     if text is None:
         return None
 
     try:
-        return int(float(text))
+        number = float(text)
     except ValueError:
         return None
+
+    # is_integer() is also False for "inf" and "nan", which int() cannot take.
+    if not number.is_integer():
+        return None
+
+    return int(number)
 
 
 def clean_yes_no(value):

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand, CommandError
 
-from core.processing.exporting.after_import import export_metadata_for_server
+from core.processing.exporting.after_import import EXPORT_FAILED_ADVICE, export_metadata_for_server
 from core.processing.importing.problems import DataProblems
 from core.processing.importing.speakers import import_speakers
 from helpers.logger import logger
@@ -36,4 +36,8 @@ class Command(BaseCommand):
             f"{summary['created']} speakers created, {summary['updated']} updated."
         )
 
-        export_metadata_for_server()
+        try:
+            export_metadata_for_server()
+        except OSError as error:
+            logger.error(str(error))
+            raise CommandError(EXPORT_FAILED_ADVICE)

@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
-import sys
 from os import environ
 from pathlib import Path
 
@@ -167,11 +166,7 @@ REST_FRAMEWORK = {
         "export": "5/min",
     },
 }
-
-# The test suite sends far more than 60 requests a minute from one address,
-# so the limits are off there; the tests of the limits switch them on again.
-if sys.argv[1:2] == ["test"]:
-    REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"] = {"anon": None, "export": None}
+# The tests switch these off for themselves: see core/tests/__init__.py.
 
 ###
 # SECURITY
@@ -188,7 +183,8 @@ CORS_ALLOW_HEADERS = default_headers + (
     "X-CSRFTOKEN",
 )
 CORS_EXPOSE_HEADERS = ["Content-Type", "X-CSRFToken"]
-CORS_ALLOW_CREDENTIALS = True
+# The public API needs no login, so the site sends no cookies with its requests.
+CORS_ALLOW_CREDENTIALS = False
 
 # CSRF configuration
 CSRF_TRUSTED_ORIGINS = environ.get("DJANGO_CSRF_TRUSTED_ORIGINS").split(",")

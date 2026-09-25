@@ -2,17 +2,21 @@
 
 Metadata and morphologically and syntactically annotated texts of the Macedonian Corpus. The metadata are in English; the material itself, and the names of people and titles, stay in Macedonian.
 
-These files are produced from the spreadsheets the editors maintain, by
-`python -m tools.fix_data.run` in the repository root. Edit the
-spreadsheets and run it again rather than editing these files by hand.
+The two metadata tables here are the master copy. A new text or a new person
+is added as a row in `metadata_texts/texts.xlsx` or
+`metadata_speakers/speakers.xlsx`, following the rows around it, and the
+table is imported again. How to import is described in `../README.md`.
+
+The annotation files may stay exactly as the linguists send them; see
+"annotations" below.
 
 ## How the files fit together
 
 ```
-speakers.xlsx          one row per person        speaker_id
+metadata_speakers/speakers.xlsx   one row per person     speaker_id
         ▲                                              ▲
         │ author_id                                    │ speaker_id
-texts.xlsx              one row per document      text_id
+metadata_texts/texts.xlsx         one row per document   text_id
         ▲                                              ▲
         │ text_id                                      │
 annotations/<text_id>.xlsx    one row per token
@@ -39,7 +43,7 @@ spreadsheets, exports and URLs unchanged.
   diacritics spelled out: `ж` → `zh`, `ч` → `ch`, `џ` → `dzh`, `ѓ` → `gj`,
   `ќ` → `kj`, `љ` → `lj`, `њ` → `nj`, `ѕ` → `dz`.
 
-## speakers.xlsx
+## metadata_speakers/speakers.xlsx
 
 One row per person whose language the corpus records.
 
@@ -62,8 +66,9 @@ One row per person whose language the corpus records.
 | `l3` | string | Third language, written like l2. |
 | `notes` | string | Remarks the source hid inside cells that were meant to hold a value, such as postings as an ambassador. |
 | `source_row` | integer | Row number in the spreadsheet this came from, for checking against the editors’ own copy. |
+| `show_metadata` | string | Whether this person's details may be shown on the site: `yes` or `no`. Empty, or no column at all, means yes. With `no` only `name`, `sex` and the languages are shown. `religion` is never shown on the site. |
 
-## texts.xlsx
+## metadata_texts/texts.xlsx
 
 One row per document of the corpus.
 
@@ -86,6 +91,12 @@ One row per document of the corpus.
 
 One file per text, one row per token, in the order of the text. Morphology follows MULTEXT-East, syntax follows Universal Dependencies.
 
+A file can be imported exactly as the linguists send it. The importer
+accepts their column names `ud_valency` (for `head`) and `speaker` (for
+`speaker_id`), finds the text by its Macedonian title in `text_id` and each
+speaker by their name, and leaves out rows with no word at all, such as an
+invisible byte order mark in the first row. The file must hold one text.
+
 | column | type | meaning |
 |---|---|---|
 | `text_id` | string | The text this token belongs to. |
@@ -104,12 +115,10 @@ One file per text, one row per token, in the order of the text. Morphology follo
 
 ## Known gaps
 
-The conversion prints everything it cannot translate or match. What it
-reported last time is recorded here:
-
-- Three authors write a text but are missing from the speaker
+- Three authors write a text but were missing from the editors' speaker
   spreadsheet: Миле Неделковски, Катица Ќулафкова and Славе Ѓ. Димовски.
   They appear in `speakers.xlsx` with their name only, and their `notes`
   say so.
-- The first row of the annotation file held a byte order mark and no
-  word, so it is not a token and was dropped.
+- `annotations/panov_pechalbari_1936.xlsx` has been corrected here after it
+  was delivered (tags, and nine tokens added). Do not import the linguists'
+  original of this text again: it would replace the corrections.

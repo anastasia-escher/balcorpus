@@ -13,7 +13,7 @@ XLSX_URL = '/api/v1/tokens/search/xlsx/'
 
 
 def rates(**rates_by_scope):
-    """Switch the request limits on for one test; the test settings turn them off."""
+    """Switch the request limits on for one test; core/tests/__init__.py turns them off."""
     return mock.patch.dict(SimpleRateThrottle.THROTTLE_RATES, rates_by_scope)
 
 

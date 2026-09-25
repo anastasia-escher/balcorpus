@@ -5328,13 +5328,6 @@ picomatch@^4.0.2, picomatch@^4.0.3, picomatch@^4.0.4, picomatch@^4.0.5, picomatc
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.7.tgz#6313360034ccb36b3dc61ecbdff78121f90fe21f"
   integrity sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==
 
-pinia-plugin-persistedstate@^4.7.1:
-  version "4.7.1"
-  resolved "https://registry.yarnpkg.com/pinia-plugin-persistedstate/-/pinia-plugin-persistedstate-4.7.1.tgz#d13880e0b7efdafd1b73fca3d73cd64ae34bde84"
-  integrity sha512-WHOqh2esDlR3eAaknPbqXrkkj0D24h8shrDPqysgCFR6ghqP/fpFfJmMPJp0gETHsvrh9YNNg6dQfo2OEtDnIQ==
-  dependencies:
-    defu "^6.1.4"
-
 pinia@^4.0.3:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/pinia/-/pinia-4.0.3.tgz#9cf9e353b3602e24a96e4ca4425817ecb9993292"
