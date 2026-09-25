@@ -42,16 +42,24 @@ def use_corpus_column_names(row):
 
 
 def drop_rows_without_a_word(rows, problems):
-    """Leave out rows with neither a word form nor a lemma.
+    """Leave out rows with no word form in any reading and no lemma.
 
     Such a row is not a token. In the linguists' files it is the byte order
     mark at the very start, which Excel shows as an invisible word. Each one
     is mentioned, so a real token that lost its word does not vanish unseen.
+
+    The diplomatic transcription counts as a word form: a text that has no
+    source is read from it (see sentence_spans.displayed_sentence).
     """
     kept = []
     for row in rows:
         fields = row['fields']
-        if fields['source'] is None and fields['lemma'] is None:
+        has_no_word = (
+            fields['source'] is None
+            and fields['diplomatic'] is None
+            and fields['lemma'] is None
+        )
+        if has_no_word:
             problems.warning('no word form and no lemma, so the row was left out', row['row_number'])
             continue
         kept.append(row)

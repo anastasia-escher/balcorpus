@@ -33,7 +33,7 @@ def check_numeric_cells(row, problems):
             continue
 
         if typed:
-            problems.error(f"{column} is '{typed}', which is not a whole number", row['row_number'])
+            problems.error(f"{column} is '{typed}', which is not a whole number of zero or more", row['row_number'])
         elif column in REQUIRED_NUMBERS:
             problems.error(f'{column} is empty', row['row_number'])
         else:

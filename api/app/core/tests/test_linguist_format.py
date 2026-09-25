@@ -66,6 +66,25 @@ class LinguistFileTests(TestCase):
         self.assertFalse(Token.objects.filter(ud_pos='NUM').exists())
         self.assertTrue(any('no word form and no lemma' in warning for warning in warnings))
 
+    def test_a_row_with_only_a_diplomatic_form_is_a_token(self):
+        # A text without a source is written down in its diplomatic
+        # transcription alone, and the lemma may not be annotated yet.
+        diplomatic_only = [2, 3, None, 'печалба', None, 'NOUN', 'Ncfsnn', '_', 1, 'nmod', 'Антон Панов', None, 'Печалбари']
+
+        summary, _warnings = import_tokens(self.write_file(SENTENCE_ROWS + [diplomatic_only]))
+
+        self.assertEqual(summary['tokens'], 3)
+        self.assertTrue(Token.objects.filter(diplomatic='печалба').exists())
+
+    def test_a_negative_token_number_is_reported_not_crashed_on(self):
+        negative = [2, -1, 'и', None, 'и', 'CCONJ', 'Cc', '_', 1, 'cc', 'Антон Панов', None, 'Печалбари']
+
+        with self.assertRaises(DataProblems) as raised:
+            import_tokens(self.write_file(SENTENCE_ROWS + [negative]))
+
+        self.assertTrue(any("ud_id is '-1'" in error for error in raised.exception.errors))
+        self.assertFalse(Token.objects.exists())
+
     def test_a_title_two_texts_share_needs_the_text_named(self):
         make_text(text_id='panov_pechalbari_1950', title='Печалбари')
 

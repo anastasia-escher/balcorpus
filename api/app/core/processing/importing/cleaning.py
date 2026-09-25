@@ -120,12 +120,17 @@ def clean_label(value):
 
 
 def clean_number(value):
-    """Read a cell as a whole number, or None when it does not hold one.
+    """Read a cell as a whole number of zero or more, or None when it does not hold one.
 
     Excel may store 1902 as 1902.0, which is still a whole number. A value
     like 1.5 is not: cutting it down to 1 would silently merge two sentences.
 
-    Example: "1902" -> 1902, 1902.0 -> 1902, "1.5" -> None, "" -> None, "um 1900" -> None
+    Negative numbers count as unreadable too. Every column read this way is
+    stored in a column that cannot hold one, and letting it through would stop
+    the import with a database error instead of a row number.
+
+    Example: "1902" -> 1902, 1902.0 -> 1902, "1.5" -> None, "-1" -> None,
+             "" -> None, "um 1900" -> None
     """
     text = clean_text(value)
     if text is None:
@@ -137,7 +142,7 @@ def clean_number(value):
         return None
 
     # is_integer() is also False for "inf" and "nan", which int() cannot take.
-    if not number.is_integer():
+    if not number.is_integer() or number < 0:
         return None
 
     return int(number)

@@ -4,7 +4,7 @@ import SearchResultContext from '~/components/search/SearchResultContext.vue'
 import {SEARCH_EXPORT_MAX_ROWS, SEARCH_PAGE_SIZE} from '~/features/search/search.constants'
 import {pageRange} from '~/features/pagination/pagination'
 import {splitSentenceIntoPieces} from '~/features/search/highlight'
-import {computed} from 'vue'
+import {computed, watch} from 'vue'
 import {useSearchStore} from '~/stores/search'
 import {useSentenceContext} from '~/composables/useSentenceContext'
 import {useI18n} from 'vue-i18n'
@@ -15,6 +15,10 @@ const searchStore = useSearchStore()
 const {t} = useI18n()
 const context = useSentenceContext()
 const config = useRuntimeConfig()
+
+// Every new search and every new page brings a new list, and the contexts
+// opened on the old one are closed rather than carried over to it.
+watch(() => searchStore.results, context.closeAll)
 
 /** The whole result of the search on screen as an Excel file, all pages at once. */
 const exportUrl = computed(() => {
