@@ -74,4 +74,15 @@ describe('useSearchStore', () => {
     expect(store.hasSearched).toBe(false)
     expect(store.loading).toBe(false)
   })
+
+  it('unticks "match inside words" on reset of the text tab', () => {
+    const store = useSearchStore()
+
+    store.textQuery = 'ица'
+    store.partialText = true
+    store.resetSearchInput('text')
+
+    expect(store.textQuery).toBe('')
+    expect(store.partialText).toBe(false)
+  })
 })

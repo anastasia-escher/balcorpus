@@ -1,5 +1,6 @@
 import {useRuntimeConfig} from '#app'
 import {useI18n} from 'vue-i18n'
+import {serverMessage} from '~/features/api/server-message'
 
 /**
  * Interface for API request options
@@ -52,7 +53,9 @@ export const useAPI = () => {
 
       if (!(notFound && options.quietNotFound)) {
         const statusCode = status ?? t('api.networkStatus')
-        const message = error.message || t('api.unknownError')
+        // What the corpus said about it, e.g. "q: Longer than 100 characters.",
+        // is more use to the reader than the technical summary of the request.
+        const message = serverMessage(error.data) || error.message || t('api.unknownError')
         toast.add({
           color: 'error',
           title: t('api.errorSummary', {statusCode}),

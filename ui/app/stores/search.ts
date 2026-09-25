@@ -77,6 +77,10 @@ export const useSearchStore = defineStore('search', () => {
       searchInputs[inputKey].value =
         inputKey === 'udTag' || inputKey === 'parent' ? undefined : ''
     }
+
+    if (kind === 'text') {
+      partialText.value = false
+    }
   }
 
   const buildSearchParameters = (kind: SearchKind) => {
