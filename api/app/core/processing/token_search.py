@@ -39,6 +39,18 @@ def ud_relation_filter(relation, prefix=''):
     )
 
 
+def is_wildcard_only(pos):
+    """True for a tag query that fixes no position at all.
+
+    Such a query matches every token of the corpus, so it does not say which
+    word is being looked for.
+
+    Example: "*" -> True, "???*" -> True, "N*" -> False, "" -> True
+    """
+    without_wildcards = pos.replace(POS_WILDCARD, '').replace(POS_TAIL_WILDCARD, '')
+    return without_wildcards == ''
+
+
 def pos_tag_regex(pos):
     """Turn a MULTEXT-East query into a regular expression.
 

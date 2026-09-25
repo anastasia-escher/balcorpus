@@ -37,6 +37,17 @@ class SearchEndpointTests(TestCase):
     def test_blank_criteria_count_as_no_criteria(self):
         self.assertEqual(self.search(lemma='   ').status_code, 400)
 
+    def test_a_tag_of_wildcards_only_is_not_a_search(self):
+        # It matches every token, so it would hand out the whole corpus.
+        self.assertEqual(self.search(pos='*').status_code, 400)
+        self.assertEqual(self.search(pos='???*').status_code, 400)
+
+    def test_a_tag_of_wildcards_only_does_not_spoil_another_criterion(self):
+        response = self.search(pos='*', lemma='убав')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['count'], 1)
+
     def test_a_match_comes_back_with_its_sentence_and_its_speaker(self):
         result = self.search(lemma='убав').json()['results'][0]
 

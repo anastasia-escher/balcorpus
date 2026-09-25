@@ -12,7 +12,7 @@ from .processing.context_search import add_context_condition, offsets_between
 from .processing.search_export.search_xlsx import MAX_ROWS as MAX_EXPORT_ROWS, write_search_xlsx
 from .processing.sentence_context import clamp_window, sentences_around
 from .processing.text_search import build_text_queryset
-from .processing.token_search import build_search_queryset
+from .processing.token_search import build_search_queryset, is_wildcard_only
 from .serializers import (
     TextSerializer,
     SpeakerSerializer,
@@ -95,6 +95,11 @@ def describes_a_word(word):
 def build_search_from_request(request):
     """The tokens a search request asks for, or None when it names no word."""
     searched_word = read_word(request)
+    # "?pos=*" would hand out the whole corpus page by page. Next to a lemma
+    # such a tag adds nothing, so dropping it changes no other search. The
+    # nearby word keeps it: that one only narrows a search down.
+    if is_wildcard_only(searched_word['pos']):
+        searched_word['pos'] = ''
     if not describes_a_word(searched_word):
         return None
 
