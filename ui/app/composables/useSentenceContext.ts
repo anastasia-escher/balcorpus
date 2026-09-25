@@ -26,9 +26,8 @@ export function useSentenceContext() {
 
   const sentencesByContext = ref<Record<string, ContextSentence[]>>({})
   const loadingContexts = ref<Record<string, boolean>>({})
-  // The open results, as {result id: its context key}, e.g. {596987: 'panov_pechalbari_1936:42'}.
-  // The key is kept so that a failed request can close every result waiting for it.
-  const openResults = ref<Record<number, string>>({})
+  // The open results by their id, e.g. {596987: true}.
+  const openResults = ref<Record<number, boolean>>({})
 
   const isOpen = (result: SearchResult) => result.id in openResults.value
 
@@ -37,15 +36,6 @@ export function useSentenceContext() {
 
   const sentencesFor = (result: SearchResult): ContextSentence[] =>
     sentencesByContext.value[contextKey(result)] ?? []
-
-  /** Close the context of every result waiting for this sentence. */
-  const closeResultsOf = (key: string) => {
-    for (const [resultId, resultKey] of Object.entries(openResults.value)) {
-      if (resultKey === key) {
-        delete openResults.value[Number(resultId)]
-      }
-    }
-  }
 
   const fetchContext = async (result: SearchResult) => {
     const key = contextKey(result)
@@ -63,7 +53,7 @@ export function useSentenceContext() {
       // left open, it would read as "no sentences around this one". The error
       // itself has already been shown, and opening the result tries once more.
       if (error.value || !data.value) {
-        closeResultsOf(key)
+        delete openResults.value[result.id]
         return
       }
 
@@ -81,7 +71,7 @@ export function useSentenceContext() {
     }
 
     const key = contextKey(result)
-    openResults.value[result.id] = key
+    openResults.value[result.id] = true
 
     const alreadyFetched = key in sentencesByContext.value
     const alreadyLoading = Boolean(loadingContexts.value[key])

@@ -7,7 +7,6 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle
 
-from .models import Speaker
 from .processing.context_search import add_context_condition, offsets_between
 from .processing.search_export.search_xlsx import MAX_ROWS as MAX_EXPORT_ROWS, write_search_xlsx
 from .processing.sentence_context import clamp_window, sentences_around
@@ -15,7 +14,6 @@ from .processing.text_search import build_text_queryset
 from .processing.token_search import build_search_queryset, is_wildcard_only
 from .serializers import (
     TextSerializer,
-    SpeakerSerializer,
     SentenceContextSerializer,
     TokenSearchResultSerializer,
 )
@@ -192,11 +190,6 @@ class TextViewSet(BrowsableCorpusViewSet):
             'total': texts.count(),
             'annotated': texts.filter(is_annotated=True).count(),
         })
-
-
-class SpeakerViewSet(BrowsableCorpusViewSet):
-    queryset = Speaker.objects.all()
-    serializer_class = SpeakerSerializer
 
 
 class SentenceViewSet(PublicCorpusViewSet):
