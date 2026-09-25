@@ -3,7 +3,8 @@ import CorpusPagination from '~/components/common/CorpusPagination.vue'
 import TextsSearchField from '~/components/texts/TextsSearchField.vue'
 import TextsTable from '~/components/texts/TextsTable.vue'
 import {TEXTS_PAGE_SIZE} from '~/features/texts/texts.constants'
-import {computed, onMounted, ref} from 'vue'
+import {computed, onMounted, ref, watch} from 'vue'
+import {useRoute} from 'vue-router'
 import {pageRange} from '~/features/pagination/pagination'
 import {useListUrl} from '~/composables/useListUrl'
 import {useTextList} from '~/composables/useTextList'
@@ -11,6 +12,7 @@ import {useI18n} from 'vue-i18n'
 
 const textList = useTextList()
 const listUrl = useListUrl()
+const route = useRoute()
 const {t} = useI18n()
 
 // What the page was opened with: a plain /texts, or a link carrying a search
@@ -30,7 +32,16 @@ const shownRange = computed(() => ({
 const narrowing = (search: string): Record<string, string> => (search ? {q: search} : {})
 
 /** Put into the address whatever the list is actually showing now. */
-const rememberInUrl = () => listUrl.writeToUrl({page: textList.page.value, search: currentSearch.value})
+const rememberInUrl = () => {
+  // A list that failed to load is not on screen, so the address keeps the
+  // last one that was. Otherwise it would pair the new search with the old
+  // page number.
+  if (textList.failed.value) {
+    return
+  }
+
+  listUrl.writeToUrl({page: textList.page.value, search: currentSearch.value})
+}
 
 const search = async (query: string) => {
   currentSearch.value = query
@@ -55,6 +66,25 @@ onMounted(async () => {
   // that page does not exist; the address follows what is on screen.
   rememberInUrl()
 })
+
+// Nuxt keeps this page when only the query of the address changes: a link to
+// /texts from /texts?q=панов, or the back button. The list follows the
+// address then. The page's own writes change nothing on screen and are skipped.
+watch(
+  () => route.query,
+  async () => {
+    const searchInUrl = listUrl.searchInUrl()
+    const pageInUrl = listUrl.pageInUrl()
+
+    if (searchInUrl === currentSearch.value && pageInUrl === textList.page.value) {
+      return
+    }
+
+    currentSearch.value = searchInUrl
+    await textList.load(narrowing(searchInUrl), pageInUrl)
+    rememberInUrl()
+  },
+)
 </script>
 
 <template>
@@ -65,7 +95,7 @@ onMounted(async () => {
     </header>
 
     <div class="mt-8">
-      <TextsSearchField :initial-query="openedWith.search" @search="search" />
+      <TextsSearchField :active-query="currentSearch" @search="search" />
     </div>
 
     <p v-if="textList.loading.value" class="mt-12 text-sm text-stone-500">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {ref} from 'vue'
+import {ref, watch} from 'vue'
 import {useI18n} from 'vue-i18n'
 
 /**
@@ -9,16 +9,23 @@ import {useI18n} from 'vue-i18n'
  * says when to go and ask. It reports the query rather than acting on it.
  */
 const props = defineProps<{
-  // What was searched for already, so a link to a search arrives with its
-  // own words still in the box.
-  initialQuery: string
+  // What the list is showing now, so a link to a search arrives with its own
+  // words in the box, and the box follows when the address changes.
+  activeQuery: string
 }>()
 
 const emit = defineEmits<{search: [query: string]}>()
 
 const {t} = useI18n()
 
-const query = ref(props.initialQuery)
+const query = ref(props.activeQuery)
+
+watch(
+  () => props.activeQuery,
+  activeQuery => {
+    query.value = activeQuery
+  },
+)
 
 const search = () => emit('search', query.value.trim())
 

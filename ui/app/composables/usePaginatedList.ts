@@ -42,6 +42,10 @@ export function usePaginatedList<Item>(endpoint: string, pageSize: number) {
   // leave the newer words in the search box above the older list.
   let latestRequest = 0
 
+  // Whether the last failure was the corpus saying "no such page" (404),
+  // rather than the server or the network failing.
+  let pageWasMissing = false
+
   /** Fetch one page. Answers whether this request was still the current one. */
   const fetchPage = async (wantedPage: number, quietNotFound = false): Promise<boolean> => {
     const thisRequest = (latestRequest += 1)
@@ -69,6 +73,8 @@ export function usePaginatedList<Item>(endpoint: string, pageSize: number) {
         items.value = []
         itemCount.value = 0
         failed.value = true
+        // The error is the one $fetch threw, which carries the HTTP status.
+        pageWasMissing = (error.value as {status?: number} | null)?.status === 404
         return true
       }
 
@@ -98,11 +104,12 @@ export function usePaginatedList<Item>(endpoint: string, pageSize: number) {
     // corpus was smaller, or a number typed by hand. That is not worth an
     // error in the reader's face, so the attempt is made quietly and the list
     // simply opens at the beginning instead. The second attempt is loud: if
-    // that one fails too, something is genuinely wrong.
+    // that one fails too, something is genuinely wrong. Any other failure is
+    // not retried, since asking again would only report it twice.
     const namesAPage = startPage !== FIRST_PAGE
     const applied = await fetchPage(startPage, namesAPage)
 
-    if (applied && failed.value && namesAPage) {
+    if (applied && failed.value && namesAPage && pageWasMissing) {
       return fetchPage(FIRST_PAGE)
     }
 
